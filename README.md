@@ -257,6 +257,8 @@ Robz Play şu açık kaynak projelerin üzerine kuruludur:
 
 ## Lisans
 
+**Robz Play, [chiaki-ng](https://github.com/chiaki-ng/chiaki-ng) 1.10.1'in değiştirilmiş bir sürümüdür.** Değişiklikler 20 Kasım 2026'da başladı ve tamamı bu deponun commit geçmişinde görülebilir (chiaki-ng'den devralınan son commit: `43728af2`). Robz Play, chiaki-ng ya da Chiaki geliştiricileri tarafından hazırlanmamıştır ve onlar tarafından onaylanmamıştır; Robz Play ile ilgili sorunları onlara değil, [bu depoya](https://github.com/kutsalkiremitci/robz-play/issues) bildir.
+
 Robz Play, chiaki-ng gibi **AGPL-3.0-only** (OpenSSL istisnasıyla) lisanslıdır; tam metin [`LICENSES`](LICENSES) klasöründe ve [`COPYING`](COPYING) dosyasındadır. RIFE modeli ve rife-ncnn-vulkan kodu MIT lisanslıdır; lisans metinleri ilgili klasörlerde durur.
 
 PlayStation, PS5, PS4 ve DualSense, Sony Interactive Entertainment'ın markalarıdır. Grand Theft Auto ve GTA, Take-Two Interactive'in markalarıdır; bu sayfadaki oyun görüntüleri Rockstar Games'e aittir ve yalnızca Robz Play'in çalışmasını göstermek için kullanılmıştır. Bu proje Sony Interactive Entertainment, Rockstar Games ya da Take-Two Interactive tarafından onaylanmamış ya da desteklenmemiştir.
