@@ -17,7 +17,12 @@
 
 **Robz Play, GTA VI için tasarlandı: PS5'te 30 FPS çalışan oyunu, bilgisayarının ekranında 1080p ve 60 FPS akıcılığında oynatır.** PS5'ine ev ağı üzerinden bağlanır, aradaki kareleri bilgisayarının ekran kartı üretir. Capture card gerekmez: PS5, bilgisayar ve ikisinin bağlı olduğu ağ yeterli.
 
-GTA VI konsollarda 30 FPS çalışıyor. Robz Play bu yüzden yazıldı ve GTA VI oynanarak geliştirildi. Aynı yöntem 30 FPS'e kilitli bütün PS5 ve PS4 oyunlarında işe yarar.
+Robz Play iki şey sunar:
+
+1. **PS5'ine 1080p, 60 FPS Remote Play bağlantısı.** Konsolunu bilgisayarından oynarsın; görüntü, konsolun gönderdiği gibidir.
+2. **Üstüne, istersen kare üretimi.** GTA VI gibi 30 FPS çalışan oyunlar 60 FPS akıcılığında gösterilir; 120 FPS seçeneği deneyseldir.
+
+Kare üretimi zorunlu değil: ana ekranın ortasındaki **Görüntü modu** bölümünden tek tıkla açılır ve kapanır. GTA VI konsollarda 30 FPS çalışıyor; kare üretimi bu yüzden yazıldı ve GTA VI oynanarak geliştirildi. Aynı yöntem 30 FPS'e kilitli bütün PS5 ve PS4 oyunlarında işe yarar.
 
 <p align="center">
   <img src="assets/robzplay/gta-vi-30-vs-60.webp" alt="GTA VI: solda 30 FPS, sağda Robz Play ile 60 FPS" width="100%">
@@ -50,8 +55,18 @@ Robz Play bunların üstüne HUD ve yazı korumasını, keskinleştirmeyi, OBS k
 Karşılaştırmanın GIF sürümü: [`assets/robzplay/gta-vi-30-vs-60.gif`](assets/robzplay/gta-vi-30-vs-60.gif). GIF biçimi en fazla 50 FPS gösterebildiği için o dosya %83 hızda oynar; yukarıdaki animasyon gerçek hızda 60 FPS'tir.
 
 <p align="center">
-  <img src="assets/robzplay/ana-ekran.png" alt="Robz Play ana ekranı: solda konsollar, sağda kare üretimi paneli" width="92%">
+  <img src="assets/robzplay/ana-ekran.png" alt="Robz Play ana ekranı: üstte konsol, ortada üç seçenekli Görüntü modu" width="92%">
 </p>
+
+## Görüntü modları
+
+| Mod | Ne yapar | 30 FPS çalışan GTA VI'da görülen |
+|---|---|:---:|
+| **Yalnızca yayın** | Düz Remote Play: 1080p, 60 FPS yayın, konsolun gönderdiği gibi. Kare üretimi kapalı. | 30 FPS |
+| **60 FPS** | Aradaki kareleri ekran kartı üretir. Varsayılan mod. | **60 FPS** |
+| **120 FPS** `Deneysel` | Her iki gerçek karenin arasına üç kare üretir. | 120 FPS |
+
+Mod, bir sonraki bağlantıda geçerli olur. Zaten 60 FPS çalışan bir oyunda "Yalnızca yayın" ile "60 FPS" aynı görüntüyü verir; fark 30 FPS'e kilitli oyunlarda ortaya çıkar.
 
 ## Nasıl çalışır?
 
@@ -76,7 +91,8 @@ Can göstergesi, mini harita, altyazı gibi **sabit duran HUD öğeleri ayrıca 
 
 | | |
 |---|---|
-| **30 → 60 FPS** | GTA VI ve 30 FPS'e kilitli diğer oyunlar 60 FPS akıcılığında. Varsayılan ve önerilen mod. |
+| **1080p, 60 FPS Remote Play** | PS5'ine ev ağından bağlan ve bilgisayarından oyna. Kare üretimi olmadan da kullanılır. |
+| **30 → 60 FPS** | GTA VI ve 30 FPS'e kilitli diğer oyunlar 60 FPS akıcılığında. Varsayılan mod. |
 | **120 FPS** `Deneysel` | Her iki gerçek karenin arasına üç kare üretir. Güçlü ekran kartı ve 120 Hz ekran ister; ayrıntı için [aşağıya bak](#120-fps-deneysel). |
 | **HUD ve yazı koruması** | Sabit arayüz öğeleri üretilen karelerde yerinde kalır. |
 | **Keskinleştirme** | Sıkıştırılmış yayının kaybettiği netliği geri getirir; oyun sırasında anında değişir. |
@@ -166,7 +182,7 @@ Yayınlanan zip paketini üretmek için: `./scripts/robzplay-package.sh`.
 1. PS5'te **Ayarlar › Sistem › Uzaktan Oynama** bölümünden **Uzaktan Oynamayı Etkinleştir**'i aç.
 2. PS5 ve bilgisayar aynı ağdayken Robz Play'i aç; konsol ana ekranda kendiliğinden görünür.
 3. **Kur**'a bas ve PS5'in **Cihazı Bağla** ekranında gösterdiği kodu yaz. Bu adım bir kez yapılır; konsolun chiaki-ng'den geldiyse hiç gerekmez.
-4. **Oyna**'ya bas. Kare üretimi varsayılan olarak açık ve 60 FPS hedefindedir.
+4. **Oyna**'ya bas. Varsayılan mod 60 FPS'tir; düz Remote Play istiyorsan ana ekrandaki **Görüntü modu** bölümünden "Yalnızca yayın"ı seç.
 
 Oyun sırasında `Ctrl+O` yayın menüsünü açar.
 
@@ -178,8 +194,7 @@ Oyun sırasında `Ctrl+O` yayın menüsünü açar.
 
 | Ayar | Seçenekler | Ne yapar |
 |---|---|---|
-| Kare üretimi | Açık / Kapalı | Kapalıyken yayın konsolun gönderdiği gibi gösterilir. |
-| Hedef | 60 FPS / 120 FPS `Deneysel` | Ekranda gösterilecek kare hızı. |
+| Görüntü modu | Yalnızca yayın / 60 FPS / 120 FPS `Deneysel` | Kare üretimini kapatır ya da hedefini seçer. Ana ekranın ortasındadır. |
 | Hareket ayrıntısı | Hızlı / Dengeli / Yüksek | Hareketin hangi çözünürlükte ölçüleceği. Yüksek daha temiz, ama ekran kartına yaklaşık üç kat daha ağır. |
 | HUD ve yazıları sabit tut | Açık / Kapalı | Sabit arayüz öğelerini üretilen karelerde korur. |
 | Keskinleştirme | Kapalı / Düşük / Orta / Yüksek | Yayının netliğini artırır; anında uygulanır. |

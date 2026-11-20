@@ -16,6 +16,12 @@ DialogView {
     }
     property int selectedConsole: SettingsDialog.Console.PS5
     property bool quitControllerMapping: true
+    // the section shown first: 0 General, 1 Video, 2 Stream, ... in the order of the list
+    property int startSection: 0
+    Component.onCompleted: {
+        if (startSection > 0)
+            bar.currentIndex = startSection;
+    }
     id: dialog
     title: qsTr("Settings")
     header: qsTr("Values in brackets are the defaults")

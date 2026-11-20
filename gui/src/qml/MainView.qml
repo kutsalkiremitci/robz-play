@@ -116,10 +116,13 @@ Pane {
         return n;
     }
 
-    // The frame rate the picture is shown at with the current switches, for a 30 FPS game.
-    readonly property int shownFps: Chiaki.settings.frameGenEnabled ? Chiaki.settings.frameGenTargetFps : 30
+    // room for the explanations inside the picture mode tiles
+    readonly property bool tall: height >= 840
 
-    // Drives the two moving markers of the frame generation panel. It only runs while this
+    // the stream the console is asked for on the home network, as set under Settings > Stream
+    readonly property string streamResolution: ["360p", "540p", "720p", "1080p"][Math.max(1, Math.min(4, Chiaki.settings.resolutionLocalPS5)) - 1]
+
+    // Drives the moving markers of the picture mode tiles. It only runs while this
     // screen is the one on show and the app is in front.
     property real cadencePhase: 0
     NumberAnimation on cadencePhase {
@@ -325,6 +328,115 @@ Pane {
                     text: cardAction.text
                     color: "#C2C0B6"
                     font.pixelSize: 14
+                }
+            }
+        }
+    }
+
+    // One picture mode: what it is called, what it does, and - as a marker that moves at
+    // that rate - what a 30 FPS game looks like in it.
+    component ModeTile: AbstractButton {
+        id: tile
+        property bool active: false
+        property string title: ""
+        property string badge: ""
+        property color badgeTint: "#D9A65A"
+        property string summary: ""
+        property bool showSummary: true
+        property string result: ""
+        property int laneFps: 30
+        property real phase: 0
+        Layout.fillWidth: true
+        Layout.fillHeight: true
+        implicitHeight: tileColumn.implicitHeight + 34
+        focusPolicy: Qt.NoFocus
+        hoverEnabled: true
+        HoverHandler { cursorShape: Qt.PointingHandCursor }
+        background: Rectangle {
+            radius: 14
+            color: tile.active ? "#2C2622" : (tile.hovered ? "#201F1E" : "#1A1918")
+            border.width: tile.active ? 2 : 1
+            border.color: tile.active ? "#D97757" : (tile.hovered ? "#5A5853" : "#3A3936")
+        }
+        contentItem: Item {
+            implicitHeight: tileColumn.implicitHeight
+            ColumnLayout {
+                id: tileColumn
+                anchors {
+                    fill: parent
+                    margins: 17
+                }
+                spacing: 9
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 10
+                    Rectangle {
+                        Layout.alignment: Qt.AlignVCenter
+                        implicitWidth: 18
+                        implicitHeight: 18
+                        radius: 9
+                        color: "transparent"
+                        border.width: 2
+                        border.color: tile.active ? "#D97757" : "#6B6963"
+                        Rectangle {
+                            anchors.centerIn: parent
+                            width: 8
+                            height: 8
+                            radius: 4
+                            color: "#D97757"
+                            visible: tile.active
+                        }
+                    }
+                    Label {
+                        text: tile.title
+                        color: "#FAF9F5"
+                        font.pixelSize: 20
+                        font.weight: Font.DemiBold
+                    }
+                    Rectangle {
+                        Layout.alignment: Qt.AlignVCenter
+                        visible: tile.badge.length > 0
+                        implicitWidth: tileBadge.implicitWidth + 14
+                        implicitHeight: 20
+                        radius: 10
+                        color: "transparent"
+                        border.color: tile.badgeTint
+                        Label {
+                            id: tileBadge
+                            anchors.centerIn: parent
+                            text: tile.badge
+                            color: tile.badgeTint
+                            font.pixelSize: 12
+                        }
+                    }
+                    Item { Layout.fillWidth: true }
+                }
+
+                Label {
+                    Layout.fillWidth: true
+                    visible: tile.showSummary
+                    text: tile.summary
+                    color: "#C2C0B6"
+                    font.pixelSize: 14
+                    wrapMode: Text.Wrap
+                    lineHeight: 1.15
+                }
+
+                Item { Layout.fillHeight: true }
+
+                CadenceLane {
+                    phase: tile.phase
+                    fps: tile.laneFps
+                    tint: tile.active ? "#D97757" : "#8F8D85"
+                }
+
+                Label {
+                    Layout.fillWidth: true
+                    text: tile.result
+                    color: tile.active ? "#D97757" : "#8F8D85"
+                    font.pixelSize: 13
+                    elide: Text.ElideRight
                 }
             }
         }
@@ -559,7 +671,7 @@ Pane {
             Layout.fillWidth: true
             Layout.fillHeight: true
 
-            RowLayout {
+            ColumnLayout {
                 id: contentRow
                 anchors {
                     fill: parent
@@ -568,7 +680,7 @@ Pane {
                     topMargin: 30
                     bottomMargin: 26
                 }
-                spacing: consolePane.roomy ? 28 : 20
+                spacing: 20
 
                 // ------------------------------------------------------ consoles
                 ColumnLayout {
@@ -601,8 +713,14 @@ Pane {
                     }
 
                     Item {
+                        // as tall as what it shows; it gives way and scrolls when the window is short
+                        readonly property real wanted: Math.max(164, consolePane.visibleHosts === 0 ? connectSteps.implicitHeight + 8 : hostsView.contentHeight)
                         Layout.fillWidth: true
                         Layout.fillHeight: true
+                        Layout.minimumHeight: 164
+                        Layout.preferredHeight: wanted
+                        Layout.maximumHeight: wanted
+                        clip: true
 
                         ListView {
                             id: hostsView
@@ -838,6 +956,7 @@ Pane {
 
                         // nothing to show yet: the three steps that get a console on this screen
                         ColumnLayout {
+                            id: connectSteps
                             anchors {
                                 left: parent.left
                                 right: parent.right
@@ -926,208 +1045,169 @@ Pane {
                     }
                 }
 
-                // ------------------------------------------------------ frame generation
+                // ------------------------------------------------------ picture mode
+                // What Robz Play offers, as one choice in the middle of the screen: the plain
+                // Remote Play stream, or that stream with frames generated in between. The
+                // three tiles write the same two settings the Settings page shows
+                // (frame generation on/off and its target).
                 Rectangle {
-                    id: frameGenPanel
-                    Layout.alignment: Qt.AlignTop
-                    Layout.preferredWidth: consolePane.roomy ? 448 : 360
-                    Layout.preferredHeight: Math.min(contentRow.height, frameGenColumn.implicitHeight + 48)
+                    id: modePanel
+                    Layout.fillWidth: true
+                    implicitHeight: modeColumn.implicitHeight + (consolePane.tall ? 44 : 30)
+                    visible: consolePane.visibleHosts > 0 || consolePane.tall
                     radius: 16
                     color: consolePane.cSurface
                     border.color: consolePane.cBorder
 
-                    Flickable {
-                        id: frameGenFlick
+                    ColumnLayout {
+                        id: modeColumn
                         anchors {
-                            fill: parent
-                            margins: 1
+                            left: parent.left
+                            right: parent.right
+                            top: parent.top
+                            margins: 22
+                            topMargin: consolePane.tall ? 22 : 15
                         }
-                        clip: true
-                        contentWidth: width
-                        contentHeight: frameGenColumn.implicitHeight + 46
-                        boundsBehavior: Flickable.StopAtBounds
-                        interactive: contentHeight > height
+                        spacing: consolePane.tall ? 14 : 10
 
-                        ColumnLayout {
-                            id: frameGenColumn
-                            x: 23
-                            y: 23
-                            width: frameGenFlick.width - 46
+                        RowLayout {
+                            Layout.fillWidth: true
                             spacing: 14
 
-                            RowLayout {
+                            ColumnLayout {
                                 Layout.fillWidth: true
-                                spacing: 14
+                                spacing: 2
                                 Label {
-                                    Layout.fillWidth: true
-                                    text: qsTr("Frame generation")
+                                    text: qsTr("Picture mode")
                                     font.family: consolePane.serif
                                     font.pixelSize: 24
                                     color: consolePane.cText
                                 }
-                                Toggle {
-                                    Layout.alignment: Qt.AlignVCenter
-                                    on: Chiaki.settings.frameGenEnabled
-                                    onClicked: Chiaki.settings.frameGenEnabled = !Chiaki.settings.frameGenEnabled
+                                Label {
+                                    Layout.fillWidth: true
+                                    text: qsTr("Choose how Robz Play shows the stream. It applies from the next connection.")
+                                    color: consolePane.cMuted
+                                    font.pixelSize: 14
+                                    wrapMode: Text.Wrap
                                 }
                             }
 
                             Label {
-                                Layout.fillWidth: true
-                                Layout.topMargin: -6
-                                text: Chiaki.settings.frameGenEnabled
-                                    ? qsTr("On. This PC's graphics card draws the frames in between, so a 30 FPS game is shown at %1 FPS. Changes apply from the next stream.").arg(Chiaki.settings.frameGenTargetFps)
-                                    : qsTr("Off. The stream is shown exactly as the console sends it.")
+                                Layout.alignment: Qt.AlignVCenter
+                                text: qsTr("Stream: %1, %2 FPS").arg(consolePane.streamResolution).arg(Chiaki.settings.fpsLocalPS5)
                                 color: consolePane.cMuted
                                 font.pixelSize: 14
-                                wrapMode: Text.Wrap
-                                lineHeight: 1.15
                             }
 
-                            // what it looks like: the same motion at the console's rate and at ours
-                            Rectangle {
-                                Layout.fillWidth: true
-                                implicitHeight: cadenceColumn.implicitHeight + 30
-                                radius: 12
-                                color: consolePane.cInset
-                                border.color: consolePane.cBorder
+                            CardAction {
+                                Layout.alignment: Qt.AlignVCenter
+                                text: qsTr("Stream settings")
+                                onClicked: root.showSettingsDialog(2)
+                            }
+                        }
 
-                                ColumnLayout {
-                                    id: cadenceColumn
-                                    anchors {
-                                        left: parent.left
-                                        right: parent.right
-                                        top: parent.top
-                                        margins: 15
-                                    }
-                                    spacing: 7
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: 12
+                            uniformCellSizes: true
 
-                                    RowLayout {
-                                        Layout.fillWidth: true
-                                        Label {
-                                            Layout.fillWidth: true
-                                            text: qsTr("As the console sends it")
-                                            color: consolePane.cFaint
-                                            font.pixelSize: 13
-                                        }
-                                        Label {
-                                            text: qsTr("%1 FPS").arg(30)
-                                            color: consolePane.cMuted
-                                            font.pixelSize: 13
-                                        }
-                                    }
-                                    CadenceLane {
-                                        phase: consolePane.cadencePhase
-                                        fps: 30
-                                        tint: "#8F8D85"
-                                    }
+                            ModeTile {
+                                title: qsTr("Stream only")
+                                summary: qsTr("Plain Remote Play: the picture exactly as the console sends it. Frame generation is off.")
+                                result: qsTr("A 30 FPS game stays at 30 FPS")
+                                laneFps: 30
+                                showSummary: consolePane.tall
+                                phase: consolePane.cadencePhase
+                                active: !Chiaki.settings.frameGenEnabled
+                                onClicked: Chiaki.settings.frameGenEnabled = false
+                            }
 
-                                    RowLayout {
-                                        Layout.fillWidth: true
-                                        Layout.topMargin: 6
-                                        Label {
-                                            Layout.fillWidth: true
-                                            text: qsTr("As Robz Play shows it")
-                                            color: consolePane.cFaint
-                                            font.pixelSize: 13
-                                        }
-                                        Label {
-                                            text: qsTr("%1 FPS").arg(consolePane.shownFps)
-                                            color: Chiaki.settings.frameGenEnabled ? consolePane.cAccent : consolePane.cMuted
-                                            font.pixelSize: 13
-                                            font.weight: Chiaki.settings.frameGenEnabled ? Font.DemiBold : Font.Normal
-                                        }
-                                    }
-                                    CadenceLane {
-                                        phase: consolePane.cadencePhase
-                                        fps: consolePane.shownFps
-                                        tint: Chiaki.settings.frameGenEnabled ? "#D97757" : "#8F8D85"
-                                    }
+                            ModeTile {
+                                title: qsTr("60 FPS")
+                                badge: qsTr("For GTA VI")
+                                badgeTint: "#D97757"
+                                summary: qsTr("This PC's graphics card draws the frames in between, so a 30 FPS game looks like 60.")
+                                result: qsTr("A 30 FPS game is shown at 60 FPS")
+                                laneFps: 60
+                                showSummary: consolePane.tall
+                                phase: consolePane.cadencePhase
+                                active: Chiaki.settings.frameGenEnabled && Chiaki.settings.frameGenTargetFps === 60
+                                onClicked: {
+                                    Chiaki.settings.frameGenTargetFps = 60;
+                                    Chiaki.settings.frameGenEnabled = true;
                                 }
                             }
 
+                            ModeTile {
+                                title: qsTr("120 FPS")
+                                badge: qsTr("Experimental")
+                                summary: qsTr("Three generated frames between every two real ones. Needs a fast graphics card and a 120 Hz screen.")
+                                result: qsTr("A 30 FPS game is shown at 120 FPS")
+                                laneFps: 120
+                                showSummary: consolePane.tall
+                                phase: consolePane.cadencePhase
+                                active: Chiaki.settings.frameGenEnabled && Chiaki.settings.frameGenTargetFps === 120
+                                onClicked: {
+                                    Chiaki.settings.frameGenTargetFps = 120;
+                                    Chiaki.settings.frameGenEnabled = true;
+                                }
+                            }
+                        }
+
+                        GridLayout {
+                            Layout.fillWidth: true
+                            Layout.topMargin: 2
+                            columns: consolePane.roomy ? 4 : 2
+                            columnSpacing: 26
+                            rowSpacing: 12
+
+                            // the two that only matter while frames are generated
                             ColumnLayout {
                                 Layout.fillWidth: true
-                                spacing: 14
+                                spacing: 6
                                 opacity: Chiaki.settings.frameGenEnabled ? 1.0 : 0.4
                                 enabled: Chiaki.settings.frameGenEnabled
-
-                                ColumnLayout {
-                                    Layout.fillWidth: true
-                                    spacing: 6
-                                    Label { text: qsTr("Target"); color: consolePane.cMuted; font.pixelSize: 14 }
-                                    SegmentGroup {
-                                        Segment {
-                                            text: qsTr("60 FPS")
-                                            active: Chiaki.settings.frameGenTargetFps === 60
-                                            onClicked: Chiaki.settings.frameGenTargetFps = 60
-                                        }
-                                        Segment {
-                                            text: qsTr("120 FPS")
-                                            badge: qsTr("Experimental")
-                                            active: Chiaki.settings.frameGenTargetFps === 120
-                                            onClicked: Chiaki.settings.frameGenTargetFps = 120
-                                        }
+                                Label { text: qsTr("Motion detail"); color: consolePane.cMuted; font.pixelSize: 14 }
+                                SegmentGroup {
+                                    Segment {
+                                        text: qsTr("Fast")
+                                        active: Chiaki.settings.frameGenFlowDivisor === 4
+                                        onClicked: Chiaki.settings.frameGenFlowDivisor = 4
                                     }
-                                    Label {
-                                        Layout.fillWidth: true
-                                        visible: Chiaki.settings.frameGenTargetFps === 120
-                                        text: qsTr("120 FPS is experimental. It needs a fast graphics card and a 120 Hz screen, and quick motion can show more artifacts than at 60 FPS.")
-                                        color: consolePane.cWarn
-                                        font.pixelSize: 12
-                                        wrapMode: Text.Wrap
-                                        lineHeight: 1.15
+                                    Segment {
+                                        text: qsTr("Balanced")
+                                        active: Chiaki.settings.frameGenFlowDivisor === 2
+                                        onClicked: Chiaki.settings.frameGenFlowDivisor = 2
                                     }
-                                }
-
-                                ColumnLayout {
-                                    Layout.fillWidth: true
-                                    spacing: 6
-                                    Label { text: qsTr("Motion detail"); color: consolePane.cMuted; font.pixelSize: 14 }
-                                    SegmentGroup {
-                                        Segment {
-                                            text: qsTr("Fast")
-                                            active: Chiaki.settings.frameGenFlowDivisor === 4
-                                            onClicked: Chiaki.settings.frameGenFlowDivisor = 4
-                                        }
-                                        Segment {
-                                            text: qsTr("Balanced")
-                                            active: Chiaki.settings.frameGenFlowDivisor === 2
-                                            onClicked: Chiaki.settings.frameGenFlowDivisor = 2
-                                        }
-                                        Segment {
-                                            text: qsTr("High")
-                                            active: Chiaki.settings.frameGenFlowDivisor === 1
-                                            onClicked: Chiaki.settings.frameGenFlowDivisor = 1
-                                        }
-                                    }
-                                }
-
-                                RowLayout {
-                                    Layout.fillWidth: true
-                                    spacing: 12
-                                    Label {
-                                        Layout.fillWidth: true
-                                        text: qsTr("Keep HUD and text steady")
-                                        color: consolePane.cMuted
-                                        font.pixelSize: 14
-                                        wrapMode: Text.Wrap
-                                    }
-                                    Toggle {
-                                        on: Chiaki.settings.frameGenProtectStatic
-                                        onClicked: Chiaki.settings.frameGenProtectStatic = !Chiaki.settings.frameGenProtectStatic
+                                    Segment {
+                                        text: qsTr("High")
+                                        active: Chiaki.settings.frameGenFlowDivisor === 1
+                                        onClicked: Chiaki.settings.frameGenFlowDivisor = 1
                                     }
                                 }
                             }
 
-                            Rectangle {
+                            RowLayout {
                                 Layout.fillWidth: true
-                                Layout.topMargin: 2
-                                Layout.bottomMargin: 2
-                                implicitHeight: 1
-                                color: consolePane.cBorder
+                                Layout.alignment: Qt.AlignBottom
+                                Layout.minimumHeight: 40
+                                spacing: 12
+                                opacity: Chiaki.settings.frameGenEnabled ? 1.0 : 0.4
+                                enabled: Chiaki.settings.frameGenEnabled
+                                Label {
+                                    Layout.fillWidth: true
+                                    text: qsTr("Keep HUD and text steady")
+                                    color: consolePane.cMuted
+                                    font.pixelSize: 14
+                                    wrapMode: Text.Wrap
+                                }
+                                Toggle {
+                                    on: Chiaki.settings.frameGenProtectStatic
+                                    onClicked: Chiaki.settings.frameGenProtectStatic = !Chiaki.settings.frameGenProtectStatic
+                                }
                             }
 
+                            // the two that apply to every stream
                             ColumnLayout {
                                 Layout.fillWidth: true
                                 spacing: 6
@@ -1154,17 +1234,12 @@ Pane {
                                         onClicked: Chiaki.settings.sharpening = 3
                                     }
                                 }
-                                Label {
-                                    Layout.fillWidth: true
-                                    text: qsTr("Brings back crispness the compressed stream loses. Applies right away.")
-                                    color: consolePane.cFaint
-                                    font.pixelSize: 12
-                                    wrapMode: Text.Wrap
-                                }
                             }
 
                             RowLayout {
                                 Layout.fillWidth: true
+                                Layout.alignment: Qt.AlignBottom
+                                Layout.minimumHeight: 40
                                 spacing: 12
                                 Label {
                                     Layout.fillWidth: true
@@ -1181,6 +1256,8 @@ Pane {
                         }
                     }
                 }
+
+                Item { Layout.fillHeight: true }
             }
         }
     }

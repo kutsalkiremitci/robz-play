@@ -186,8 +186,9 @@ Item {
         stack.push(registDialogComponent, {host: host, ps5: ps5});
     }
 
-    function showSettingsDialog() {
-        stack.push(settingsDialogComponent);
+    // section: the settings section to open on (see the list in SettingsDialog), or nothing
+    function showSettingsDialog(section) {
+        stack.push(settingsDialogComponent, section === undefined ? {} : {startSection: section});
     }
 
     function showDisplaySettingsDialog() {
