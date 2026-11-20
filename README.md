@@ -101,8 +101,8 @@ Hazır kurulum paketi henüz yok; şimdilik kaynaktan derleniyor. Paket [yol har
 2. Depoyu alt modülleriyle birlikte indir:
 
    ```bash
-   git clone -c core.autocrlf=false --recursive https://github.com/kutsalkiremitci/RobzPlay.git
-   cd RobzPlay
+   git clone -c core.autocrlf=false --recursive https://github.com/kutsalkiremitci/robz-play.git
+   cd robz-play
    ```
 
 3. Bağımlılıkları bir kez kur (uzun sürer), sonra derle:
