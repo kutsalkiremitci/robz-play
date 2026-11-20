@@ -1,9 +1,11 @@
 <p align="center">
-  <img src="assets/robzplay/banner.svg" alt="Robz Play: PS5 Remote Play ve kare üretimi" width="100%">
+  <img src="assets/robzplay/banner.svg" alt="Robz Play: GTA VI için tasarlandı. PS5'te 30 FPS, ekranında 60 FPS." width="100%">
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Windows-10%20%7C%2011-D97757?style=flat-square" alt="Windows 10 ve 11">
+  <img src="https://img.shields.io/badge/GTA%20VI-60%20FPS-D97757?style=flat-square" alt="GTA VI: 60 FPS">
+  <img src="https://img.shields.io/badge/PS5%20Remote%20Play-1080p-D97757?style=flat-square" alt="PS5 Remote Play: 1080p">
+  <img src="https://img.shields.io/badge/Windows-10%20%7C%2011-5A5853?style=flat-square" alt="Windows 10 ve 11">
   <img src="https://img.shields.io/badge/durum-erken%20s%C3%BCr%C3%BCm-D9A65A?style=flat-square" alt="Durum: erken sürüm">
   <img src="https://img.shields.io/badge/aray%C3%BCz-T%C3%BCrk%C3%A7e%20%7C%20English-8DB580?style=flat-square" alt="Arayüz: Türkçe ve İngilizce">
   <img src="https://img.shields.io/badge/lisans-AGPL--3.0-5A5853?style=flat-square" alt="Lisans: AGPL-3.0">
@@ -12,9 +14,39 @@
 
 # Robz Play
 
-**Robz Play, PlayStation'ını ev ağı üzerinden bilgisayarına bağlar ve 30 FPS çalışan oyunu ekranında 60 FPS akıcılığında gösterir.** Aradaki kareleri bilgisayarının ekran kartı üretir. Capture card gerekmez: PS5, bilgisayar ve ikisinin bağlı olduğu ağ yeterli.
+**Robz Play, GTA VI için tasarlandı: PS5'te 30 FPS çalışan oyunu, bilgisayarının ekranında 1080p ve 60 FPS akıcılığında oynatır.** PS5'ine ev ağı üzerinden bağlanır, aradaki kareleri bilgisayarının ekran kartı üretir. Capture card gerekmez: PS5, bilgisayar ve ikisinin bağlı olduğu ağ yeterli.
 
-Projenin çıkış noktası tek bir cümle: **PS5'te 30 FPS çalışan GTA VI'yı, PC üzerinden PS Remote Play ile 60 FPS akıcılığında oynamak.** Robz Play bunun için yazıldı; aynı yöntem 30 FPS'e kilitli bütün PS5 ve PS4 oyunlarında işe yarar.
+GTA VI konsollarda 30 FPS çalışıyor. Robz Play bu yüzden yazıldı ve GTA VI oynanarak geliştirildi. Aynı yöntem 30 FPS'e kilitli bütün PS5 ve PS4 oyunlarında işe yarar.
+
+<p align="center">
+  <img src="assets/robzplay/gta-vi-30-vs-60.webp" alt="GTA VI: solda 30 FPS, sağda Robz Play ile 60 FPS" width="100%">
+</p>
+<p align="center">
+  <sub>Aynı GTA VI kaydı yan yana: sağda Robz Play'in ekrana verdiği 60 FPS, solda aynı görüntünün 30 FPS'e indirilmiş hali (temsilî). Kayıt, OBS ile Robz Play penceresinden alındı.</sub>
+</p>
+
+## PS Remote Play ile Robz Play
+
+| | PS Remote Play<br><sub>720p · 30 FPS ayarında</sub> | Robz Play |
+|---|:---:|:---:|
+| **GTA VI'da gördüğün kare hızı** | 30 FPS | **60 FPS** |
+| **Çözünürlük** | 720p | **1080p** |
+| **Kare üretimi** | Yok | **Var**, ekran kartında |
+| **Kaynak kodu** | Kapalı | **Açık** (AGPL-3.0) |
+
+Robz Play bunların üstüne HUD ve yazı korumasını, keskinleştirmeyi, OBS kayıtlarında da görünen FPS sayacını ve deneysel 120 FPS modunu ekler.
+
+> [!NOTE]
+> Karşılaştırma dürüst olsun: resmî PS Remote Play uygulamasında da çözünürlük PS5'te 1080p'ye, yayının kare hızı 60'a çıkarılabilir. Ama uygulama kare üretmez; GTA VI 30 FPS çalıştığı için ekranda gördüğün hareket yine 30 FPS olur. Farkı yaratan, Robz Play'in aradaki kareleri üretmesidir.
+
+<p align="center">
+  <img src="assets/robzplay/gta-vi-60fps.jpg" alt="Robz Play ile GTA VI: sol üstteki sayaç 60 FPS gösteriyor" width="92%">
+</p>
+<p align="center">
+  <sub>Robz Play ile GTA VI. Sol üstteki sayaç ekrana verilen kare hızını (60 FPS) ve konsoldan gelen kaynağı (yaklaşık 30) gösteriyor.</sub>
+</p>
+
+Karşılaştırmanın GIF sürümü: [`assets/robzplay/gta-vi-30-vs-60.gif`](assets/robzplay/gta-vi-30-vs-60.gif). GIF biçimi en fazla 50 FPS gösterebildiği için o dosya %83 hızda oynar; yukarıdaki animasyon gerçek hızda 60 FPS'tir.
 
 <p align="center">
   <img src="assets/robzplay/ana-ekran.png" alt="Robz Play ana ekranı: solda konsollar, sağda kare üretimi paneli" width="92%">
@@ -32,7 +64,7 @@ flowchart LR
     URET --> EKRAN["Ekranın<br/>60 FPS"]
 ```
 
-1. PS5 görüntüyü Remote Play ile bilgisayara yollar. Oyun 30 FPS olsa da yayın 60 FPS gelir; her kare iki kez gönderilir.
+1. PS5 görüntüyü Remote Play ile 1080p olarak bilgisayara yollar. GTA VI 30 FPS çalışsa da yayın 60 FPS gelir; her kare iki kez gönderilir.
 2. Robz Play bu kopyaları ayıklar ve oyunun gerçek 30 karesini bulur.
 3. Ekran kartında çalışan bir yapay zekâ modeli (RIFE), art arda gelen iki gerçek karedeki hareketi ölçer ve tam aradaki kareyi çizer.
 4. Gerçek ve üretilen kareler eşit aralıklarla ekrana verilir: saniyede 30 gerçek + 30 üretilen = 60 kare.
@@ -43,7 +75,7 @@ Can göstergesi, mini harita, altyazı gibi **sabit duran HUD öğeleri ayrıca 
 
 | | |
 |---|---|
-| **30 → 60 FPS** | 30 FPS oyunlar 60 FPS akıcılığında. Varsayılan ve önerilen mod. |
+| **30 → 60 FPS** | GTA VI ve 30 FPS'e kilitli diğer oyunlar 60 FPS akıcılığında. Varsayılan ve önerilen mod. |
 | **120 FPS** `Deneysel` | Her iki gerçek karenin arasına üç kare üretir. Güçlü ekran kartı ve 120 Hz ekran ister; ayrıntı için [aşağıya bak](#120-fps-deneysel). |
 | **HUD ve yazı koruması** | Sabit arayüz öğeleri üretilen karelerde yerinde kalır. |
 | **Keskinleştirme** | Sıkıştırılmış yayının kaybettiği netliği geri getirir; oyun sırasında anında değişir. |
@@ -81,7 +113,7 @@ Kartın zorlanırsa **Hareket ayrıntısı** ayarını "Hızlı"ya al: hareket, 
 
 **Yararı**
 
-- 30 FPS'e kilitli oyunlarda kamera dönüşleri ve hareket gözle görülür biçimde akıcılaşır.
+- GTA VI gibi 30 FPS'e kilitli oyunlarda kamera dönüşleri, araç sürüşü ve hareket gözle görülür biçimde akıcılaşır.
 - Ek donanım istemez. Capture card, HDMI ayırıcı, ikinci bir cihaz yok.
 - Ücretsiz ve açık kaynak; ne yaptığı kodda okunabilir.
 
@@ -157,7 +189,7 @@ Sorun yaşarsan 60 FPS'e dön; günlük kullanım için önerilen mod odur.
 Hayır. Görüntü PS5'ten ağ üzerinden, Remote Play ile gelir.
 
 **Hangi oyunlarda çalışır?**
-Remote Play'in izin verdiği bütün PS5 ve PS4 oyunlarında. En büyük fark 30 FPS'e kilitli oyunlarda görülür. Zaten 60 FPS çalışan bir oyunda 60 FPS hedefi bir şey eklemez.
+GTA VI için tasarlandı, ama Remote Play'in izin verdiği bütün PS5 ve PS4 oyunlarında çalışır. En büyük fark 30 FPS'e kilitli oyunlarda görülür. Zaten 60 FPS çalışan bir oyunda 60 FPS hedefi bir şey eklemez.
 
 **OBS ile yayın ya da kayıt yapabilir miyim?**
 Evet. Robz Play penceresini oyun yakalama kaynağı olarak ekle; üretilen kareler ve FPS sayacı kayda girer.
@@ -194,7 +226,7 @@ Robz Play şu açık kaynak projelerin üzerine kuruludur:
 
 Robz Play, chiaki-ng gibi **AGPL-3.0-only** (OpenSSL istisnasıyla) lisanslıdır; tam metin [`LICENSES`](LICENSES) klasöründe ve [`COPYING`](COPYING) dosyasındadır. RIFE modeli ve rife-ncnn-vulkan kodu MIT lisanslıdır; lisans metinleri ilgili klasörlerde durur.
 
-PlayStation, PS5, PS4 ve DualSense, Sony Interactive Entertainment'ın markalarıdır. Bu proje Sony Interactive Entertainment tarafından onaylanmamış ya da desteklenmemiştir.
+PlayStation, PS5, PS4 ve DualSense, Sony Interactive Entertainment'ın markalarıdır. Grand Theft Auto ve GTA, Take-Two Interactive'in markalarıdır; bu sayfadaki oyun görüntüleri Rockstar Games'e aittir ve yalnızca Robz Play'in çalışmasını göstermek için kullanılmıştır. Bu proje Sony Interactive Entertainment, Rockstar Games ya da Take-Two Interactive tarafından onaylanmamış ya da desteklenmemiştir.
 
 ---
 
