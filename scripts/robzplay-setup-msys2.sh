@@ -32,7 +32,8 @@ pacboy -S --noconfirm --needed \
 	lcms2:p libdovi:p meson:p miniupnpc:p gcc:p nasm:p ninja:p openssl:p opus:p \
 	pkgconf:p protobuf:p python:p python-psutil:p python-glad:p python-jinja:p \
 	python-pip:p python-protobuf:p qt6-base:p qt6-declarative:p qt6-svg:p shaderc:p \
-	speexdsp:p spirv-cross:p vulkan:p vulkan-headers:p compiler-rt:p librsvg:p
+	speexdsp:p spirv-cross:p vulkan:p vulkan-headers:p compiler-rt:p librsvg:p \
+	nsis:p
 
 echo "== [2/6] FFmpeg (prebuilt, shared)"
 if [[ ! -d "$DEPS/$FFMPEG_NAME" ]]; then

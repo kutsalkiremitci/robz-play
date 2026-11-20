@@ -144,11 +144,14 @@ Kartın zorlanırsa **Hareket ayrıntısı** ayarını "Hızlı"ya al: hareket, 
 
 ## Kurulum
 
-1. [**Son sürümü indir**](https://github.com/kutsalkiremitci/robz-play/releases/latest): `RobzPlay-…-windows-x64.zip`.
-2. Zip'i istediğin bir klasöre çıkar.
-3. **`RobzPlay.exe`** dosyasına çift tıkla.
+1. [**`RobzPlay-Setup.exe` dosyasını indir**](https://github.com/kutsalkiremitci/robz-play/releases/latest/download/RobzPlay-Setup.exe).
+2. İndirdiğin dosyayı çalıştır ve kurulumu tamamla. Yönetici izni istemez.
+3. Masaüstündeki ya da Başlat menüsündeki **Robz Play** kısayolundan aç.
 
-Kurulum programı yok; kaldırmak için klasörü silmek yeterli (ayarların Windows kayıt defterinde kalır). Uygulama imzalı olmadığı için Windows ilk açılışta "bilinmeyen yayıncı" uyarısı gösterebilir.
+Kurulum dosyası imzalı olmadığı için Windows ilk çalıştırmada "Windows kişisel bilgisayarınızı korudu" uyarısı gösterebilir; "Ek bilgi" ve ardından "Yine de çalıştır" ile devam edilir.
+
+- **Güncellemek için** yeni `RobzPlay-Setup.exe` dosyasını çalıştırman yeterli; ayarların ve kayıtlı konsolların korunur.
+- **Kaldırmak için** Windows'un "Yüklü uygulamalar" listesinden Robz Play'i kaldır. Ayarların Windows kayıt defterinde kalır.
 
 > [!TIP]
 > **chiaki-ng kullanıyor musun?** Robz Play ilk açılışta chiaki-ng'nin ayarlarını ve kayıtlı konsollarını kendiliğinden alır; konsolu yeniden eşleştirmen gerekmez. chiaki-ng'de ne seçili olursa olsun kare üretimi açık, 60 FPS ve Vulkan seçili gelir. chiaki-ng'nin kendi ayarlarına dokunulmaz.
@@ -173,7 +176,7 @@ Kurulum programı yok; kaldırmak için klasörü silmek yeterli (ayarların Win
 
 4. Depo klasöründeki **`start.bat`** dosyasına çift tıkla. Uygulama `dist\RobzPlay` klasöründen açılır.
 
-Yayınlanan zip paketini üretmek için: `./scripts/robzplay-package.sh`.
+Yayınlanan kurulum dosyasını (`RobzPlay-Setup.exe`) ve taşınabilir zip paketini üretmek için: `./scripts/robzplay-package.sh`.
 
 </details>
 
@@ -232,7 +235,7 @@ Kare üretimi HDR yayınla henüz denenmedi.
 
 ## Yol haritası
 
-- Kurulum programı ve imzalı sürüm.
+- İmzalı kurulum dosyası.
 - İlk açılışta ekran kartı hız testi ve buna göre otomatik ayar.
 - Eklenen gecikmeyi azaltma.
 - Gerçek oyun görüntüleriyle kalite ayarı; daha fazla ekran kartında deneme.

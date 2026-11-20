@@ -4,9 +4,14 @@
 #   scripts/robzplay-build.sh --deploy     # once, so that dist/RobzPlay holds every DLL
 #   scripts/robzplay-package.sh
 #
-# Result: dist/release/RobzPlay-<version>-windows-x64.zip - a folder that runs from anywhere:
-# the executable just built, the runtime files of dist/RobzPlay, the frame generation
-# model, the licences and a short read-me.
+# Results, in dist/release:
+#   RobzPlay-Setup.exe                    the installer people download (NSIS; per user, no
+#                                         administrator rights). Its name carries no version,
+#                                         so .../releases/latest/download/RobzPlay-Setup.exe
+#                                         always points at the newest one.
+#   RobzPlay-<version>-windows-x64.zip    the same folder as a zip that runs from anywhere
+# Both hold the executable just built, the runtime files of dist/RobzPlay, the frame
+# generation model, the licences and a short read-me.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -89,3 +94,26 @@ EOF
 echo "== Compressing"
 ( cd dist/release && /c/Windows/System32/tar.exe -a -c -f "$NAME.zip" "$NAME" )
 ls -la "dist/release/$NAME.zip" | awk '{printf "== %s (%.1f MB)\n", $NF, $5 / 1048576}'
+
+echo "== Installer"
+if ! command -v makensis > /dev/null; then
+	echo "makensis is missing: pacman -S mingw-w64-x86_64-nsis (scripts/robzplay-setup-msys2.sh installs it)"
+	exit 1
+fi
+# what the uninstaller removes: exactly the files and folders of this package, deepest first
+UNLIST="dist/release/uninstall-list.nsh"
+{
+	( cd "$STAGE" && find . -type f | sed 's|^\./||' | sort ) | sed 's|/|\\|g; s|^|Delete "$INSTDIR\\|; s|$|"|'
+	( cd "$STAGE" && find . -mindepth 1 -type d | sed 's|^\./||' | sort -r ) | sed 's|/|\\|g; s|^|RMDir "$INSTDIR\\|; s|$|"|'
+} > "$UNLIST"
+SIZEKB=$(du -sk "$STAGE" | cut -f1)
+rm -f dist/release/RobzPlay-Setup.exe
+makensis -V2 -INPUTCHARSET UTF8 \
+	"-DVERSION=$VERSION" \
+	"-DSOURCE=$(cygpath -w "$PWD/$STAGE")" \
+	"-DOUTFILE=$(cygpath -w "$PWD/dist/release/RobzPlay-Setup.exe")" \
+	"-DUNLIST=$(cygpath -w "$PWD/$UNLIST")" \
+	"-DSIZEKB=$SIZEKB" \
+	"-DICON=$(cygpath -w "$PWD/gui/robzplay.ico")" \
+	scripts/robzplay-installer.nsi
+ls -la dist/release/RobzPlay-Setup.exe | awk '{printf "== %s (%.1f MB)\n", $NF, $5 / 1048576}'
