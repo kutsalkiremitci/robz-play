@@ -68,11 +68,20 @@ static const QMap<QString, CLICommand> cli_commands = {
 // launch, copy chiaki-ng's saved settings (registered consoles, video and
 // controller options, profiles) so an existing chiaki-ng user does not have to
 // pair the console again. chiaki-ng's own settings are never modified.
+//
+// The copy then starts where Robz Play is meant to be used, whatever chiaki-ng was set
+// to: frame generation on with a 60 FPS target, and a 60 FPS stream on the home network
+// (the frame generator is built around the 60 FPS stream, in which a 30 FPS game arrives
+// as pairs of equal frames). Everything else is taken over as it was.
+//
+// ROBZPLAY_IMPORT_FROM_ORG names another settings organisation to import from; it exists
+// so the import can be tried against made-up settings without touching real ones.
 static void ImportChiakiNgSettingsOnce()
 {
 	const QString own_org = QCoreApplication::organizationName();
 	const QString own_app = QCoreApplication::applicationName();
-	const QString src_org = QStringLiteral("Chiaki");
+	const QString src_org = qEnvironmentVariableIsEmpty("ROBZPLAY_IMPORT_FROM_ORG")
+		? QStringLiteral("Chiaki") : qEnvironmentVariable("ROBZPLAY_IMPORT_FROM_ORG");
 	const QString src_app = QStringLiteral("Chiaki");
 	if(own_org == src_org)
 		return;
@@ -97,7 +106,19 @@ static void ImportChiakiNgSettingsOnce()
 		to.remove("settings/auto_connect_mac");
 	};
 
+	auto start_at_60_fps = [](QSettings &to) {
+		to.setValue("settings/framegen_enabled", true);
+		to.setValue("settings/framegen_target_fps", 60);
+		to.setValue("settings/fps_local_ps5", 60);
+		to.setValue("settings/fps_local_ps4", 60);
+		// settings written by an old chiaki-ng keep the frame rate under this name until
+		// they are migrated on load
+		if(to.contains("settings/fps"))
+			to.setValue("settings/fps", 60);
+	};
+
 	copy_all(src, own);
+	start_at_60_fps(own);
 
 	QStringList profiles;
 	int count = src.beginReadArray("profiles");
@@ -116,6 +137,7 @@ static void ImportChiakiNgSettingsOnce()
 		QSettings own_profile(own_org, QStringLiteral("%1-%2").arg(own_app, profile));
 		own_profile.setFallbacksEnabled(false);
 		copy_all(src_profile, own_profile);
+		start_at_60_fps(own_profile);
 	}
 
 	QSettings src_placebo(src_org, QStringLiteral("pl_render_params"));
@@ -148,7 +170,7 @@ int real_main(int argc, char *argv[])
 	if(sandbox_settings)
 		QGuiApplication::setOrganizationName(qEnvironmentVariable("ROBZPLAY_SETTINGS_ORG"));
 	QGuiApplication::setApplicationName("RobzPlay");
-	QGuiApplication::setApplicationVersion(CHIAKI_VERSION);
+	QGuiApplication::setApplicationVersion(ROBZPLAY_VERSION);
 	QGuiApplication::setApplicationDisplayName("Robz Play");
 #if defined(Q_OS_MACOS)
 	// Use a plain CAMetalLayer for Vulkan windows. Qt's own layer presents in step with each
@@ -271,7 +293,7 @@ int real_main(int argc, char *argv[])
 	parser.process(app);
 	QStringList args = parser.positionalArguments();
 
-	if(!sandbox_settings)
+	if(!sandbox_settings || !qEnvironmentVariableIsEmpty("ROBZPLAY_IMPORT_FROM_ORG"))
 		ImportChiakiNgSettingsOnce();
 
 	Settings settings(parser.isSet(profile_option) ? parser.value(profile_option) : QString());

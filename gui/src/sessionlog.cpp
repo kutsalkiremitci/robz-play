@@ -40,7 +40,7 @@ SessionLog::SessionLog(StreamSession *session, uint32_t level_mask, const QStrin
 		}
 	}
 
-	CHIAKI_LOGI(&log, "Chiaki Version " CHIAKI_VERSION);
+	CHIAKI_LOGI(&log, "Robz Play Version " ROBZPLAY_VERSION " (chiaki-ng " CHIAKI_VERSION ")");
 }
 
 SessionLog::~SessionLog()

@@ -6,6 +6,7 @@
   <img src="https://img.shields.io/badge/GTA%20VI-60%20FPS-D97757?style=flat-square" alt="GTA VI: 60 FPS">
   <img src="https://img.shields.io/badge/PS5%20Remote%20Play-1080p-D97757?style=flat-square" alt="PS5 Remote Play: 1080p">
   <img src="https://img.shields.io/badge/Windows-10%20%7C%2011-5A5853?style=flat-square" alt="Windows 10 ve 11">
+  <a href="https://github.com/kutsalkiremitci/robz-play/releases/latest"><img src="https://img.shields.io/github/v/release/kutsalkiremitci/robz-play?style=flat-square&label=indir&color=D97757" alt="Son sürümü indir"></a>
   <img src="https://img.shields.io/badge/durum-erken%20s%C3%BCr%C3%BCm-D9A65A?style=flat-square" alt="Durum: erken sürüm">
   <img src="https://img.shields.io/badge/aray%C3%BCz-T%C3%BCrk%C3%A7e%20%7C%20English-8DB580?style=flat-square" alt="Arayüz: Türkçe ve İngilizce">
   <img src="https://img.shields.io/badge/lisans-AGPL--3.0-5A5853?style=flat-square" alt="Lisans: AGPL-3.0">
@@ -127,7 +128,17 @@ Kartın zorlanırsa **Hareket ayrıntısı** ayarını "Hızlı"ya al: hareket, 
 
 ## Kurulum
 
-Hazır kurulum paketi henüz yok; şimdilik kaynaktan derleniyor. Paket [yol haritasında](#yol-haritası).
+1. [**Son sürümü indir**](https://github.com/kutsalkiremitci/robz-play/releases/latest): `RobzPlay-…-windows-x64.zip`.
+2. Zip'i istediğin bir klasöre çıkar.
+3. **`RobzPlay.exe`** dosyasına çift tıkla.
+
+Kurulum programı yok; kaldırmak için klasörü silmek yeterli (ayarların Windows kayıt defterinde kalır). Uygulama imzalı olmadığı için Windows ilk açılışta "bilinmeyen yayıncı" uyarısı gösterebilir.
+
+> [!TIP]
+> **chiaki-ng kullanıyor musun?** Robz Play ilk açılışta chiaki-ng'nin ayarlarını ve kayıtlı konsollarını kendiliğinden alır; konsolu yeniden eşleştirmen gerekmez. chiaki-ng'de ne seçili olursa olsun kare üretimi açık ve 60 FPS seçili gelir. chiaki-ng'nin kendi ayarlarına dokunulmaz.
+
+<details>
+<summary>Kaynaktan derlemek</summary>
 
 1. [MSYS2](https://www.msys2.org/)'yi varsayılan konumuna (`C:\msys64`) kur ve **MSYS2 MINGW64** kabuğunu aç.
 2. Depoyu alt modülleriyle birlikte indir:
@@ -146,11 +157,15 @@ Hazır kurulum paketi henüz yok; şimdilik kaynaktan derleniyor. Paket [yol har
 
 4. Depo klasöründeki **`start.bat`** dosyasına çift tıkla. Uygulama `dist\RobzPlay` klasöründen açılır.
 
+Yayınlanan zip paketini üretmek için: `./scripts/robzplay-package.sh`.
+
+</details>
+
 ## İlk kullanım
 
 1. PS5'te **Ayarlar › Sistem › Uzaktan Oynama** bölümünden **Uzaktan Oynamayı Etkinleştir**'i aç.
 2. PS5 ve bilgisayar aynı ağdayken Robz Play'i aç; konsol ana ekranda kendiliğinden görünür.
-3. **Kur**'a bas ve PS5'in **Cihazı Bağla** ekranında gösterdiği kodu yaz. Bu adım bir kez yapılır.
+3. **Kur**'a bas ve PS5'in **Cihazı Bağla** ekranında gösterdiği kodu yaz. Bu adım bir kez yapılır; konsolun chiaki-ng'den geldiyse hiç gerekmez.
 4. **Oyna**'ya bas. Kare üretimi varsayılan olarak açık ve 60 FPS hedefindedir.
 
 Oyun sırasında `Ctrl+O` yayın menüsünü açar.
@@ -202,7 +217,7 @@ Kare üretimi HDR yayınla henüz denenmedi.
 
 ## Yol haritası
 
-- Derleme gerektirmeyen hazır paket (taşınabilir `.zip`).
+- Kurulum programı ve imzalı sürüm.
 - İlk açılışta ekran kartı hız testi ve buna göre otomatik ayar.
 - Eklenen gecikmeyi azaltma.
 - Gerçek oyun görüntüleriyle kalite ayarı; daha fazla ekran kartında deneme.
