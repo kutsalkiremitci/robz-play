@@ -375,8 +375,8 @@ Window {
                 if (!Chiaki.session)
                     return "";
                 if (Chiaki.session.connected)
-                    return qsTr("Connected to <b>%1</b>").arg(Chiaki.settings.streamerMode ? "hidden" : Chiaki.session.host);
-                return qsTr("Connecting to <b>%1</b>").arg(Chiaki.settings.streamerMode ? "hidden" : Chiaki.session.host);
+                    return qsTr("Connected to <b>%1</b>").arg(Chiaki.settings.streamerMode ? qsTr("hidden") : Chiaki.session.host);
+                return qsTr("Connecting to <b>%1</b>").arg(Chiaki.settings.streamerMode ? qsTr("hidden") : Chiaki.session.host);
             }
 
             RowLayout {

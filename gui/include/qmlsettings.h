@@ -31,6 +31,13 @@ class QmlSettings : public QObject
     Q_PROPERTY(int echoSuppressLevel READ echoSuppressLevel WRITE setEchoSuppressLevel NOTIFY echoSuppressLevelChanged)
 #endif
     Q_PROPERTY(bool showStreamStats READ showStreamStats WRITE setShowStreamStats NOTIFY showStreamStatsChanged)
+    Q_PROPERTY(bool frameGenEnabled READ frameGenEnabled WRITE setFrameGenEnabled NOTIFY frameGenEnabledChanged)
+    Q_PROPERTY(bool showFpsCounter READ showFpsCounter WRITE setShowFpsCounter NOTIFY showFpsCounterChanged)
+    Q_PROPERTY(int sharpening READ sharpening WRITE setSharpening NOTIFY sharpeningChanged)
+    Q_PROPERTY(QString language READ language WRITE setLanguage NOTIFY languageChanged)
+    Q_PROPERTY(int frameGenTargetFps READ frameGenTargetFps WRITE setFrameGenTargetFps NOTIFY frameGenTargetFpsChanged)
+    Q_PROPERTY(bool frameGenProtectStatic READ frameGenProtectStatic WRITE setFrameGenProtectStatic NOTIFY frameGenProtectStaticChanged)
+    Q_PROPERTY(int frameGenFlowDivisor READ frameGenFlowDivisor WRITE setFrameGenFlowDivisor NOTIFY frameGenFlowDivisorChanged)
     Q_PROPERTY(bool streamerMode READ streamerMode WRITE setStreamerMode NOTIFY streamerModeChanged)
     Q_PROPERTY(float hapticOverride READ hapticOverride WRITE setHapticOverride NOTIFY hapticOverrideChanged)
     Q_PROPERTY(int displayTargetContrast READ displayTargetContrast WRITE setDisplayTargetContrast NOTIFY displayTargetContrastChanged)
@@ -179,6 +186,22 @@ public:
 
     bool showStreamStats() const;
     void setShowStreamStats(bool enabled);
+
+    bool frameGenEnabled() const;
+    void setFrameGenEnabled(bool enabled);
+    bool showFpsCounter() const;
+    void setShowFpsCounter(bool enabled);
+    int sharpening() const;
+    void setSharpening(int level);
+
+    QString language() const;
+    void setLanguage(const QString &language);
+    int frameGenTargetFps() const;
+    void setFrameGenTargetFps(int fps);
+    bool frameGenProtectStatic() const;
+    void setFrameGenProtectStatic(bool enabled);
+    int frameGenFlowDivisor() const;
+    void setFrameGenFlowDivisor(int divisor);
 
     bool streamerMode() const;
     void setStreamerMode(bool enabled);
@@ -641,6 +664,13 @@ signals:
     void hapticOverrideChanged();
     void audioVideoDisabledChanged();
     void showStreamStatsChanged();
+    void frameGenEnabledChanged();
+    void showFpsCounterChanged();
+    void sharpeningChanged();
+    void languageChanged();
+    void frameGenTargetFpsChanged();
+    void frameGenProtectStaticChanged();
+    void frameGenFlowDivisorChanged();
     void streamerModeChanged();
     void fpsLocalPS4Changed();
     void fpsRemotePS4Changed();

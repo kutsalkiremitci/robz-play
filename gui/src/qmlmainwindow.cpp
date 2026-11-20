@@ -167,7 +167,10 @@ public:
         valueFont.setPixelSize(18);
         valueFont.setBold(true);
 
-        bitrateRow = makeRow(tr("Mbps"), QColor(QStringLiteral("#00a7ff")), titleFont, valueFont, bitrateValue);
+        bitrateRow = makeRow(tr("Mbps"), QColor(QStringLiteral("#D97757")), titleFont, valueFont, bitrateValue);
+        // Robz Play frame generation: real frames per second > frames shown, and its cost or state
+        frameGenFpsRow = makeRow(tr("fps real > shown"), QColor(QStringLiteral("#D97757")), titleFont, valueFont, frameGenFpsValue);
+        frameGenStateRow = makeRow(tr("frame generation"), QColor(QStringLiteral("#D97757")), titleFont, valueFont, frameGenStateValue);
         queueRow = makeRow(tr("queue depth avg"), QColor(QStringLiteral("#90caf9")), titleFont, valueFont, queueDepthValue);
         pendingRow = makeRow(tr("pending frame age"), QColor(QStringLiteral("#90caf9")), titleFont, valueFont, pendingAgeValue);
         packetLossRow = makeRow(tr("packet loss"), QColor(QStringLiteral("#ef9a9a")), titleFont, valueFont, packetLossValue);
@@ -175,7 +178,42 @@ public:
         lostFramesRow = makeRow(tr("lost frames"), QColor(QStringLiteral("#ef9a9a")), titleFont, valueFont, lostFramesValue);
 
         outer->addWidget(panel, 0, Qt::AlignRight | Qt::AlignVCenter);
+        statsPanel = panel;
+        statsPanel->hide();
 
+        // Robz Play FPS counter: a small panel of its own in the top-left corner, switched
+        // on and off independently of the stats panel
+        fpsPanel = new QFrame(this);
+        fpsPanel->setObjectName(QStringLiteral("fpsPanel"));
+        fpsPanel->setStyleSheet(QStringLiteral(
+            "#fpsPanel {"
+            "  background: rgba(20, 20, 19, 170);"
+            "  border-radius: 10px;"
+            "}"
+            "QLabel { color: #FAF9F5; }"));
+        auto *fpsLayout = new QVBoxLayout(fpsPanel);
+        fpsLayout->setContentsMargins(14, 8, 14, 9);
+        fpsLayout->setSpacing(0);
+        fpsValue = new QLabel(fpsPanel);
+        QFont fpsFont;
+        fpsFont.setPixelSize(26);
+        fpsFont.setBold(true);
+        fpsValue->setFont(fpsFont);
+        fpsValue->setStyleSheet(QStringLiteral("color: #D97757;"));
+        fpsDetail = new QLabel(fpsPanel);
+        QFont fpsDetailFont;
+        fpsDetailFont.setPixelSize(13);
+        fpsDetail->setFont(fpsDetailFont);
+        fpsLayout->addWidget(fpsValue);
+        fpsLayout->addWidget(fpsDetail);
+        fpsPanel->move(18, 18);
+        fpsPanel->hide();
+
+        connect(owner, &QmlMainWindow::displayFpsChanged, this, &StatsOverlayWidget::refresh);
+        if (backend && backend->qmlFrameGen()) {
+            connect(backend->qmlFrameGen(), &FrameGenStage::statsChanged, this, &StatsOverlayWidget::refresh);
+            connect(backend->qmlFrameGen(), &FrameGenStage::stateChanged, this, &StatsOverlayWidget::refresh);
+        }
         connect(owner, &QmlMainWindow::queueDepthAverageChanged, this, &StatsOverlayWidget::refresh);
         connect(owner, &QmlMainWindow::pendingFrameAgeChanged, this, &StatsOverlayWidget::refresh);
         connect(owner, &QmlMainWindow::droppedFramesChanged, this, &StatsOverlayWidget::refresh);
@@ -191,6 +229,22 @@ public:
 
     void setOverlayVisible(bool visible)
     {
+        stats_wanted = visible;
+        applyVisibility();
+    }
+
+    void setFpsCounterVisible(bool visible)
+    {
+        fps_wanted = visible;
+        applyVisibility();
+    }
+
+    // The overlay window is up while either panel is wanted; each panel follows its own switch.
+    void applyVisibility()
+    {
+        statsPanel->setVisible(stats_wanted);
+        fpsPanel->setVisible(fps_wanted);
+        const bool visible = stats_wanted || fps_wanted;
         if (visible) {
             updateTransientParent();
             syncGeometry();
@@ -263,6 +317,24 @@ public:
             packetLossValue->clear();
         }
 
+        FrameGenStage *frameGen = backend ? backend->qmlFrameGen() : nullptr;
+        const bool frameGenOn = hasSession && frameGen && frameGen->enabled();
+        const bool generating = frameGenOn && frameGen->sourceFps() > 1.0 && frameGen->outputFps() > frameGen->sourceFps() * 1.3;
+        frameGenFpsRow->setVisible(frameGenOn);
+        frameGenStateRow->setVisible(frameGenOn);
+        if (frameGenOn) {
+            frameGenFpsValue->setText(QStringLiteral("%1 > %2").arg(qRound(frameGen->sourceFps())).arg(qRound(frameGen->outputFps())));
+            frameGenStateValue->setText(generating
+                ? tr("%1 ms").arg(frameGen->generateMs(), 0, 'f', 1)
+                : frameGen->status());
+        }
+
+        fpsValue->setText(tr("%1 FPS").arg(qRound(owner ? owner->displayFps() : 0.0)));
+        fpsDetail->setVisible(generating);
+        if (generating)
+            fpsDetail->setText(tr("source %1").arg(qRound(frameGen->sourceFps())));
+        fpsPanel->adjustSize();
+
         const int droppedFrames = owner ? owner->droppedFrames() : 0;
         droppedFramesValue->setText(QString::number(droppedFrames));
         droppedFramesRow->setVisible(droppedFrames > 0);
@@ -278,6 +350,16 @@ private:
     QPointer<QmlMainWindow> owner;
     QPointer<QmlBackend> backend;
     QPointer<StreamSession> current_session;
+    bool stats_wanted = false;
+    bool fps_wanted = false;
+    QFrame *statsPanel = nullptr;
+    QFrame *fpsPanel = nullptr;
+    QLabel *fpsValue = nullptr;
+    QLabel *fpsDetail = nullptr;
+    QWidget *frameGenFpsRow = nullptr;
+    QWidget *frameGenStateRow = nullptr;
+    QLabel *frameGenFpsValue = nullptr;
+    QLabel *frameGenStateValue = nullptr;
     QWidget *bitrateRow = nullptr;
     QWidget *queueRow = nullptr;
     QWidget *pendingRow = nullptr;
@@ -2684,6 +2766,8 @@ QmlMainWindow::~QmlMainWindow()
     pl_mpv_user_shader_destroy(&fsr_hook);
     pl_mpv_user_shader_destroy(&fsrcnnx_hook_8);
     pl_mpv_user_shader_destroy(&fsrcnnx_hook_16);
+    for (const struct pl_hook *&hook : sharpen_hooks)
+        pl_mpv_user_shader_destroy(&hook);
     if (render_backend == RenderBackend::Vulkan) {
         pl_vulkan_destroy(&placebo_vulkan);
         pl_vk_inst_destroy(&placebo_vk_inst);
@@ -2825,6 +2909,19 @@ void QmlMainWindow::setStatsOverlayActive(bool active)
         emit statsOverlayActiveChanged();
 }
 
+void QmlMainWindow::setFpsCounterActive(bool active)
+{
+    if (stats_overlay_widget)
+        stats_overlay_widget->setFpsCounterVisible(active);
+    if (active)
+        updateStatsOverlayGeometry();
+}
+
+bool QmlMainWindow::saveStatsOverlayImage(const QString &path)
+{
+    return stats_overlay_widget && stats_overlay_widget->grab().save(path);
+}
+
 void QmlMainWindow::noteLoadingTransitionComplete()
 {
     armQuickNeedSync("loading_transition_complete");
@@ -2881,9 +2978,9 @@ void QmlMainWindow::setSettings(Settings *new_settings)
     QString profile = settings->GetCurrentProfile();
     qCCritical(chiakiGui) << "Current Profile: " << profile;
     if(profile.isEmpty())
-        QGuiApplication::setApplicationDisplayName("chiaki-ng");
+        QGuiApplication::setApplicationDisplayName("Robz Play");
     else
-        QGuiApplication::setApplicationDisplayName(QString("chiaki-ng:%1").arg(profile));
+        QGuiApplication::setApplicationDisplayName(QString("Robz Play:%1").arg(profile));
     this->setTitle(QGuiApplication::applicationDisplayName());
 }
 
@@ -3019,6 +3116,7 @@ void QmlMainWindow::presentFrame(ChiakiFfmpegFrame frame, int32_t frames_lost, q
 
     if (!frame.frame)
         return;
+    presented_frames_counter.fetchAndAddRelaxed(1);
 
     if (bypass_frame_queue) {
         {
@@ -4954,7 +5052,7 @@ void QmlMainWindow::init(Settings *settings, bool exit_app_on_stream_exit)
             // The last launch closed before Vulkan showed a frame, which is how a crash inside the
             // Vulkan driver or a third-party Vulkan layer looks; keep OpenGL until switched back
             settings->SetRenderBackend(RenderBackend::OpenGL);
-            fallbackToOpenGL(tr("chiaki-ng closed while starting Vulkan last time, so it now uses OpenGL. "
+            fallbackToOpenGL(tr("Robz Play closed while starting Vulkan last time, so it now uses OpenGL. "
                                 "You can switch back under Settings > Video > Renderer Backend."));
             goto renderer_backend_ready;
         }
@@ -5322,12 +5420,47 @@ renderer_backend_ready:
         }
     });
 
+    // Robz Play: frames per second reaching the renderer, for the on-screen FPS counter
+    QTimer *display_fps_timer = new QTimer(this);
+    display_fps_timer->setInterval(500);
+    display_fps_timer->start();
+    connect(display_fps_timer, &QTimer::timeout, this, [this]() {
+        const qint64 now_us = static_cast<qint64>(chiaki_time_now_monotonic_us());
+        const int frames = presented_frames_counter.fetchAndStoreRelaxed(0);
+        const double seconds = display_fps_window_start_us > 0 ? (now_us - display_fps_window_start_us) / 1000000.0 : 0.0;
+        display_fps_window_start_us = now_us;
+        const double measured = seconds > 0.0 ? frames / seconds : 0.0;
+        // average two windows, so the number does not flicker between 59 and 61
+        const double next = (display_fps > 0.0 && measured > 0.0) ? (display_fps + measured) * 0.5 : measured;
+        if (qAbs(next - display_fps) > 0.05) {
+            display_fps = next;
+            emit displayFpsChanged();
+        }
+    });
+
     this->renderparams_opts = pl_options_alloc(this->placebo_log);
     pl_options_reset(this->renderparams_opts, &pl_render_high_quality_params);
     this->renderparams_changed = true;
     this->fsr_hook = load_mpv_hook(placeboGpu(), QStringLiteral(":/shaders/FSR.glsl"));
     this->fsrcnnx_hook_8 = load_mpv_hook(placeboGpu(), QStringLiteral(":/shaders/FSRCNNX_x2_8-0-4-1.glsl"));
     this->fsrcnnx_hook_16 = load_mpv_hook(placeboGpu(), QStringLiteral(":/shaders/FSRCNNX_x2_16-0-4-1.glsl"));
+    {
+        // Robz Play sharpening: the same shader at three strengths
+        static const char *const strengths[3] = {"1.0", "2.0", "3.5"};
+        QFile sharpen_file(QStringLiteral(":/shaders/robzplay_sharpen.glsl"));
+        if (sharpen_file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            const QByteArray source = sharpen_file.readAll();
+            for (int i = 0; i < 3; i++) {
+                QByteArray shader = source;
+                shader.replace("@STRENGTH@", strengths[i]);
+                sharpen_hooks[i] = pl_mpv_user_shader_parse(placeboGpu(), shader.constData(), static_cast<size_t>(shader.size()));
+                if (!sharpen_hooks[i])
+                    qCWarning(chiakiGui) << "Failed to parse the sharpening shader, level" << (i + 1);
+            }
+        } else {
+            qCWarning(chiakiGui) << "Failed to open the sharpening shader";
+        }
+    }
 
 
     switch (settings->GetPlaceboPreset()) {
@@ -5406,6 +5539,12 @@ void QmlMainWindow::fullscreenTime()
         was_maximized = false;
     showFullScreen();
 }
+void QmlMainWindow::retranslateUi()
+{
+    if (qml_engine)
+        qml_engine->retranslate();
+}
+
 void QmlMainWindow::update()
 {
     Q_ASSERT(QThread::currentThread() == QGuiApplication::instance()->thread());
@@ -6006,7 +6145,7 @@ void QmlMainWindow::createSwapchain()
             if (surface_renderable && failures >= 60 && failure_duration_us >= 3000000) {
                 handleVulkanRendererFallback(
                     tr("Vulkan renderer stalled"),
-                    tr("The Vulkan surface could not recover. Chiaki-ng will relaunch with OpenGL for this run only."),
+                    tr("The Vulkan surface could not recover. Robz Play will relaunch with OpenGL for this run only."),
                     tr("Vulkan surface creation failed repeatedly while the window was visible. OpenGL is being used for this launch only."));
             } else {
                 swapchain_recreate_pending.storeRelease(1);
@@ -6404,7 +6543,7 @@ void QmlMainWindow::handleVulkanDeviceLost(const QString &reason)
 {
     handleVulkanRendererFallback(
         tr("Vulkan device lost"),
-        tr("The Vulkan renderer stopped responding. Chiaki-ng will relaunch with OpenGL for this run only.\n\nReason: %1").arg(reason),
+        tr("The Vulkan renderer stopped responding. Robz Play will relaunch with OpenGL for this run only.\n\nReason: %1").arg(reason),
         tr("Vulkan device was lost. OpenGL is being used for this launch only. Reason: %1").arg(reason));
 }
 
@@ -6757,7 +6896,7 @@ void QmlMainWindow::render()
     const bool timer_owned_playback = stream_active && mixer_active;
     const double present_submit_interval_s = timer_owned_playback
         ? present_interval_s
-        : stream_interval_s;
+        : (external_frame_pacing.loadAcquire() != 0 ? 0.0 : stream_interval_s);
     const qint64 present_interval_us = static_cast<qint64>(qMax(1.0, vsync_duration * 1000000.0) + 0.5);
     const bool pending_overflow_waiting = hasPendingFrameOverflow();
     const bool pending_frame_waiting = snapshotQueueDepth() >= effectiveQueueDepthLimit() || hasPendingFrame();
@@ -7013,7 +7152,7 @@ void QmlMainWindow::render()
             if (surface_renderable && failures >= 60 && failure_duration_us >= 3000000) {
                 handleVulkanRendererFallback(
                     tr("Vulkan renderer stalled"),
-                    tr("The Vulkan swapchain could not recover. Chiaki-ng will relaunch with OpenGL for this run only."),
+                    tr("The Vulkan swapchain could not recover. Robz Play will relaunch with OpenGL for this run only."),
                     tr("Vulkan swapchain failed repeatedly while the window was visible. OpenGL is being used for this launch only."));
             } else {
                 swapchain_recreate_pending.storeRelease(1);
@@ -7539,10 +7678,21 @@ void QmlMainWindow::render()
                                                fsr_hook, fsrcnnx_hook_8, fsrcnnx_hook_16);
         }
     }
-    const struct pl_hook *active_hooks[] = {fsrcnnx_hook};
-    if (fsrcnnx_hook) {
+    // Robz Play: the sharpening pass runs after any upscaling hook
+    const int sharpen_level_now = sharpen_level.loadAcquire();
+    const struct pl_hook *sharpen_hook_now =
+        (sharpen_level_now >= 1 && sharpen_level_now <= 3) ? sharpen_hooks[sharpen_level_now - 1] : nullptr;
+    const struct pl_hook *active_hooks[2] = {nullptr, nullptr};
+    int active_hook_count = 0;
+    if (fsrcnnx_hook)
+        active_hooks[active_hook_count++] = fsrcnnx_hook;
+    if (sharpen_hook_now)
+        active_hooks[active_hook_count++] = sharpen_hook_now;
+    if (active_hook_count > 0) {
         params.hooks = active_hooks;
-        params.num_hooks = 1;
+        params.num_hooks = active_hook_count;
+    }
+    if (fsrcnnx_hook) {
         switch (video_preset) {
         case VideoPreset::HighQualitySpatial:
             if (fsrcnnx_hook == fsr_hook)

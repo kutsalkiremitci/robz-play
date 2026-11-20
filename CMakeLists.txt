@@ -282,6 +282,11 @@ else()
 endif()
 
 if(CHIAKI_ENABLE_GUI)
+	option(ROBZPLAY_ENABLE_FRAMEGEN "Build Robz Play frame generation (needs ncnn, see scripts/robzplay-setup-msys2.sh)" ON)
+	if(ROBZPLAY_ENABLE_FRAMEGEN)
+		set(ROBZFG_BUILD_LAB OFF CACHE BOOL "" FORCE)
+		add_subdirectory(robzfg)
+	endif()
 	add_subdirectory(gui)
 endif()
 

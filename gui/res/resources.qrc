@@ -5,6 +5,10 @@
     <file>discover-24px.svg</file>
     <file>discover-off-24px.svg</file>
     <file>chiaking.svg</file>
+    <file>robzplay.svg</file>
+    <file>kick.svg</file>
+    <file>flag-tr.svg</file>
+    <file>flag-en.svg</file>
     <file>chiaking-logo.svg</file>
     <file>chiaking-logo-white.svg</file>
     <file>chiaki.svg</file>
@@ -25,8 +29,12 @@
     <file>steam_logo.png</file>
     <file>steam_portrait.png</file>
   </qresource>
+  <qresource prefix="/i18n">
+    <file alias="tr.json">i18n/tr.json</file>
+  </qresource>
   <qresource prefix="/shaders">
     <file alias="FSR.glsl">shaders/FSR.glsl</file>
+    <file alias="robzplay_sharpen.glsl">shaders/robzplay_sharpen.glsl</file>
     <file alias="FSRCNNX_x2_8-0-4-1.glsl">shaders/FSRCNNX_x2_8-0-4-1.glsl</file>
     <file alias="FSRCNNX_x2_16-0-4-1.glsl">shaders/FSRCNNX_x2_16-0-4-1.glsl</file>
   </qresource>
