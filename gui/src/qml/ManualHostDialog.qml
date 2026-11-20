@@ -62,7 +62,7 @@ DialogView {
                     for (; i < Chiaki.settings.registeredHosts.length; ++i) {
                         let host = Chiaki.settings.registeredHosts[i];
                         m.push({
-                            name: "%1 (%2)".arg(Chiaki.settings.streamerMode ? "hidden" : host.mac).arg(host.name),
+                            name: "%1 (%2)".arg(Chiaki.settings.streamerMode ? qsTr("hidden") : host.mac).arg(host.name),
                             index: i,
                         });
                     }

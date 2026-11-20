@@ -111,6 +111,85 @@ void QmlSettings::setShowStreamStats(bool enabled)
     emit showStreamStatsChanged();
 }
 
+bool QmlSettings::frameGenEnabled() const
+{
+    return settings->GetFrameGenEnabled();
+}
+
+void QmlSettings::setFrameGenEnabled(bool enabled)
+{
+    settings->SetFrameGenEnabled(enabled);
+    emit frameGenEnabledChanged();
+}
+
+bool QmlSettings::showFpsCounter() const
+{
+    return settings->GetShowFpsCounter();
+}
+
+void QmlSettings::setShowFpsCounter(bool enabled)
+{
+    settings->SetShowFpsCounter(enabled);
+    emit showFpsCounterChanged();
+}
+
+int QmlSettings::sharpening() const
+{
+    return settings->GetSharpening();
+}
+
+void QmlSettings::setSharpening(int level)
+{
+    settings->SetSharpening(level);
+    emit sharpeningChanged();
+}
+
+QString QmlSettings::language() const
+{
+    return settings->GetLanguage();
+}
+
+void QmlSettings::setLanguage(const QString &language)
+{
+    if (settings->GetLanguage() == language)
+        return;
+    settings->SetLanguage(language);
+    emit languageChanged();
+}
+
+int QmlSettings::frameGenTargetFps() const
+{
+    return settings->GetFrameGenTargetFps();
+}
+
+void QmlSettings::setFrameGenTargetFps(int fps)
+{
+    settings->SetFrameGenTargetFps(fps);
+    emit frameGenTargetFpsChanged();
+}
+
+bool QmlSettings::frameGenProtectStatic() const
+{
+    return settings->GetFrameGenProtectStatic();
+}
+
+void QmlSettings::setFrameGenProtectStatic(bool enabled)
+{
+    settings->SetFrameGenProtectStatic(enabled);
+    emit frameGenProtectStaticChanged();
+}
+
+int QmlSettings::frameGenFlowDivisor() const
+{
+    return settings->GetFrameGenFlowDivisor();
+}
+
+void QmlSettings::setFrameGenFlowDivisor(int divisor)
+{
+    settings->SetFrameGenFlowDivisor(divisor);
+    emit frameGenFlowDivisorChanged();
+}
+
 bool QmlSettings::streamerMode() const
 {
     return settings->GetStreamerMode();
@@ -1898,6 +1977,13 @@ void QmlSettings::refreshAllKeys()
     emit allowJoystickBackgroundEventsChanged();
     emit startMicUnmutedChanged();
     emit showStreamStatsChanged();
+    emit frameGenEnabledChanged();
+    emit frameGenFlowDivisorChanged();
+    emit showFpsCounterChanged();
+    emit sharpeningChanged();
+    emit languageChanged();
+    emit frameGenTargetFpsChanged();
+    emit frameGenProtectStaticChanged();
     emit streamerModeChanged();
 #ifdef CHIAKI_GUI_ENABLE_STEAMDECK_NATIVE
     emit verticalDeckChanged();

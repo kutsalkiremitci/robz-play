@@ -32,6 +32,20 @@ Rectangle {
         onActivated: view.cancel()
     }
 
+    RobzBackdrop {
+        anchors.fill: parent
+    }
+
+    Image {
+        anchors {
+            horizontalCenter: parent.horizontalCenter
+            bottom: infoLabel.top
+            bottomMargin: 36
+        }
+        source: "qrc:/icons/robzplay.svg"
+        sourceSize: Qt.size(132, 132)
+    }
+
     MouseArea {
         anchors.fill: parent
         enabled: view.allowClose
@@ -45,6 +59,7 @@ Rectangle {
         opacity: view.allowClose ? 1.0 : 0.0
         visible: opacity
         text: qsTr("Waiting for console...")
+        font.pixelSize: 24
 
         Behavior on opacity { NumberAnimation { duration: 250 } }
     }

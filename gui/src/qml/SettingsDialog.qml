@@ -18,7 +18,7 @@ DialogView {
     property bool quitControllerMapping: true
     id: dialog
     title: qsTr("Settings")
-    header: qsTr("* Defaults in () to right of value or marked with (Default)")
+    header: qsTr("Values in brackets are the defaults")
     buttonVisible: false
     function flickContainsItem(flick, item) {
         let current = item;
@@ -43,13 +43,22 @@ DialogView {
     function ensureItemVisibleInFlick(flick, item) {
         if (!flick || !item || !flickContainsItem(flick, item))
             return;
-        const target = flickVisibilityTarget(flick, item);
+        const air = 28;
+        // A control on the first screenful: stay at the top, so the section heading shows too.
+        if (item.mapToItem(flick.contentItem, 0, 0).y + item.height + air <= flick.height) {
+            flick.contentY = 0;
+            return;
+        }
+        let target = flickVisibilityTarget(flick, item);
+        // A block taller than the view cannot be shown whole: follow the control itself.
+        if (target.height > flick.height)
+            target = item;
         const top = target.mapToItem(flick.contentItem, 0, 0).y;
         const bottom = top + target.height;
-        if (top < flick.contentY)
-            flick.contentY = top;
-        else if (bottom > flick.contentY + flick.height)
-            flick.contentY = bottom - flick.height;
+        if (top - air < flick.contentY)
+            flick.contentY = Math.max(0, top - air);
+        else if (bottom + air > flick.contentY + flick.height)
+            flick.contentY = Math.min(Math.max(0, flick.contentHeight - flick.height), bottom + air - flick.height);
     }
     function itemIsInsideNestedScrollable(flick, item) {
         let current = item ? item.parent : null;
@@ -165,13 +174,17 @@ DialogView {
     }
 
     Item {
+        // The tab bar is kept as the holder of the current section (every key handler and
+        // focus rule in this file refers to bar.currentIndex) but is no longer shown: the
+        // column on the left does the navigating.
         TabBar {
             id: bar
+            visible: false
+            height: 0
             anchors {
                 top: parent.top
                 left: parent.left
                 right: parent.right
-                topMargin: 5
             }
             TabButton {
                 id: general
@@ -420,10 +433,131 @@ DialogView {
             }
         }
 
+        Rectangle {
+            id: settingsNav
+            anchors {
+                top: parent.top
+                left: parent.left
+                bottom: parent.bottom
+            }
+            width: 300
+            color: "#181716"
+
+            Rectangle {
+                anchors.right: parent.right
+                width: 1
+                height: parent.height
+                color: "#3A3936"
+            }
+
+            Column {
+                anchors {
+                    top: parent.top
+                    left: parent.left
+                    right: parent.right
+                    margins: 18
+                    topMargin: 22
+                }
+                spacing: 4
+
+                Repeater {
+                    model: [
+                        { title: qsTr("General"), note: qsTr("Frame generation and basics") },
+                        { title: qsTr("Video"), note: qsTr("Decoder, window, renderer") },
+                        { title: qsTr("Stream"), note: qsTr("Resolution, frame rate, bitrate") },
+                        { title: qsTr("Audio and network"), note: qsTr("Sound devices and volume") },
+                        { title: qsTr("Consoles"), note: qsTr("Registered and hidden consoles") },
+                        { title: qsTr("Keyboard"), note: qsTr("Keys for controller buttons") },
+                        { title: qsTr("Controllers"), note: qsTr("Button mapping") },
+                        { title: qsTr("Remote play"), note: qsTr("PSN sign-in") },
+                        { title: qsTr("Profiles and data"), note: qsTr("Profiles, import, export, logs") }
+                    ]
+
+                    AbstractButton {
+                        id: navEntry
+                        required property int index
+                        required property var modelData
+                        readonly property bool current: bar.currentIndex === index
+                        width: parent.width
+                        height: 54
+                        focusPolicy: Qt.NoFocus
+                        hoverEnabled: true
+                        onClicked: bar.currentIndex = index
+                        HoverHandler { cursorShape: Qt.PointingHandCursor }
+                        background: Rectangle {
+                            radius: 10
+                            color: navEntry.current ? "#262624" : (navEntry.hovered ? "#21201F" : "transparent")
+                            border.width: navEntry.current ? 1 : 0
+                            border.color: "#3A3936"
+                            Rectangle {
+                                visible: navEntry.current
+                                anchors {
+                                    left: parent.left
+                                    verticalCenter: parent.verticalCenter
+                                    leftMargin: 6
+                                }
+                                width: 3
+                                height: 26
+                                radius: 2
+                                color: "#D97757"
+                            }
+                        }
+                        contentItem: Column {
+                            leftPadding: 20
+                            topPadding: 7
+                            spacing: 1
+                            Label {
+                                text: navEntry.modelData.title
+                                color: navEntry.current ? "#FAF9F5" : "#C2C0B6"
+                                font.pixelSize: 17
+                                font.weight: navEntry.current ? Font.DemiBold : Font.Normal
+                            }
+                            Label {
+                                text: navEntry.modelData.note
+                                color: "#8F8D85"
+                                font.pixelSize: 12
+                            }
+                        }
+                    }
+                }
+            }
+
+            // controller and keyboard hint: the shoulder buttons / Page Up, Page Down switch section
+            Row {
+                anchors {
+                    left: parent.left
+                    bottom: parent.bottom
+                    leftMargin: 26
+                    bottomMargin: 22
+                }
+                spacing: 8
+                Image {
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: 24
+                    height: 24
+                    sourceSize: Qt.size(width, height)
+                    source: "qrc:/icons/l1.svg"
+                }
+                Image {
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: 24
+                    height: 24
+                    sourceSize: Qt.size(width, height)
+                    source: "qrc:/icons/r1.svg"
+                }
+                Label {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: qsTr("Switch section")
+                    color: "#8F8D85"
+                    font.pixelSize: 13
+                }
+            }
+        }
+
         StackLayout {
             anchors {
-                top: bar.bottom
-                left: parent.left
+                top: parent.top
+                left: settingsNav.right
                 right: parent.right
                 bottom: parent.bottom
             }
@@ -443,18 +577,44 @@ DialogView {
                         bottomMargin: 20
                     }
                     clip: true
-                    contentWidth: Math.max(width, generalLayout.width)
-                    contentHeight: generalLayout.height
+                    contentWidth: Math.max(width, generalLayout.width + 140)
+                    contentHeight: generalLayout.y + generalLayout.height + 60
                     flickableDirection: Flickable.AutoFlickIfNeeded
                     ScrollBar.vertical: ScrollBar {
                         policy: ScrollBar.AlwaysOn
                         visible: generalFlick.contentHeight > generalFlick.height
                     }
+                    Rectangle {
+                        x: generalLayout.x - 32
+                        y: generalLayout.y - 28
+                        width: generalLayout.width + 64
+                        height: generalLayout.height + 56
+                        radius: 16
+                        color: "#262624"
+                        border.color: "#3A3936"
+                    }
+                    Label {
+                        x: generalLayout.x - 32
+                        y: 14
+                        text: qsTr("General")
+                        font.family: "Georgia"
+                        font.pixelSize: 36
+                        color: "#FAF9F5"
+                    }
+                    Label {
+                        x: generalLayout.x - 32
+                        y: 66
+                        text: qsTr("Frame generation, what happens on disconnect, and other basics.")
+                        font.pixelSize: 15
+                        color: "#C2C0B6"
+                    }
                     ColumnLayout {
                         id: generalLayout
                         anchors {
                             top: parent.top
-                            horizontalCenter: parent.horizontalCenter
+                            left: parent.left
+                            topMargin: 132
+                            leftMargin: 78
                         }
                         spacing: 10
                         GridLayout {
@@ -464,7 +624,7 @@ DialogView {
                             columnSpacing: 20
 
                             Label {
-                                Layout.alignment: Qt.AlignRight
+                                Layout.alignment: Qt.AlignLeft
                                 text: qsTr("Action On Disconnect:")
                             }
 
@@ -478,12 +638,122 @@ DialogView {
                         }
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
+                            Layout.alignment: Qt.AlignLeft
+                            color: "#8F8D85"
+                            font.pixelSize: 14
                             text: qsTr("(Ask)")
                         }
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
+                            Layout.alignment: Qt.AlignLeft
+                            text: qsTr("Frame Generation:")
+                        }
+
+                        C.CheckBox {
+                            checked: Chiaki.settings.frameGenEnabled
+                            onToggled: Chiaki.settings.frameGenEnabled = !Chiaki.settings.frameGenEnabled
+                        }
+
+                        Label {
+                            Layout.alignment: Qt.AlignLeft
+                            color: "#8F8D85"
+                            font.pixelSize: 14
+                            text: qsTr("(On)")
+                        }
+
+                        Label {
+                            Layout.alignment: Qt.AlignLeft
+                            text: qsTr("FPS Counter During Gameplay:")
+                        }
+
+                        C.CheckBox {
+                            checked: Chiaki.settings.showFpsCounter
+                            onToggled: Chiaki.settings.showFpsCounter = !Chiaki.settings.showFpsCounter
+                        }
+
+                        Label {
+                            Layout.alignment: Qt.AlignLeft
+                            color: "#8F8D85"
+                            font.pixelSize: 14
+                            text: qsTr("(Off)")
+                        }
+
+                        Label {
+                            Layout.alignment: Qt.AlignLeft
+                            text: qsTr("Frame Generation Motion Detail:")
+                        }
+
+                        C.ComboBox {
+                            Layout.preferredWidth: 400
+                            model: [qsTr("Fast (quarter resolution)"), qsTr("Balanced (half resolution)"), qsTr("High (full resolution)")]
+                            currentIndex: Chiaki.settings.frameGenFlowDivisor === 4 ? 0 : (Chiaki.settings.frameGenFlowDivisor === 1 ? 2 : 1)
+                            onActivated: index => Chiaki.settings.frameGenFlowDivisor = [4, 2, 1][index]
+                        }
+
+                        Label {
+                            Layout.alignment: Qt.AlignLeft
+                            color: "#8F8D85"
+                            font.pixelSize: 14
+                            text: qsTr("(Balanced)")
+                        }
+
+                        Label {
+                            Layout.alignment: Qt.AlignLeft
+                            text: qsTr("Frame Generation Target:")
+                        }
+
+                        C.ComboBox {
+                            Layout.preferredWidth: 400
+                            model: [qsTr("60 FPS"), qsTr("120 FPS (Experimental)")]
+                            currentIndex: Chiaki.settings.frameGenTargetFps === 120 ? 1 : 0
+                            onActivated: index => Chiaki.settings.frameGenTargetFps = index === 1 ? 120 : 60
+                        }
+
+                        Label {
+                            Layout.alignment: Qt.AlignLeft
+                            color: "#8F8D85"
+                            font.pixelSize: 14
+                            text: qsTr("(60 FPS)")
+                        }
+
+                        Label {
+                            Layout.alignment: Qt.AlignLeft
+                            text: qsTr("Keep HUD And Text Steady:")
+                        }
+
+                        C.CheckBox {
+                            checked: Chiaki.settings.frameGenProtectStatic
+                            onToggled: Chiaki.settings.frameGenProtectStatic = !Chiaki.settings.frameGenProtectStatic
+                        }
+
+                        Label {
+                            Layout.alignment: Qt.AlignLeft
+                            color: "#8F8D85"
+                            font.pixelSize: 14
+                            text: qsTr("(On)")
+                        }
+
+                        Label {
+                            Layout.alignment: Qt.AlignLeft
+                            text: qsTr("Picture Sharpening:")
+                        }
+
+                        C.ComboBox {
+                            Layout.preferredWidth: 400
+                            model: [qsTr("Off"), qsTr("Low"), qsTr("Medium"), qsTr("High")]
+                            currentIndex: Chiaki.settings.sharpening
+                            onActivated: index => Chiaki.settings.sharpening = index
+                        }
+
+                        Label {
+                            Layout.alignment: Qt.AlignLeft
+                            color: "#8F8D85"
+                            font.pixelSize: 14
+                            text: qsTr("(Off)")
+                        }
+
+                        Label {
+                            Layout.alignment: Qt.AlignLeft
                             text: qsTr("Action On Suspend:")
                         }
 
@@ -495,12 +765,14 @@ DialogView {
                         }
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
+                            Layout.alignment: Qt.AlignLeft
+                            color: "#8F8D85"
+                            font.pixelSize: 14
                             text: qsTr("(Do Nothing)")
                         }
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
+                            Layout.alignment: Qt.AlignLeft
                             text: qsTr("Steam Deck Haptics:")
                             visible: (typeof Chiaki.settings.steamDeckHaptics !== "undefined")
                         }
@@ -518,13 +790,15 @@ DialogView {
                         }
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
-                            text: qsTr("(Unchecked)")
+                            Layout.alignment: Qt.AlignLeft
+                            color: "#8F8D85"
+                            font.pixelSize: 14
+                            text: qsTr("(Off)")
                             visible: (typeof Chiaki.settings.steamDeckHaptics !== "undefined")
                         }
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
+                            Layout.alignment: Qt.AlignLeft
                             text: qsTr("Steam Deck Vertical:")
                             visible: typeof Chiaki.settings.verticalDeck !== "undefined"
                         }
@@ -542,13 +816,15 @@ DialogView {
                         }
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
-                            text: qsTr("(Unchecked)")
+                            Layout.alignment: Qt.AlignLeft
+                            color: "#8F8D85"
+                            font.pixelSize: 14
+                            text: qsTr("(Off)")
                             visible: typeof Chiaki.settings.verticalDeck !== "undefined"
                         }
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
+                            Layout.alignment: Qt.AlignLeft
                             text: qsTr("Audio/Video:")
                         }
 
@@ -560,12 +836,14 @@ DialogView {
                         }
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
+                            Layout.alignment: Qt.AlignLeft
+                            color: "#8F8D85"
+                            font.pixelSize: 14
                             text: qsTr("(Audio and Video Enabled)")
                         }
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
+                            Layout.alignment: Qt.AlignLeft
                             text: qsTr("Log Directory:")
                         }
 
@@ -592,7 +870,7 @@ DialogView {
 
                         }
                         Label {
-                            Layout.alignment: Qt.AlignRight
+                            Layout.alignment: Qt.AlignLeft
                             text: qsTr("Streamer Mode (Hides Info)")
                         }
                         C.CheckBox {
@@ -602,12 +880,14 @@ DialogView {
                         }
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
-                            text: qsTr("(Unchecked)")
+                            Layout.alignment: Qt.AlignLeft
+                            color: "#8F8D85"
+                            font.pixelSize: 14
+                            text: qsTr("(Off)")
                         }
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
+                            Layout.alignment: Qt.AlignLeft
                             text: qsTr("Stream Menu Shortcut Enabled")
                         }
                         C.CheckBox {
@@ -627,8 +907,10 @@ DialogView {
                         }
 
                             Label {
-                                Layout.alignment: Qt.AlignRight
-                                text: qsTr("(Checked)")
+                                Layout.alignment: Qt.AlignLeft
+                                color: "#8F8D85"
+                                font.pixelSize: 14
+                                text: qsTr("(On)")
                             }
                         }
                         RowLayout {
@@ -636,7 +918,7 @@ DialogView {
                             visible: Chiaki.settings.streamMenuEnabled
                             Layout.alignment: Qt.AlignHCenter
                             Label {
-                                Layout.alignment: Qt.AlignRight
+                                Layout.alignment: Qt.AlignLeft
                                 text: qsTr("Stream Menu Combo:")
                             }
 
@@ -717,7 +999,9 @@ DialogView {
                         }
 
                             Label {
-                                Layout.alignment: Qt.AlignRight
+                                Layout.alignment: Qt.AlignLeft
+                                color: "#8F8D85"
+                                font.pixelSize: 14
                                 text: qsTr("(L1+R1+L3+R3)")
                             }
                         }
@@ -735,25 +1019,51 @@ DialogView {
                         bottomMargin: 20
                     }
                     clip: true
-                    contentWidth: Math.max(width, videoGrid.width)
-                    contentHeight: videoGrid.height
+                    contentWidth: Math.max(width, videoGrid.width + 140)
+                    contentHeight: videoGrid.y + videoGrid.height + 60
                     flickableDirection: Flickable.AutoFlickIfNeeded
                     ScrollBar.vertical: ScrollBar {
                         policy: ScrollBar.AlwaysOn
                         visible: videoFlick.contentHeight > videoFlick.height
                     }
+                    Rectangle {
+                        x: videoGrid.x - 32
+                        y: videoGrid.y - 28
+                        width: videoGrid.width + 64
+                        height: videoGrid.height + 56
+                        radius: 16
+                        color: "#262624"
+                        border.color: "#3A3936"
+                    }
+                    Label {
+                        x: videoGrid.x - 32
+                        y: 14
+                        text: qsTr("Video")
+                        font.family: "Georgia"
+                        font.pixelSize: 36
+                        color: "#FAF9F5"
+                    }
+                    Label {
+                        x: videoGrid.x - 32
+                        y: 66
+                        text: qsTr("Decoder, window and renderer options.")
+                        font.pixelSize: 15
+                        color: "#C2C0B6"
+                    }
                     GridLayout {
                         id: videoGrid
                         anchors {
                             top: parent.top
-                            horizontalCenter: parent.horizontalCenter
+                            left: parent.left
+                            topMargin: 132
+                            leftMargin: 78
                         }
                         columns: 3
                         rowSpacing: 10
                         columnSpacing: 20
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
+                            Layout.alignment: Qt.AlignLeft
                             text: qsTr("Hardware Decoder:")
                         }
 
@@ -789,12 +1099,14 @@ DialogView {
                     }
 
                     Label {
-                        Layout.alignment: Qt.AlignRight
+                        Layout.alignment: Qt.AlignLeft
+                        color: "#8F8D85"
+                        font.pixelSize: 14
                         text: qsTr("(Auto)")
                     }
 
                     Label {
-                        Layout.alignment: Qt.AlignRight
+                        Layout.alignment: Qt.AlignLeft
                         text: qsTr("Window Type:")
                     }
 
@@ -808,12 +1120,14 @@ DialogView {
                     }
 
                     Label {
-                        Layout.alignment: Qt.AlignRight
+                        Layout.alignment: Qt.AlignLeft
+                        color: "#8F8D85"
+                        font.pixelSize: 14
                         text: qsTr("(Fullscreen)")
                     }
 
                     Label {
-                        Layout.alignment: Qt.AlignRight
+                        Layout.alignment: Qt.AlignLeft
                         text: qsTr("Custom Resolution Width")
                         visible: Chiaki.settings.windowType == 1
                     }
@@ -839,13 +1153,15 @@ DialogView {
                     }
 
                     Label {
-                        Layout.alignment: Qt.AlignRight
+                        Layout.alignment: Qt.AlignLeft
+                        color: "#8F8D85"
+                        font.pixelSize: 14
                         text: qsTr("(1920)")
                         visible: Chiaki.settings.windowType == 1
                     }
 
                     Label {
-                        Layout.alignment: Qt.AlignRight
+                        Layout.alignment: Qt.AlignLeft
                         text: qsTr("Custom Resolution Height")
                         visible: Chiaki.settings.windowType == 1
                     }
@@ -871,13 +1187,15 @@ DialogView {
                     }
 
                     Label {
-                        Layout.alignment: Qt.AlignRight
+                        Layout.alignment: Qt.AlignLeft
+                        color: "#8F8D85"
+                        font.pixelSize: 14
                         text: qsTr("(1080)")
                         visible: Chiaki.settings.windowType == 1
                     }
 
                     Label {
-                        Layout.alignment: Qt.AlignRight
+                        Layout.alignment: Qt.AlignLeft
                         text: qsTr("Toggle Fullscreen on Double-click:")
                     }
 
@@ -887,12 +1205,14 @@ DialogView {
                     }
 
                     Label {
-                        Layout.alignment: Qt.AlignRight
-                        text: qsTr("(Unchecked)")
+                        Layout.alignment: Qt.AlignLeft
+                        color: "#8F8D85"
+                        font.pixelSize: 14
+                        text: qsTr("(Off)")
                     }
 
                     Label {
-                        Layout.alignment: Qt.AlignRight
+                        Layout.alignment: Qt.AlignLeft
                         text: qsTr("Hide Cursor during Stream")
                     }
                     C.CheckBox {
@@ -901,12 +1221,14 @@ DialogView {
                     }
 
                     Label {
-                        Layout.alignment: Qt.AlignRight
-                        text: qsTr("(Checked)")
+                        Layout.alignment: Qt.AlignLeft
+                        color: "#8F8D85"
+                        font.pixelSize: 14
+                        text: qsTr("(On)")
                     }
 
                     Label {
-                        Layout.alignment: Qt.AlignRight
+                        Layout.alignment: Qt.AlignLeft
                         text: qsTr("Vertical Sync:")
                     }
 
@@ -920,12 +1242,14 @@ DialogView {
                     }
 
                     Label {
-                        Layout.alignment: Qt.AlignRight
-                        text: qsTr("(Unchecked)")
+                        Layout.alignment: Qt.AlignLeft
+                        color: "#8F8D85"
+                        font.pixelSize: 14
+                        text: qsTr("(Off)")
                     }
 
                     Label {
-                        Layout.alignment: Qt.AlignRight
+                        Layout.alignment: Qt.AlignLeft
                         text: qsTr("Render Preset:")
                     }
 
@@ -947,12 +1271,14 @@ DialogView {
                     }
 
                     Label {
-                        Layout.alignment: Qt.AlignRight
+                        Layout.alignment: Qt.AlignLeft
+                        color: "#8F8D85"
+                        font.pixelSize: 14
                         text: qsTr("(High Quality)")
                     }
 
                     Label {
-                        Layout.alignment: Qt.AlignRight
+                        Layout.alignment: Qt.AlignLeft
                         text: qsTr("Frame Delivery:")
                     }
 
@@ -971,12 +1297,14 @@ DialogView {
                     }
 
                     Label {
-                        Layout.alignment: Qt.AlignRight
+                        Layout.alignment: Qt.AlignLeft
+                        color: "#8F8D85"
+                        font.pixelSize: 14
                         text: qsTr("(Direct Mapping)")
                     }
 
                     Label {
-                        Layout.alignment: Qt.AlignRight
+                        Layout.alignment: Qt.AlignLeft
                         text: qsTr("Frame Mixer:")
                     }
 
@@ -989,12 +1317,14 @@ DialogView {
                     }
 
                     Label {
-                        Layout.alignment: Qt.AlignRight
+                        Layout.alignment: Qt.AlignLeft
+                        color: "#8F8D85"
+                        font.pixelSize: 14
                         text: qsTr("(None)")
                     }
 
                     Label {
-                        Layout.alignment: Qt.AlignRight
+                        Layout.alignment: Qt.AlignLeft
                         text: qsTr("Renderer Backend:")
                     }
 
@@ -1012,12 +1342,14 @@ DialogView {
                     }
 
                     Label {
-                        Layout.alignment: Qt.AlignRight
+                        Layout.alignment: Qt.AlignLeft
+                        color: "#8F8D85"
+                        font.pixelSize: 14
                         text: qsTr("(Vulkan)")
                     }
 
                     Label {
-                        Layout.alignment: Qt.AlignRight
+                        Layout.alignment: Qt.AlignLeft
                         text: qsTr("Vulkan Deferred Swap:")
                         visible: Chiaki.settings.rendererBackend == 0
                     }
@@ -1029,13 +1361,15 @@ DialogView {
                     }
 
                     Label {
-                        Layout.alignment: Qt.AlignRight
-                        text: qsTr("(Unchecked)")
+                        Layout.alignment: Qt.AlignLeft
+                        color: "#8F8D85"
+                        font.pixelSize: 14
+                        text: qsTr("(Off)")
                         visible: Chiaki.settings.rendererBackend == 0
                     }
 
                     Label {
-                        Layout.alignment: Qt.AlignRight
+                        Layout.alignment: Qt.AlignLeft
                         text: qsTr("Custom Renderer Settings")
                         visible: Chiaki.window.videoPreset == ChiakiWindow.VideoPreset.Custom
                     }
@@ -1051,7 +1385,7 @@ DialogView {
                     Label { visible: Chiaki.window.videoPreset == ChiakiWindow.VideoPreset.Custom }
 
                     Label {
-                        Layout.alignment: Qt.AlignRight
+                        Layout.alignment: Qt.AlignLeft
                         text: qsTr("Display Settings")
                     }
 
@@ -1078,25 +1412,51 @@ DialogView {
                         bottomMargin: 20
                     }
                     clip: true
-                    contentWidth: Math.max(width, streamGrid.width)
-                    contentHeight: streamGrid.height
+                    contentWidth: Math.max(width, streamGrid.width + 140)
+                    contentHeight: streamGrid.y + streamGrid.height + 60
                     flickableDirection: Flickable.AutoFlickIfNeeded
                     ScrollBar.vertical: ScrollBar {
                         policy: ScrollBar.AlwaysOn
                         visible: streamFlick.contentHeight > streamFlick.height
                     }
+                    Rectangle {
+                        x: streamGrid.x - 32
+                        y: streamGrid.y - 28
+                        width: streamGrid.width + 64
+                        height: streamGrid.height + 56
+                        radius: 16
+                        color: "#262624"
+                        border.color: "#3A3936"
+                    }
+                    Label {
+                        x: streamGrid.x - 32
+                        y: 14
+                        text: qsTr("Stream")
+                        font.family: "Georgia"
+                        font.pixelSize: 36
+                        color: "#FAF9F5"
+                    }
+                    Label {
+                        x: streamGrid.x - 32
+                        y: 66
+                        text: qsTr("Resolution, frame rate, bitrate and codec for each console.")
+                        font.pixelSize: 15
+                        color: "#C2C0B6"
+                    }
                     GridLayout {
                         id: streamGrid
                         anchors {
                             top: parent.top
-                            horizontalCenter: parent.horizontalCenter
+                            left: parent.left
+                            topMargin: 132
+                            leftMargin: 78
                         }
                         columns: 3
                         rowSpacing: 10
                         columnSpacing: 20
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
+                            Layout.alignment: Qt.AlignLeft
                             text: qsTr("Settings for:")
                         }
 
@@ -1126,27 +1486,27 @@ DialogView {
                     }
 
                     Label {
-                        Layout.alignment: Qt.AlignRight
+                        Layout.alignment: Qt.AlignLeft
                         text: qsTr("")
                     }
 
                     Label {
-                        Layout.alignment: Qt.AlignRight
+                        Layout.alignment: Qt.AlignLeft
                         text: qsTr("")
                     }
 
                     Label {
-                        Layout.alignment: Qt.AlignRight
+                        Layout.alignment: Qt.AlignLeft
                         text: qsTr("")
                     }
 
                     Label {
-                        Layout.alignment: Qt.AlignRight
+                        Layout.alignment: Qt.AlignLeft
                         text: qsTr("")
                     }
 
                     Label {
-                        Layout.alignment: Qt.AlignRight
+                        Layout.alignment: Qt.AlignLeft
                         text: qsTr("")
                     }
 
@@ -1161,7 +1521,7 @@ DialogView {
                     }
 
                     Label {
-                        Layout.alignment: Qt.AlignRight
+                        Layout.alignment: Qt.AlignLeft
                         text: qsTr("Resolution:")
                     }
 
@@ -1250,7 +1610,7 @@ DialogView {
                     }
 
                     Label {
-                        Layout.alignment: Qt.AlignRight
+                        Layout.alignment: Qt.AlignLeft
                         text: qsTr("FPS:")
                     }
 
@@ -1327,7 +1687,7 @@ DialogView {
                     }
 
                     Label {
-                        Layout.alignment: Qt.AlignRight
+                        Layout.alignment: Qt.AlignLeft
                         text: qsTr("Bitrate:")
                     }
 
@@ -1465,7 +1825,7 @@ DialogView {
                     }
 
                     Label {
-                        Layout.alignment: Qt.AlignRight
+                        Layout.alignment: Qt.AlignLeft
                         text: qsTr("Codec:")
                         visible: selectedConsole == SettingsDialog.Console.PS5
                     }
@@ -1535,13 +1895,37 @@ DialogView {
                         bottomMargin: 20
                     }
                     clip: true
-                    contentWidth: Math.max(width, audiowifigrid.width)
-                    contentHeight: audiowifigrid.height
+                    contentWidth: Math.max(width, audiowifigrid.width + 140)
+                    contentHeight: audiowifigrid.y + audiowifigrid.height + 60
                     flickableDirection: Flickable.AutoFlickIfNeeded
                     ScrollBar.vertical: ScrollBar {
                         id: audiowifiScrollbar
                         policy: ScrollBar.AlwaysOn
                         visible: audiowifiFlick.contentHeight > audiowifiFlick.height
+                    }
+                    Rectangle {
+                        x: audiowifigrid.x - 32
+                        y: audiowifigrid.y - 28
+                        width: audiowifigrid.width + 64
+                        height: audiowifigrid.height + 56
+                        radius: 16
+                        color: "#262624"
+                        border.color: "#3A3936"
+                    }
+                    Label {
+                        x: audiowifigrid.x - 32
+                        y: 14
+                        text: qsTr("Audio and network")
+                        font.family: "Georgia"
+                        font.pixelSize: 36
+                        color: "#FAF9F5"
+                    }
+                    Label {
+                        x: audiowifigrid.x - 32
+                        y: 66
+                        text: qsTr("Sound devices, volume and connection warnings.")
+                        font.pixelSize: 15
+                        color: "#C2C0B6"
                     }
                     GridLayout {
                         id: audiowifigrid
@@ -1552,10 +1936,12 @@ DialogView {
 
                         anchors {
                             top: parent.top
-                            horizontalCenter: parent.horizontalCenter
+                            left: parent.left
+                            topMargin: 132
+                            leftMargin: 78
                         }
                         Label {
-                            Layout.alignment: Qt.AlignRight
+                            Layout.alignment: Qt.AlignLeft
                             text: qsTr("Output Device:")
                         }
 
@@ -1574,12 +1960,14 @@ DialogView {
                         }
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
+                            Layout.alignment: Qt.AlignLeft
+                            color: "#8F8D85"
+                            font.pixelSize: 14
                             text: qsTr("(Auto)")
                         }
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
+                            Layout.alignment: Qt.AlignLeft
                             text: qsTr("Input Device:")
                         }
 
@@ -1598,12 +1986,14 @@ DialogView {
                         }
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
+                            Layout.alignment: Qt.AlignLeft
+                            color: "#8F8D85"
+                            font.pixelSize: 14
                             text: qsTr("(Auto)")
                         }
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
+                            Layout.alignment: Qt.AlignLeft
                             text: qsTr("Audio Buffer Size:")
                         }
 
@@ -1630,12 +2020,14 @@ DialogView {
                         }
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
+                            Layout.alignment: Qt.AlignLeft
+                            color: "#8F8D85"
+                            font.pixelSize: 14
                             text: qsTr("(50 ms)")
                         }
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
+                            Layout.alignment: Qt.AlignLeft
                             text: qsTr("Audio Volume:")
                         }
 
@@ -1660,12 +2052,14 @@ DialogView {
                         }
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
+                            Layout.alignment: Qt.AlignLeft
+                            color: "#8F8D85"
+                            font.pixelSize: 14
                             text: qsTr("(100%)")
                         }
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
+                            Layout.alignment: Qt.AlignLeft
                             text: qsTr("Start Mic Unmuted:")
                         }
 
@@ -1675,12 +2069,14 @@ DialogView {
                         }
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
-                            text: qsTr("(Unchecked)")
+                            Layout.alignment: Qt.AlignLeft
+                            color: "#8F8D85"
+                            font.pixelSize: 14
+                            text: qsTr("(Off)")
                         }
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
+                            Layout.alignment: Qt.AlignLeft
                             text: qsTr("Speech Processing:")
                             visible: typeof Chiaki.settings.speechProcessing !== "undefined"
                         }
@@ -1693,13 +2089,15 @@ DialogView {
                         }
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
-                            text: qsTr("(Unchecked)")
+                            Layout.alignment: Qt.AlignLeft
+                            color: "#8F8D85"
+                            font.pixelSize: 14
+                            text: qsTr("(Off)")
                             visible: typeof Chiaki.settings.speechProcessing !== "undefined"
                         }
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
+                            Layout.alignment: Qt.AlignLeft
                             text: qsTr("Noise To Suppress:")
                             visible: if (typeof Chiaki.settings.speechProcessing !== "undefined") {Chiaki.settings.speechProcessing} else {false}
                         }
@@ -1724,13 +2122,15 @@ DialogView {
                         }
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
+                            Layout.alignment: Qt.AlignLeft
+                            color: "#8F8D85"
+                            font.pixelSize: 14
                             text: qsTr("(6 dB)")
                             visible: if (typeof Chiaki.settings.speechProcessing !== "undefined") {Chiaki.settings.speechProcessing} else {false}
                         }
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
+                            Layout.alignment: Qt.AlignLeft
                             text: qsTr("Echo To Suppress:")
                             visible: if (typeof Chiaki.settings.speechProcessing !== "undefined") {Chiaki.settings.speechProcessing} else {false}
                         }
@@ -1755,13 +2155,15 @@ DialogView {
                         }
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
+                            Layout.alignment: Qt.AlignLeft
+                            color: "#8F8D85"
+                            font.pixelSize: 14
                             text: qsTr("(30 dB)")
                             visible: if (typeof Chiaki.settings.speechProcessing !== "undefined") {Chiaki.settings.speechProcessing} else {false}
                         }
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
+                            Layout.alignment: Qt.AlignLeft
                             text: qsTr("Weak Wifi Notification:")
                         }
 
@@ -1784,12 +2186,14 @@ DialogView {
                         }
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
+                            Layout.alignment: Qt.AlignLeft
+                            color: "#8F8D85"
+                            font.pixelSize: 14
                             text: qsTr("(3%)")
                         }
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
+                            Layout.alignment: Qt.AlignLeft
                             text: qsTr("Packet Loss Reported Max:")
                         }
 
@@ -1812,12 +2216,14 @@ DialogView {
                         }
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
+                            Layout.alignment: Qt.AlignLeft
+                            color: "#8F8D85"
+                            font.pixelSize: 14
                             text: qsTr("(5%)")
                         }
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
+                            Layout.alignment: Qt.AlignLeft
                             text: qsTr("Request IDR Frame on FEC Failure")
                         }
 
@@ -1827,12 +2233,14 @@ DialogView {
                         }
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
-                            text: qsTr("(Unchecked)")
+                            Layout.alignment: Qt.AlignLeft
+                            color: "#8F8D85"
+                            font.pixelSize: 14
+                            text: qsTr("(Off)")
                         }
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
+                            Layout.alignment: Qt.AlignLeft
                             text: qsTr("Show Stream Stats During Gameplay")
                         }
 
@@ -1843,8 +2251,10 @@ DialogView {
                         }
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
-                            text: qsTr("(Unchecked)")
+                            Layout.alignment: Qt.AlignLeft
+                            color: "#8F8D85"
+                            font.pixelSize: 14
+                            text: qsTr("(Off)")
                         }
                     }
                 }
@@ -1860,18 +2270,44 @@ DialogView {
                         bottomMargin: 20
                     }
                     clip: true
-                    contentWidth: Math.max(width, consolesLayout.width)
-                    contentHeight: consolesLayout.height
+                    contentWidth: Math.max(width, consolesLayout.width + 140)
+                    contentHeight: consolesLayout.y + consolesLayout.height + 60
                     flickableDirection: Flickable.AutoFlickIfNeeded
                     ScrollBar.vertical: ScrollBar {
                         policy: ScrollBar.AlwaysOn
                         visible: consolesFlick.contentHeight > consolesFlick.height
                     }
+                    Rectangle {
+                        x: consolesLayout.x - 32
+                        y: consolesLayout.y - 28
+                        width: consolesLayout.width + 64
+                        height: consolesLayout.height + 56
+                        radius: 16
+                        color: "#262624"
+                        border.color: "#3A3936"
+                    }
+                    Label {
+                        x: consolesLayout.x - 32
+                        y: 14
+                        text: qsTr("Consoles")
+                        font.family: "Georgia"
+                        font.pixelSize: 36
+                        color: "#FAF9F5"
+                    }
+                    Label {
+                        x: consolesLayout.x - 32
+                        y: 66
+                        text: qsTr("Registered, hidden and manually added consoles.")
+                        font.pixelSize: 15
+                        color: "#C2C0B6"
+                    }
                     ColumnLayout {
                         id: consolesLayout
                         anchors {
                             top: parent.top
-                            horizontalCenter: parent.horizontalCenter
+                            left: parent.left
+                            topMargin: 132
+                            leftMargin: 78
                         }
                         spacing: 10
 
@@ -1921,7 +2357,7 @@ DialogView {
                             clip: true
                             model: Chiaki.settings.registeredHosts
                             delegate: ItemDelegate {
-                                text: "%1 (%2, %3)".arg(Chiaki.settings.streamerMode ? "hidden" : modelData.mac).arg(modelData.ps5 ? "PS5" : "PS4").arg(modelData.name)
+                                text: "%1 (%2, %3)".arg(Chiaki.settings.streamerMode ? qsTr("hidden") : modelData.mac).arg(modelData.ps5 ? "PS5" : "PS4").arg(modelData.name)
                                 height: 80
                                 width: parent ? parent.width : 0
                                 leftPadding: autoConnectButton.width + 40
@@ -2113,7 +2549,7 @@ DialogView {
                             }
                             model: Chiaki.hiddenHosts
                             delegate: ItemDelegate {
-                                text: "%1 (%2)".arg(Chiaki.settings.streamerMode ? "hidden" : modelData.mac).arg(modelData.name)
+                                text: "%1 (%2)".arg(Chiaki.settings.streamerMode ? qsTr("hidden") : modelData.mac).arg(modelData.name)
                                 height: 80
                                 width: parent ? parent.width : 0
 
@@ -2187,8 +2623,8 @@ DialogView {
                         bottomMargin: 20
                     }
                     clip: true
-                    contentWidth: Math.max(width, keysGrid.width)
-                    contentHeight: keysGrid.height
+                    contentWidth: Math.max(width, keysGrid.width + 140)
+                    contentHeight: keysGrid.y + keysGrid.height + 60
                     flickableDirection: Flickable.AutoFlickIfNeeded
                     function ensureItemVisible(item) {
                         if (!item)
@@ -2204,11 +2640,37 @@ DialogView {
                         policy: ScrollBar.AlwaysOn
                         visible: keysFlick.contentHeight > keysFlick.height
                     }
+                    Rectangle {
+                        x: keysGrid.x - 32
+                        y: keysGrid.y - 28
+                        width: keysGrid.width + 64
+                        height: keysGrid.height + 56
+                        radius: 16
+                        color: "#262624"
+                        border.color: "#3A3936"
+                    }
+                    Label {
+                        x: keysGrid.x - 32
+                        y: 14
+                        text: qsTr("Keyboard")
+                        font.family: "Georgia"
+                        font.pixelSize: 36
+                        color: "#FAF9F5"
+                    }
+                    Label {
+                        x: keysGrid.x - 32
+                        y: 66
+                        text: qsTr("Keys used in place of controller buttons.")
+                        font.pixelSize: 15
+                        color: "#C2C0B6"
+                    }
                     GridLayout {
                         id: keysGrid
                         anchors {
                             top: parent.top
-                            horizontalCenter: parent.horizontalCenter
+                            left: parent.left
+                            topMargin: 132
+                            leftMargin: 78
                         }
                         columns: 3
                         rowSpacing: 3
@@ -2216,7 +2678,7 @@ DialogView {
 
                         Button {
                             id: resetAllKeys
-                            text: "Reset All Keys"
+                            text: qsTr("Reset All Keys")
                             Layout.alignment: Qt.AlignRight
                             property bool firstInFocusChain: true
                             property bool lastInFocusChain: false
@@ -2531,26 +2993,52 @@ DialogView {
                         bottomMargin: 20
                     }
                     clip: true
-                    contentWidth: Math.max(width, controllersLayout.width)
-                    contentHeight: controllersLayout.height
+                    contentWidth: Math.max(width, controllersLayout.width + 140)
+                    contentHeight: controllersLayout.y + controllersLayout.height + 60
                     flickableDirection: Flickable.AutoFlickIfNeeded
                     ScrollBar.vertical: ScrollBar {
                         id: controllersScrollbar
                         policy: ScrollBar.AlwaysOn
                         visible: controllersFlick.contentHeight > controllersFlick.height
                     }
+                    Rectangle {
+                        x: controllersLayout.x - 32
+                        y: controllersLayout.y - 28
+                        width: controllersLayout.width + 64
+                        height: controllersLayout.height + 56
+                        radius: 16
+                        color: "#262624"
+                        border.color: "#3A3936"
+                    }
+                    Label {
+                        x: controllersLayout.x - 32
+                        y: 14
+                        text: qsTr("Controllers")
+                        font.family: "Georgia"
+                        font.pixelSize: 36
+                        color: "#FAF9F5"
+                    }
+                    Label {
+                        x: controllersLayout.x - 32
+                        y: 66
+                        text: qsTr("Button mapping and controller behaviour.")
+                        font.pixelSize: 15
+                        color: "#C2C0B6"
+                    }
                     ColumnLayout {
                         id: controllersLayout
                         anchors {
                             top: parent.top
-                            horizontalCenter: parent.horizontalCenter
+                            left: parent.left
+                            topMargin: 132
+                            leftMargin: 78
                         }
                         spacing: 10
                         C.Button {
                             Layout.alignment: Qt.AlignHCenter
                             id: controllerMappingChange
                             firstInFocusChain: true
-                            text: "Change Controller Mapping"
+                            text: qsTr("Change Controller Mapping")
                             onClicked: controllerMappingDialog.show({
                                 reset: false
                             });
@@ -2558,7 +3046,7 @@ DialogView {
                         C.Button {
                             Layout.alignment: Qt.AlignHCenter
                             id: controllerMappingReset
-                            text: "Reset Controller Mapping"
+                            text: qsTr("Reset Controller Mapping")
                             onClicked: controllerMappingDialog.show({
                                 reset: true
                             });
@@ -2568,7 +3056,7 @@ DialogView {
                             spacing: 10
                             Layout.alignment: Qt.AlignHCenter
                             Label {
-                                Layout.alignment: Qt.AlignRight
+                                Layout.alignment: Qt.AlignLeft
                                 text: qsTr("Background Controller Events:")
                             }
                             C.CheckBox {
@@ -2581,15 +3069,17 @@ DialogView {
                             }
 
                             Label {
-                                Layout.alignment: Qt.AlignRight
-                                text: qsTr("(Checked)")
+                                Layout.alignment: Qt.AlignLeft
+                                color: "#8F8D85"
+                                font.pixelSize: 14
+                                text: qsTr("(On)")
                             }
                         }
                         RowLayout {
                             spacing: 10
                             Layout.alignment: Qt.AlignHCenter
                             Label {
-                                Layout.alignment: Qt.AlignRight
+                                Layout.alignment: Qt.AlignLeft
                                 text: qsTr("Dpad Touchpad Emulation")
                             }
                             C.CheckBox {
@@ -2609,8 +3099,10 @@ DialogView {
                             }
 
                             Label {
-                                Layout.alignment: Qt.AlignRight
-                                text: qsTr("(Checked)")
+                                Layout.alignment: Qt.AlignLeft
+                                color: "#8F8D85"
+                                font.pixelSize: 14
+                                text: qsTr("(On)")
                             }
                         }
 
@@ -2620,7 +3112,7 @@ DialogView {
                             Layout.alignment: Qt.AlignHCenter
                             visible: Chiaki.settings.dpadTouchEnabled
                             Label {
-                                Layout.alignment: Qt.AlignRight
+                                Layout.alignment: Qt.AlignLeft
                                 text: qsTr("Dpad Touch Increment:")
                             }
 
@@ -2652,7 +3144,7 @@ DialogView {
                             }
 
                             Label {
-                                Layout.alignment: Qt.AlignRight
+                                Layout.alignment: Qt.AlignLeft
                                 Layout.leftMargin: 100
                                 text: qsTr("(0.3 mm)")
                             }
@@ -2662,7 +3154,7 @@ DialogView {
                             visible: Chiaki.settings.dpadTouchEnabled
                             Layout.alignment: Qt.AlignHCenter
                             Label {
-                                Layout.alignment: Qt.AlignRight
+                                Layout.alignment: Qt.AlignLeft
                                 text: qsTr("Dpad Regular/Touch Combo:")
                             }
 
@@ -2743,7 +3235,9 @@ DialogView {
                             }
 
                             Label {
-                                Layout.alignment: Qt.AlignRight
+                                Layout.alignment: Qt.AlignLeft
+                                color: "#8F8D85"
+                                font.pixelSize: 14
                                 text: qsTr("(L1+R1+dpad Up)")
                             }
                         }
@@ -2751,7 +3245,7 @@ DialogView {
                             spacing: 10
                             Layout.alignment: Qt.AlignHCenter
                             Label {
-                                Layout.alignment: Qt.AlignRight
+                                Layout.alignment: Qt.AlignLeft
                                 text: qsTr("Buttons By Position:")
                             }
 
@@ -2773,15 +3267,17 @@ DialogView {
                             }
 
                             Label {
-                                Layout.alignment: Qt.AlignRight
-                                text: qsTr("(Unchecked)")
+                                Layout.alignment: Qt.AlignLeft
+                                color: "#8F8D85"
+                                font.pixelSize: 14
+                                text: qsTr("(Off)")
                             }
                         }
                         RowLayout {
                             spacing: 10
                             Layout.alignment: Qt.AlignHCenter
                             Label {
-                                Layout.alignment: Qt.AlignRight
+                                Layout.alignment: Qt.AlignLeft
                                 text: qsTr("Rumble Haptics:")
                             }
 
@@ -2794,7 +3290,9 @@ DialogView {
                             }
 
                             Label {
-                                Layout.alignment: Qt.AlignRight
+                                Layout.alignment: Qt.AlignLeft
+                                color: "#8F8D85"
+                                font.pixelSize: 14
                                 text: qsTr("(Normal)")
                             }
                         }
@@ -2802,7 +3300,7 @@ DialogView {
                             spacing: 10
                             Layout.alignment: Qt.AlignHCenter
                             Label {
-                                Layout.alignment: Qt.AlignRight
+                                Layout.alignment: Qt.AlignLeft
                                 text: qsTr("True Haptics Intensity:")
                             }
 
@@ -2831,7 +3329,7 @@ DialogView {
                             }
 
                             Label {
-                                Layout.alignment: Qt.AlignRight
+                                Layout.alignment: Qt.AlignLeft
                                 Layout.leftMargin: 250
                                 text: qsTr("(console setting)")
                             }
@@ -2850,19 +3348,44 @@ DialogView {
                         bottomMargin: 20
                     }
                     clip: true
-                    contentWidth: Math.max(width, remoteGrid.width)
-                    contentHeight: remoteGrid.y + remoteGrid.height
+                    contentWidth: Math.max(width, remoteGrid.width + 140)
+                    contentHeight: remoteGrid.y + remoteGrid.height + 60
                     flickableDirection: Flickable.AutoFlickIfNeeded
                     ScrollBar.vertical: ScrollBar {
                         policy: ScrollBar.AlwaysOn
                         visible: remoteFlick.contentHeight > remoteFlick.height
                     }
+                    Rectangle {
+                        x: remoteGrid.x - 32
+                        y: remoteGrid.y - 28
+                        width: remoteGrid.width + 64
+                        height: remoteGrid.height + 56
+                        radius: 16
+                        color: "#262624"
+                        border.color: "#3A3936"
+                    }
+                    Label {
+                        x: remoteGrid.x - 32
+                        y: 14
+                        text: qsTr("Remote play")
+                        font.family: "Georgia"
+                        font.pixelSize: 36
+                        color: "#FAF9F5"
+                    }
+                    Label {
+                        x: remoteGrid.x - 32
+                        y: 66
+                        text: qsTr("PSN sign-in, for playing away from home.")
+                        font.pixelSize: 15
+                        color: "#C2C0B6"
+                    }
                     GridLayout {
                         id: remoteGrid
                         anchors {
                             top: parent.top
-                            horizontalCenter: parent.horizontalCenter
-                            topMargin: 30
+                            left: parent.left
+                            topMargin: 132
+                            leftMargin: 78
                         }
                         columns: 3
                         rowSpacing: 20
@@ -2905,7 +3428,7 @@ DialogView {
 
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
+                            Layout.alignment: Qt.AlignLeft
                             text: qsTr("Hole Punching Port Guessing:")
                         }
 
@@ -2917,12 +3440,14 @@ DialogView {
                         }
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
-                            text: qsTr("(Unchecked)")
+                            Layout.alignment: Qt.AlignLeft
+                            color: "#8F8D85"
+                            font.pixelSize: 14
+                            text: qsTr("(Off)")
                         }
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
+                            Layout.alignment: Qt.AlignLeft
                             text: qsTr("Port Guess Count:")
                         }
 
@@ -2946,13 +3471,13 @@ DialogView {
                         }
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
+                            Layout.alignment: Qt.AlignLeft
                             Layout.leftMargin: 100
                             text: qsTr("(75)")
                         }
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
+                            Layout.alignment: Qt.AlignLeft
                             text: qsTr("Port Guess Socket Count:")
                         }
 
@@ -2977,7 +3502,9 @@ DialogView {
                         }
 
                         Label {
-                            Layout.alignment: Qt.AlignRight
+                            Layout.alignment: Qt.AlignLeft
+                            color: "#8F8D85"
+                            font.pixelSize: 14
                             text: qsTr("(250)")
                             Layout.leftMargin: 100
                         }
@@ -2995,19 +3522,44 @@ DialogView {
                         bottomMargin: 20
                     }
                     clip: true
-                    contentWidth: Math.max(width, configGrid.width)
-                    contentHeight: configGrid.y + configGrid.height
+                    contentWidth: Math.max(width, configGrid.width + 140)
+                    contentHeight: configGrid.y + configGrid.height + 60
                     flickableDirection: Flickable.AutoFlickIfNeeded
                     ScrollBar.vertical: ScrollBar {
                         policy: ScrollBar.AlwaysOn
                         visible: configFlick.contentHeight > configFlick.height
                     }
+                    Rectangle {
+                        x: configGrid.x - 32
+                        y: configGrid.y - 28
+                        width: configGrid.width + 64
+                        height: configGrid.height + 56
+                        radius: 16
+                        color: "#262624"
+                        border.color: "#3A3936"
+                    }
+                    Label {
+                        x: configGrid.x - 32
+                        y: 14
+                        text: qsTr("Profiles and data")
+                        font.family: "Georgia"
+                        font.pixelSize: 36
+                        color: "#FAF9F5"
+                    }
+                    Label {
+                        x: configGrid.x - 32
+                        y: 66
+                        text: qsTr("Profiles, import and export, logs and about.")
+                        font.pixelSize: 15
+                        color: "#C2C0B6"
+                    }
                     GridLayout {
                         id: configGrid
                         anchors {
                             top: parent.top
-                            horizontalCenter: parent.horizontalCenter
-                            topMargin: 30
+                            left: parent.left
+                            topMargin: 132
+                            leftMargin: 78
                         }
                         columns: 1
                         rowSpacing: 20
@@ -3052,7 +3604,7 @@ DialogView {
 
                     C.Button {
                         id: aboutButton
-                        text: qsTr("About %1-ng").arg(Qt.application.name)
+                        text: qsTr("About Robz Play")
                         onClicked: aboutDialog.open()
                         Material.roundedScale: Material.SmallScale
                     }
@@ -3113,7 +3665,7 @@ DialogView {
             parent: Overlay.overlay
             x: Math.round((root.width - width) / 2)
             y: Math.round((root.height - height) / 2)
-            title: qsTr("About %1-ng").arg(Qt.application.name)
+            title: qsTr("About Robz Play")
             modal: true
             standardButtons: Dialog.Ok
             Material.roundedScale: Material.MediumScale
@@ -3129,15 +3681,16 @@ DialogView {
                     Layout.preferredWidth: 200
                     fillMode: Image.PreserveAspectFit
                     verticalAlignment: Image.AlignTop
-                    source: "qrc:icons/chiaking-logo.svg"
+                    source: "qrc:icons/robzplay.svg"
                 }
 
                 Label {
                     Layout.preferredWidth: 400
                     verticalAlignment: Text.AlignTop
                     wrapMode: Text.Wrap
-                    text: "<h1>chiaki-ng</h1> by Street Pea, version %1
-                        <h2>Fork of Chiaki</h2> by Florian Markl at version 2.1.1
+                    text: "<h1>Robz Play</h1> version %1
+                        <p>PS5 Remote Play with PC frame generation.</p>
+                        <h2>Based on chiaki-ng</h2> by Street Pea, a fork of Chiaki by Florian Markl
 
                         <p>This program is free software: you can redistribute it and/or modify
                         it under the terms of the GNU Affero General Public License version 3

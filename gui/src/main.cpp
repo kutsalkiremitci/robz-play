@@ -19,6 +19,7 @@ int main(int argc, char *argv[]) { return real_main(argc, argv); }
 #include <controllermanager.h>
 #include <discoverymanager.h>
 #include <qmlmainwindow.h>
+#include <robztranslator.h>
 #include <QApplication>
 #include <QtTypes>
 
@@ -39,6 +40,8 @@ int main(int argc, char *argv[]) { return real_main(argc, argv); }
 
 #include <QCommandLineParser>
 #include <QMap>
+#include <QSettings>
+#include <QStringList>
 #include <QSurfaceFormat>
 
 Q_DECLARE_METATYPE(ChiakiLogLevel)
@@ -61,6 +64,71 @@ static const QMap<QString, CLICommand> cli_commands = {
 };
 #endif
 
+// Robz Play is a fork of chiaki-ng and keeps its own settings. On the very first
+// launch, copy chiaki-ng's saved settings (registered consoles, video and
+// controller options, profiles) so an existing chiaki-ng user does not have to
+// pair the console again. chiaki-ng's own settings are never modified.
+static void ImportChiakiNgSettingsOnce()
+{
+	const QString own_org = QCoreApplication::organizationName();
+	const QString own_app = QCoreApplication::applicationName();
+	const QString src_org = QStringLiteral("Chiaki");
+	const QString src_app = QStringLiteral("Chiaki");
+	if(own_org == src_org)
+		return;
+
+	QSettings own(own_org, own_app);
+	own.setFallbacksEnabled(false);
+	if(!own.allKeys().isEmpty())
+		return;
+
+	QSettings src(src_org, src_app);
+	src.setFallbacksEnabled(false);
+	if(src.allKeys().isEmpty())
+		return;
+
+	auto copy_all = [](QSettings &from, QSettings &to) {
+		const QStringList keys = from.allKeys();
+		for(const QString &key : keys)
+			to.setValue(key, from.value(key));
+		// Connecting to a console the moment the application starts is not carried over:
+		// Robz Play opens on its home screen until the user asks for it here
+		// (Settings > Consoles > Auto-Connect).
+		to.remove("settings/auto_connect_mac");
+	};
+
+	copy_all(src, own);
+
+	QStringList profiles;
+	int count = src.beginReadArray("profiles");
+	for(int i = 0; i < count; i++)
+	{
+		src.setArrayIndex(i);
+		const QString name = src.value("settings/profile_name").toString();
+		if(!name.isEmpty())
+			profiles.append(name);
+	}
+	src.endArray();
+	for(const QString &profile : std::as_const(profiles))
+	{
+		QSettings src_profile(src_org, QStringLiteral("%1-%2").arg(src_app, profile));
+		src_profile.setFallbacksEnabled(false);
+		QSettings own_profile(own_org, QStringLiteral("%1-%2").arg(own_app, profile));
+		own_profile.setFallbacksEnabled(false);
+		copy_all(src_profile, own_profile);
+	}
+
+	QSettings src_placebo(src_org, QStringLiteral("pl_render_params"));
+	src_placebo.setFallbacksEnabled(false);
+	QSettings own_placebo(own_org, QStringLiteral("pl_render_params"));
+	own_placebo.setFallbacksEnabled(false);
+	copy_all(src_placebo, own_placebo);
+
+	own.setValue("robzplay/imported_from_chiaki_ng", true);
+	own.sync();
+	fprintf(stderr, "Robz Play: imported existing chiaki-ng settings (%d profile(s))\n", (int)profiles.size());
+}
+
 int RunStream(QGuiApplication &app, const StreamSessionConnectInfo &connect_info);
 int RunMain(QGuiApplication &app, Settings *settings, bool exit_app_on_stream_exit);
 
@@ -73,10 +141,15 @@ int real_main(int argc, char *argv[])
 	qRegisterMetaType<ChiakiRegistEventType>();
 	qRegisterMetaType<ChiakiLogLevel>();
 
-	QGuiApplication::setOrganizationName("Chiaki");
-	QGuiApplication::setApplicationName("Chiaki");
+	QGuiApplication::setOrganizationName("RobzPlay");
+	// Development aid: ROBZPLAY_SETTINGS_ORG=<name> runs against a separate, empty settings
+	// store, so test launches never touch (or auto-connect with) the user's real consoles.
+	const bool sandbox_settings = qEnvironmentVariableIsSet("ROBZPLAY_SETTINGS_ORG") && !qEnvironmentVariableIsEmpty("ROBZPLAY_SETTINGS_ORG");
+	if(sandbox_settings)
+		QGuiApplication::setOrganizationName(qEnvironmentVariable("ROBZPLAY_SETTINGS_ORG"));
+	QGuiApplication::setApplicationName("RobzPlay");
 	QGuiApplication::setApplicationVersion(CHIAKI_VERSION);
-	QGuiApplication::setApplicationDisplayName("chiaki-ng");
+	QGuiApplication::setApplicationDisplayName("Robz Play");
 #if defined(Q_OS_MACOS)
 	// Use a plain CAMetalLayer for Vulkan windows. Qt's own layer presents in step with each
 	// live resize, but our swapchain presents from the render thread, so every resize step
@@ -97,7 +170,7 @@ int real_main(int argc, char *argv[])
 		QGuiApplication::setDesktopFileName(qEnvironmentVariable("FLATPAK_ID"));
 	else
 #endif
-		QGuiApplication::setDesktopFileName("chiaki-ng");
+		QGuiApplication::setDesktopFileName("robzplay");
 
 	qputenv("QTWEBENGINE_CHROMIUM_FLAGS", "--disable-gpu");
 #if defined(Q_OS_WIN)
@@ -129,7 +202,7 @@ int real_main(int argc, char *argv[])
 		return 1;
 	}
 
-    SDL_SetHint(SDL_HINT_APP_NAME, "chiaki-ng");
+    SDL_SetHint(SDL_HINT_APP_NAME, "Robz Play");
 
 	if(SDL_Init(SDL_INIT_AUDIO) < 0)
 	{
@@ -146,7 +219,7 @@ int real_main(int argc, char *argv[])
 #ifdef Q_OS_MACOS
 	QGuiApplication::setWindowIcon(QIcon(":/icons/chiaking_macos.svg"));
 #else
-	QGuiApplication::setWindowIcon(QIcon(":/icons/chiaking.svg"));
+	QGuiApplication::setWindowIcon(QIcon(":/icons/robzplay.svg"));
 #endif
 
 	QCommandLineParser parser;
@@ -198,13 +271,18 @@ int real_main(int argc, char *argv[])
 	parser.process(app);
 	QStringList args = parser.positionalArguments();
 
+	if(!sandbox_settings)
+		ImportChiakiNgSettingsOnce();
+
 	Settings settings(parser.isSet(profile_option) ? parser.value(profile_option) : QString());
+	RobzTranslator::instance()->setLanguage(settings.GetLanguage());
+	app.installTranslator(RobzTranslator::instance());
 	bool exit_app_on_stream_exit = parser.isSet(stream_exit_option);
 	if(parser.isSet(profile_option))
 		settings.SetCurrentProfile(parser.value(profile_option));
 	Settings alt_settings(parser.isSet(profile_option) ? "" : settings.GetCurrentProfile());
 	if(!settings.GetCurrentProfile().isEmpty())
-		QGuiApplication::setApplicationDisplayName(QString("chiaki-ng:%1").arg(settings.GetCurrentProfile()));
+		QGuiApplication::setApplicationDisplayName(QString("Robz Play:%1").arg(settings.GetCurrentProfile()));
 	bool use_alt_settings = false;
 	if(!parser.isSet(profile_option))
 		use_alt_settings = true;

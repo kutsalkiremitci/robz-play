@@ -1,0 +1,119 @@
+// SPDX-License-Identifier: LicenseRef-AGPL-3.0-only-OpenSSL
+// Robz Play frame generation - NV12 bytes -> normalised planar RGB tensor for the flow network.
+//
+// The network may run at a fraction of the picture size: each network pixel is the
+// mean of a k x k block of luma, with chroma sampled at the block centre (left-sited
+// 4:2:0, the H.264 / HEVC default). The NV12 planes arrive as raw bytes packed into
+// 32-bit words, so no 8-bit storage extension is needed. Pixels outside the picture
+// are zero padding.
+
+#version 450
+
+#if NCNN_fp16_storage
+#extension GL_EXT_shader_16bit_storage: require
+#endif
+
+layout (binding = 0) readonly buffer y_blob { uint y_data[]; };
+layout (binding = 1) readonly buffer uv_blob { uint uv_data[]; };
+layout (binding = 2) writeonly buffer top_blob { sfp top_blob_data[]; };
+
+layout (push_constant) uniform parameter
+{
+    int w;        // picture width
+    int h;        // picture height
+    int nw;       // network width without padding
+    int nh;       // network height without padding
+    int outw;     // tensor width (padded)
+    int outh;     // tensor height (padded)
+    int outcstep;
+    int k;        // picture pixels per network pixel
+    int full_range;
+    int matrix;   // 0 = BT.709, 1 = BT.601
+} p;
+
+float load_y(int x, int y)
+{
+    x = min(x, p.w - 1);
+    y = min(y, p.h - 1);
+    int i = y * p.w + x;
+    uint word = y_data[i >> 2];
+    return float((word >> uint((i & 3) * 8)) & 0xFFu);
+}
+
+vec2 load_uv(int cx, int cy)
+{
+    // one chroma row holds w bytes: (w / 2) interleaved Cb, Cr pairs
+    int i = cy * p.w + cx * 2;
+    uint word = uv_data[i >> 2];
+    uint shift = uint((i & 3) * 8);
+    return vec2(float((word >> shift) & 0xFFu), float((word >> (shift + 8u)) & 0xFFu));
+}
+
+void main()
+{
+    int gx = int(gl_GlobalInvocationID.x);
+    int gy = int(gl_GlobalInvocationID.y);
+
+    if (gx >= p.outw || gy >= p.outh)
+        return;
+
+    int gi = gy * p.outw + gx;
+
+    if (gx >= p.nw || gy >= p.nh)
+    {
+        top_blob_data[gi] = sfp(0.f);
+        top_blob_data[p.outcstep + gi] = sfp(0.f);
+        top_blob_data[2 * p.outcstep + gi] = sfp(0.f);
+        return;
+    }
+
+    float yv = 0.f;
+    for (int by = 0; by < p.k; by++)
+        for (int bx = 0; bx < p.k; bx++)
+            yv += load_y(gx * p.k + bx, gy * p.k + by);
+    yv /= float(p.k * p.k);
+
+    // block centre in luma coordinates; chroma sample (cx, cy) sits at luma (2 * cx, 2 * cy + 0.5)
+    int cw = p.w / 2;
+    int ch = p.h / 2;
+    float centre = float(p.k - 1) * 0.5f;
+    float fx = (float(gx * p.k) + centre) * 0.5f;
+    float fy = (float(gy * p.k) + centre - 0.5f) * 0.5f;
+    int cx0 = int(floor(fx));
+    int cy0 = int(floor(fy));
+    float ax = fx - float(cx0);
+    float ay = fy - float(cy0);
+    int cx1 = clamp(cx0 + 1, 0, cw - 1);
+    int cy1 = clamp(cy0 + 1, 0, ch - 1);
+    cx0 = clamp(cx0, 0, cw - 1);
+    cy0 = clamp(cy0, 0, ch - 1);
+    vec2 uv = mix(mix(load_uv(cx0, cy0), load_uv(cx1, cy0), ax),
+                  mix(load_uv(cx0, cy1), load_uv(cx1, cy1), ax), ay);
+
+    float yn;
+    float cb;
+    float cr;
+    if (p.full_range != 0)
+    {
+        yn = yv / 255.f;
+        cb = (uv.x - 128.f) / 255.f;
+        cr = (uv.y - 128.f) / 255.f;
+    }
+    else
+    {
+        yn = (yv - 16.f) / 219.f;
+        cb = (uv.x - 128.f) / 224.f;
+        cr = (uv.y - 128.f) / 224.f;
+    }
+
+    vec3 rgb;
+    if (p.matrix == 0)
+        rgb = vec3(yn + 1.5748f * cr, yn - 0.187324f * cb - 0.468124f * cr, yn + 1.8556f * cb);
+    else
+        rgb = vec3(yn + 1.402f * cr, yn - 0.344136f * cb - 0.714136f * cr, yn + 1.772f * cb);
+    rgb = clamp(rgb, 0.f, 1.f);
+
+    top_blob_data[gi] = sfp(rgb.r);
+    top_blob_data[p.outcstep + gi] = sfp(rgb.g);
+    top_blob_data[2 * p.outcstep + gi] = sfp(rgb.b);
+}
