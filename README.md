@@ -135,7 +135,7 @@ Kartın zorlanırsa **Hareket ayrıntısı** ayarını "Hızlı"ya al: hareket, 
 Kurulum programı yok; kaldırmak için klasörü silmek yeterli (ayarların Windows kayıt defterinde kalır). Uygulama imzalı olmadığı için Windows ilk açılışta "bilinmeyen yayıncı" uyarısı gösterebilir.
 
 > [!TIP]
-> **chiaki-ng kullanıyor musun?** Robz Play ilk açılışta chiaki-ng'nin ayarlarını ve kayıtlı konsollarını kendiliğinden alır; konsolu yeniden eşleştirmen gerekmez. chiaki-ng'de ne seçili olursa olsun kare üretimi açık ve 60 FPS seçili gelir. chiaki-ng'nin kendi ayarlarına dokunulmaz.
+> **chiaki-ng kullanıyor musun?** Robz Play ilk açılışta chiaki-ng'nin ayarlarını ve kayıtlı konsollarını kendiliğinden alır; konsolu yeniden eşleştirmen gerekmez. chiaki-ng'de ne seçili olursa olsun kare üretimi açık, 60 FPS ve Vulkan seçili gelir. chiaki-ng'nin kendi ayarlarına dokunulmaz.
 
 <details>
 <summary>Kaynaktan derlemek</summary>

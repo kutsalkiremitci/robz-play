@@ -70,9 +70,10 @@ static const QMap<QString, CLICommand> cli_commands = {
 // pair the console again. chiaki-ng's own settings are never modified.
 //
 // The copy then starts where Robz Play is meant to be used, whatever chiaki-ng was set
-// to: frame generation on with a 60 FPS target, and a 60 FPS stream on the home network
+// to: frame generation on with a 60 FPS target, a 60 FPS stream on the home network
 // (the frame generator is built around the 60 FPS stream, in which a 30 FPS game arrives
-// as pairs of equal frames). Everything else is taken over as it was.
+// as pairs of equal frames), and the Vulkan renderer. Everything else is taken over as it
+// was.
 //
 // ROBZPLAY_IMPORT_FROM_ORG names another settings organisation to import from; it exists
 // so the import can be tried against made-up settings without touching real ones.
@@ -106,7 +107,14 @@ static void ImportChiakiNgSettingsOnce()
 		to.remove("settings/auto_connect_mac");
 	};
 
-	auto start_at_60_fps = [](QSettings &to) {
+	auto start_with_robzplay_defaults = [](QSettings &to) {
+		// Vulkan is the renderer Robz Play is built and tested on, so a chiaki-ng that was
+		// left on OpenGL does not decide it - and neither does a start-up of chiaki-ng's that
+		// happened to be cut short. Where Vulkan really cannot start, the application still
+		// falls back to OpenGL by itself.
+		to.setValue("settings/render_backend", "vulkan");
+		to.remove("settings/vulkan_startup_pending");
+
 		to.setValue("settings/framegen_enabled", true);
 		to.setValue("settings/framegen_target_fps", 60);
 		to.setValue("settings/fps_local_ps5", 60);
@@ -118,7 +126,7 @@ static void ImportChiakiNgSettingsOnce()
 	};
 
 	copy_all(src, own);
-	start_at_60_fps(own);
+	start_with_robzplay_defaults(own);
 
 	QStringList profiles;
 	int count = src.beginReadArray("profiles");
@@ -137,7 +145,7 @@ static void ImportChiakiNgSettingsOnce()
 		QSettings own_profile(own_org, QStringLiteral("%1-%2").arg(own_app, profile));
 		own_profile.setFallbacksEnabled(false);
 		copy_all(src_profile, own_profile);
-		start_at_60_fps(own_profile);
+		start_with_robzplay_defaults(own_profile);
 	}
 
 	QSettings src_placebo(src_org, QStringLiteral("pl_render_params"));
