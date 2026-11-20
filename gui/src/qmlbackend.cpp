@@ -1,6 +1,7 @@
 #include "qmlbackend.h"
 #include "qmlsettings.h"
 #include "qmlmainwindow.h"
+#include "robztranslator.h"
 #include "streamsession.h"
 #include "controllermanager.h"
 #include "psnaccountid.h"
@@ -295,6 +296,37 @@ QmlBackend::QmlBackend(Settings *settings, QmlMainWindow *window)
     qmlRegisterUncreatableType<QmlMainWindow>(uri, 1, 0, "ChiakiWindow", {});
     qmlRegisterUncreatableType<QmlSettings>(uri, 1, 0, "ChiakiSettings", {});
     qmlRegisterUncreatableType<StreamSession>(uri, 1, 0, "ChiakiSession", {});
+    qmlRegisterUncreatableType<FrameGenStage>(uri, 1, 0, "RobzFrameGen", {});
+
+    framegen = new FrameGenStage(this);
+    window->setSharpening(settings->GetSharpening());
+    connect(settings_qml, &QmlSettings::languageChanged, this, [this]() {
+        RobzTranslator::instance()->setLanguage(this->settings->GetLanguage());
+        this->window->retranslateUi();
+    });
+    connect(settings_qml, &QmlSettings::sharpeningChanged, this, [this]() {
+        this->window->setSharpening(this->settings->GetSharpening());
+    });
+    if (qEnvironmentVariableIsSet("ROBZPLAY_FRAMEGEN_SELFTEST")) {
+        FrameGenStage::Config selftest_config;
+        selftest_config.enabled = true;
+        selftest_config.model_dir = QCoreApplication::applicationDirPath() + "/models/" + settings->GetFrameGenModel();
+        selftest_config.flow_divisor = settings->GetFrameGenFlowDivisor();
+        selftest_config.target_fps = static_cast<unsigned int>(settings->GetFrameGenTargetFps());
+        selftest_config.protect_static = settings->GetFrameGenProtectStatic();
+        selftest_config.stream_fps = 60;
+        QTimer::singleShot(3000, this, [this, selftest_config]() {
+            QmlMainWindow *counted_window = this->window;
+            this->window->setFpsCounterActive(true);
+            framegen->runSelfTest(selftest_config, [counted_window]() { counted_window->notePresentedFrame(); });
+        });
+        QTimer::singleShot(9500, this, [this]() {
+            const QString snapshot = qEnvironmentVariable("ROBZPLAY_FRAMEGEN_SELFTEST_SNAPSHOT");
+            if (!snapshot.isEmpty())
+                this->window->saveStatsOverlayImage(snapshot);
+            this->window->setFpsCounterActive(false);
+        });
+    }
 
     QObject *frame_obj = new QObject();
     frame_thread = new QThread(frame_obj);
@@ -540,6 +572,12 @@ void QmlBackend::teardownSession()
     if (QObject *frame_ctx = frame_thread ? frame_thread->parent() : nullptr) {
         QMetaObject::invokeMethod(frame_ctx, []() {}, Qt::BlockingQueuedConnection);
     }
+
+    // Robz Play: no frame can reach the frame generation stage any more; stop its worker.
+    if (framegen)
+        framegen->stop();
+    if (window)
+        window->setExternalFramePacing(false);
 
     // 3) Safe now: schedule the deferred delete and drop the member.
     session->deleteLater();
@@ -973,6 +1011,26 @@ void QmlBackend::createSession(const StreamSessionConnectInfo &connect_info)
     window->setStreamMaxFPS(connect_info.video_profile.max_fps);
     disable_zero_copy = !settings->GetUseZeroCopy();
     {
+        FrameGenStage::Config framegen_config;
+        framegen_config.enabled = settings->GetFrameGenEnabled();
+        framegen_config.model_dir = QCoreApplication::applicationDirPath() + "/models/" + settings->GetFrameGenModel();
+        framegen_config.flow_divisor = settings->GetFrameGenFlowDivisor();
+        framegen_config.target_fps = static_cast<unsigned int>(settings->GetFrameGenTargetFps());
+        framegen_config.protect_static = settings->GetFrameGenProtectStatic();
+        framegen_config.stream_fps = connect_info.video_profile.max_fps;
+        if (framegen_config.enabled) {
+            // frame generation reads the decoded picture, so frames must come back from the GPU
+            disable_zero_copy = true;
+        }
+        window->setExternalFramePacing(framegen_config.enabled);
+        QmlMainWindow *present_window = window;
+        framegen->start(framegen_config, [present_window](ChiakiFfmpegFrame frame, int32_t frames_lost, qint64 delivery_us) {
+            QMetaObject::invokeMethod(present_window, [present_window, frame, frames_lost, delivery_us]() mutable {
+                present_window->presentFrame(frame, frames_lost, delivery_us);
+            });
+        });
+    }
+    {
         QMutexLocker locker(&hw_transfer_state_mutex);
         logged_hw_transfer_formats.clear();
         logged_hw_transfer_failures.clear();
@@ -1117,6 +1175,8 @@ void QmlBackend::createSession(const StreamSessionConnectInfo &connect_info)
         session = new StreamSession(session_info, this);
     } catch (const Exception &e) {
         emit error(tr("Stream failed"), tr("Failed to initialize Stream Session: %1").arg(e.what()));
+        framegen->stop();
+        window->setExternalFramePacing(false);
         return;
     }
 
@@ -1153,6 +1213,10 @@ void QmlBackend::createSession(const StreamSessionConnectInfo &connect_info)
         }
 
         const qint64 delivery_us = static_cast<qint64>(chiaki_time_now_monotonic_us());
+        if (framegen && framegen->enabled()) {
+            framegen->submit(frame, frames_lost, delivery_us);
+            return;
+        }
         QmlMainWindow *target_window = window;
         QMetaObject::invokeMethod(target_window, [target_window, frame, frames_lost, delivery_us]() mutable {
             target_window->presentFrame(frame, frames_lost, delivery_us);

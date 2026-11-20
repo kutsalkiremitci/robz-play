@@ -270,6 +270,33 @@ class Settings : public QObject
 		RumbleHapticsIntensity GetRumbleHapticsIntensity() const;
 		void SetRumbleHapticsIntensity(RumbleHapticsIntensity intensity);
 
+		// Robz Play frame generation
+		bool GetFrameGenEnabled() const            { return settings.value("settings/framegen_enabled", true).toBool(); }
+		void SetFrameGenEnabled(bool enabled)      { settings.setValue("settings/framegen_enabled", enabled); }
+		int GetFrameGenFlowDivisor() const
+		{
+			const int divisor = settings.value("settings/framegen_flow_divisor", 2).toInt();
+			return (divisor == 1 || divisor == 2 || divisor == 4) ? divisor : 2;
+		}
+		void SetFrameGenFlowDivisor(int divisor)   { settings.setValue("settings/framegen_flow_divisor", divisor); }
+		int GetFrameGenTargetFps() const
+		{
+			return settings.value("settings/framegen_target_fps", 60).toInt() >= 100 ? 120 : 60;
+		}
+		void SetFrameGenTargetFps(int fps)         { settings.setValue("settings/framegen_target_fps", fps >= 100 ? 120 : 60); }
+		bool GetFrameGenProtectStatic() const      { return settings.value("settings/framegen_protect_static", true).toBool(); }
+		void SetFrameGenProtectStatic(bool enabled) { settings.setValue("settings/framegen_protect_static", enabled); }
+		// Interface language: "tr" (Turkish, the default) or "en"
+		QString GetLanguage() const                { return settings.value("settings/language", "tr").toString() == "en" ? QStringLiteral("en") : QStringLiteral("tr"); }
+		void SetLanguage(const QString &language)  { settings.setValue("settings/language", language == "en" ? QStringLiteral("en") : QStringLiteral("tr")); }
+		// Picture sharpening: 0 off, 1 low, 2 medium, 3 high
+		int GetSharpening() const                  { return qBound(0, settings.value("settings/sharpening", 0).toInt(), 3); }
+		void SetSharpening(int level)              { settings.setValue("settings/sharpening", qBound(0, level, 3)); }
+		bool GetShowFpsCounter() const             { return settings.value("settings/show_fps_counter", false).toBool(); }
+		void SetShowFpsCounter(bool enabled)       { settings.setValue("settings/show_fps_counter", enabled); }
+		QString GetFrameGenModel() const           { return settings.value("settings/framegen_model", "rife-v4.6").toString(); }
+		void SetFrameGenModel(const QString &name) { settings.setValue("settings/framegen_model", name); }
+
 		bool GetShowStreamStats() const            { return settings.value("settings/show_stream_stats", false).toBool(); }
 		void SetShowStreamStats(bool enabled)      { settings.setValue("settings/show_stream_stats", enabled); }
 

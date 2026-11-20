@@ -8,6 +8,7 @@ Button {
     property bool sendOutput: false
 
     Material.background: visualFocus ? Material.accent : undefined
+    Material.roundedScale: Material.SmallScale
 
     Component.onDestruction: {
         if (visualFocus) {

@@ -20,7 +20,7 @@ DialogView {
         if(dialog.fromReminder && Chiaki.settings.remotePlayAsk)
         {
             if(!Chiaki.settings.psnRefreshToken || !Chiaki.settings.psnAuthToken || !Chiaki.settings.psnAuthTokenExpiry || !Chiaki.settings.psnAccountId)
-                root.showRemindDialog(qsTr("Remote Play via PSN"), qsTr("Would you like to connect to PSN?\nThis enables:\n- Automatic registration\n- Playing outside of your home network without port forwarding?") + "\n\n" + qsTr("(Note: If you select no now and want to do this later, go to the Config section of the settings.)"), true, () => root.showPSNTokenDialog(false));
+                root.showRemindDialog(qsTr("Remote Play via PSN"), qsTr("Would you like to connect to PSN?\nThis enables:\n- Automatic registration\n- Playing outside of your home network without port forwarding?") + "\n\n" + qsTr("(Note: If you select no now and want to do this later, go to the Remote play section of the settings.)"), true, () => root.showPSNTokenDialog(false));
             else
                 Chiaki.settings.remotePlayAsk = false;
         }
@@ -66,7 +66,7 @@ DialogView {
             C.TextField {
                 id: name
                 Layout.preferredWidth: 400
-                text: Chiaki.settings.currentProfile ? qsTr("chiaki-ng ") + Chiaki.settings.currentProfile: qsTr("chiaki-ng")
+                text: Chiaki.settings.currentProfile ? qsTr("Robz Play ") + Chiaki.settings.currentProfile: qsTr("Robz Play")
                 firstInFocusChain: true
             }
 
@@ -184,7 +184,7 @@ DialogView {
 
                 Label {
                     id: restartArea
-                    text: "In order for " + name.text.trim() + " to appear in Steam,\nSteam must be restarted!"
+                    text: qsTr("In order for %1 to appear in Steam,\nSteam must be restarted!").arg(name.text.trim())
                     wrapMode: Text.Wrap
                     Keys.onReturnPressed: if (restartDialog.standardButtons == Dialog.Close) restartDialog.close()
                     Keys.onEscapePressed: restartDialog.close()

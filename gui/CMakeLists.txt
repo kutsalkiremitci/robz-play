@@ -54,6 +54,10 @@ set(SOURCE_FILES
 	src/qmlsvgprovider.cpp
 	include/systemdinhibit.h
 	src/systemdinhibit.cpp
+	include/framegen.h
+	src/framegen.cpp
+	include/robztranslator.h
+	src/robztranslator.cpp
 	)
 set(RESOURCE_FILES "")
 
@@ -99,6 +103,13 @@ target_link_libraries(placebo-libav-impl PkgConfig::LIBPLACEBO FFMPEG::avcodec F
 target_link_libraries(chiaki PkgConfig::LIBPLACEBO placebo-libav-impl)
 
 target_link_libraries(chiaki chiaki-lib)
+if(NOT ROBZPLAY_ENABLE_FRAMEGEN)
+	message(FATAL_ERROR "Robz Play GUI requires ROBZPLAY_ENABLE_FRAMEGEN=ON")
+endif()
+target_link_libraries(chiaki robzfg)
+if(WIN32)
+	target_link_libraries(chiaki winmm)
+endif()
 if(CHIAKI_ENABLE_CLI)
 	add_definitions(-DCHIAKI_ENABLE_CLI)
 	target_link_libraries(chiaki chiaki-cli-lib)
@@ -144,6 +155,7 @@ endif()
 
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fanalyzer")
 set_target_properties(chiaki PROPERTIES
+		OUTPUT_NAME "RobzPlay"
 		MACOSX_BUNDLE TRUE
 		MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/MacOSXBundleInfo.plist.in"
 		MACOSX_BUNDLE_BUNDLE_NAME chiaki-ng
@@ -159,3 +171,15 @@ install(TARGETS chiaki
 install(FILES chiaking.desktop DESTINATION share/applications)
 install(FILES chiaking.png DESTINATION share/icons/hicolor/512x512/apps)
 install(FILES io.github.streetpea.Chiaki4deck.appdata.xml DESTINATION share/metainfo)
+
+# Robz Play: replays a video file into the frame generation stage as if it were a live
+# stream. Not built by default: cmake --build build --target robzplay-framegen-sim
+add_executable(robzplay-framegen-sim EXCLUDE_FROM_ALL
+	tools/framegen_sim.cpp
+	include/framegen.h
+	src/framegen.cpp)
+target_include_directories(robzplay-framegen-sim PRIVATE include)
+target_link_libraries(robzplay-framegen-sim chiaki-lib robzfg Qt::Core FFMPEG::avcodec FFMPEG::avutil FFMPEG::avformat)
+if(WIN32)
+	target_link_libraries(robzplay-framegen-sim winmm)
+endif()

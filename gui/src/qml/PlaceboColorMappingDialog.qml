@@ -398,7 +398,7 @@ DialogView {
 
                     Label {
                         Layout.alignment: Qt.AlignRight
-                        text: qsTr("(Unchecked)")
+                        text: qsTr("(Off)")
                     }
 
                     Label {
@@ -414,7 +414,7 @@ DialogView {
 
                     Label {
                         Layout.alignment: Qt.AlignRight
-                        text: qsTr("(Unchecked)")
+                        text: qsTr("(Off)")
                     }
                 }
             }
@@ -830,7 +830,7 @@ DialogView {
 
                     Label {
                         Layout.alignment: Qt.AlignRight
-                        text: qsTr("(Unchecked)")
+                        text: qsTr("(Off)")
                     }
 
                     Label {

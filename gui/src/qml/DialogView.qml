@@ -56,7 +56,17 @@ Item {
             left: parent.left
             right: parent.right
         }
-        height: 80
+        height: 76
+        Material.elevation: 0
+        background: Rectangle {
+            color: "#181716"
+            Rectangle {
+                anchors.bottom: parent.bottom
+                width: parent.width
+                height: 1
+                color: "#3A3936"
+            }
+        }
 
         RowLayout {
             anchors {
@@ -100,8 +110,9 @@ Item {
             anchors.centerIn: parent
             horizontalAlignment: Qt.AlignHCenter
             verticalAlignment: Qt.AlignVCenter
-            font.bold: true
-            font.pixelSize: 26
+            font.family: "Georgia"
+            font.pixelSize: 30
+            color: "#FAF9F5"
         }
 
         Label {
@@ -114,8 +125,8 @@ Item {
             }
             horizontalAlignment: Qt.AlignHCenter
             verticalAlignment: Qt.AlignVCenter
-            font.bold: true
-            font.pixelSize: 14
+            font.pixelSize: 13
+            color: "#8F8D85"
         }
     }
 

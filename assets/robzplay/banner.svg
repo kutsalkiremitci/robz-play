@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 420" width="1280" height="420" role="img" aria-label="Robz Play: PS5 Remote Play ve kare üretimi. 30 FPS oyunlar bilgisayar ekranında 60 FPS akıcılığında.">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#211F1D"/>
+      <stop offset="1" stop-color="#100F0E"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#D97757" stop-opacity="0"/>
+      <stop offset="0.55" stop-color="#D97757" stop-opacity="0.20"/>
+      <stop offset="1" stop-color="#D97757" stop-opacity="0"/>
+    </linearGradient>
+    <clipPath id="frame">
+      <rect width="1280" height="420" rx="28"/>
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#frame)">
+    <rect width="1280" height="420" fill="url(#bg)"/>
+    <rect x="-900" y="230" width="3200" height="360" fill="url(#glow)" transform="rotate(-20 640 210)"/>
+
+    <!-- the watermark of the app's loading screen -->
+    <g transform="rotate(-9 640 210)" font-family="'Arial Black', 'Segoe UI Black', Impact, Arial, sans-serif" font-weight="900" text-anchor="middle">
+      <text x="760" y="150" font-size="170" letter-spacing="10" fill="#D97757" opacity="0.055">ROBZ PLAY</text>
+      <text x="560" y="350" font-size="210" letter-spacing="12" fill="#FAF9F5" opacity="0.05">ROBZ PLAY</text>
+      <text x="820" y="540" font-size="170" letter-spacing="10" fill="#D97757" opacity="0.055">ROBZ PLAY</text>
+    </g>
+
+    <!-- mark -->
+    <g transform="translate(72 70) scale(0.234375)">
+      <rect width="512" height="512" rx="116" fill="#D97757"/>
+      <g fill="none" stroke="#FAF9F5" stroke-width="46" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M120 372V140h62a60 60 0 0 1 0 120h-62"/>
+        <path d="M184 260l62 112"/>
+        <path d="M300 372V140h62a60 60 0 0 1 0 120h-62"/>
+      </g>
+    </g>
+
+    <text x="220" y="140" font-family="Georgia, 'Times New Roman', serif" font-size="84" fill="#FAF9F5">Robz Play</text>
+    <text x="224" y="182" font-family="'Segoe UI', system-ui, -apple-system, Helvetica, Arial, sans-serif" font-size="25" fill="#C2C0B6">PS5 Remote Play + kare üretimi</text>
+
+    <text x="72" y="256" font-family="Georgia, 'Times New Roman', serif" font-size="35" fill="#FAF9F5">30 FPS oyunlar, bilgisayarında</text>
+    <text x="72" y="300" font-family="Georgia, 'Times New Roman', serif" font-size="35" fill="#FAF9F5">60 FPS akıcılığında.</text>
+    <text x="72" y="342" font-family="'Segoe UI', system-ui, -apple-system, Helvetica, Arial, sans-serif" font-size="21" fill="#8F8D85">Capture card yok. Sadece PS5, bilgisayarın ve ev ağın.</text>
+
+    <!-- what it does: the frames the console sends, and the frames you see -->
+    <g font-family="'Segoe UI', system-ui, -apple-system, Helvetica, Arial, sans-serif">
+      <rect x="800" y="62" width="408" height="296" rx="20" fill="#1A1918" stroke="#3A3936"/>
+
+      <text x="828" y="106" font-size="17" fill="#8F8D85">PS5'in gönderdiği</text>
+      <text x="1180" y="106" font-size="17" fill="#C2C0B6" text-anchor="end">30 FPS</text>
+      <g fill="#8F8D85">
+        <rect x="828" y="124" width="26" height="34" rx="5"/>
+        <rect x="918" y="124" width="26" height="34" rx="5"/>
+        <rect x="1008" y="124" width="26" height="34" rx="5"/>
+        <rect x="1098" y="124" width="26" height="34" rx="5"/>
+      </g>
+
+      <text x="828" y="210" font-size="17" fill="#8F8D85">Robz Play'in gösterdiği</text>
+      <text x="1180" y="210" font-size="17" font-weight="600" fill="#D97757" text-anchor="end">60 FPS</text>
+      <g fill="#8F8D85">
+        <rect x="828" y="228" width="26" height="34" rx="5"/>
+        <rect x="918" y="228" width="26" height="34" rx="5"/>
+        <rect x="1008" y="228" width="26" height="34" rx="5"/>
+        <rect x="1098" y="228" width="26" height="34" rx="5"/>
+      </g>
+      <g fill="#D97757">
+        <rect x="873" y="228" width="26" height="34" rx="5"/>
+        <rect x="963" y="228" width="26" height="34" rx="5"/>
+        <rect x="1053" y="228" width="26" height="34" rx="5"/>
+        <rect x="1143" y="228" width="26" height="34" rx="5"/>
+      </g>
+
+      <rect x="828" y="304" width="14" height="14" rx="3" fill="#8F8D85"/>
+      <text x="850" y="317" font-size="15" fill="#C2C0B6">konsoldan gelen</text>
+      <rect x="1000" y="304" width="14" height="14" rx="3" fill="#D97757"/>
+      <text x="1022" y="317" font-size="15" fill="#C2C0B6">bilgisayarın ürettiği</text>
+    </g>
+  </g>
+</svg>

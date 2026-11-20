@@ -39,3 +39,7 @@ chiaki.conf
 .cache/
 *.vscode
 site/
+
+# Robz Play: yerel bagimlilik derlemeleri
+/_deps/
+/dist/

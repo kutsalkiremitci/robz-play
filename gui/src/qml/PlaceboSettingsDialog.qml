@@ -404,7 +404,7 @@ DialogView {
 
                     Label {
                         Layout.alignment: Qt.AlignRight
-                        text: qsTr("(Checked)")
+                        text: qsTr("(On)")
                     }
 
                     Label {
@@ -578,7 +578,7 @@ DialogView {
 
                     Label {
                         Layout.alignment: Qt.AlignRight
-                        text: qsTr("(Checked)")
+                        text: qsTr("(On)")
                     }
 
                     Label {
@@ -690,7 +690,7 @@ DialogView {
 
                     Label {
                         Layout.alignment: Qt.AlignRight
-                        text: qsTr("(Checked)")
+                        text: qsTr("(On)")
                     }
 
                     Label {
@@ -926,7 +926,7 @@ DialogView {
 
                     Label {
                         Layout.alignment: Qt.AlignRight
-                        text: qsTr("(Checked)")
+                        text: qsTr("(On)")
                     }
 
                     Label {
@@ -1119,7 +1119,7 @@ DialogView {
 
                     Label {
                         Layout.alignment: Qt.AlignRight
-                        text: qsTr("(Unchecked)")
+                        text: qsTr("(Off)")
                         visible: Chiaki.settings.placeboPeakDetectionEnabled && (Chiaki.settings.placeboPeakDetectionPreset == 0)
                     }
                 }
@@ -1150,7 +1150,7 @@ DialogView {
 
                     Label {
                         Layout.alignment: Qt.AlignRight
-                        text: qsTr("(Checked)")
+                        text: qsTr("(On)")
                     }
 
                     Label {

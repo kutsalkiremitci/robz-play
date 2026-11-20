@@ -67,6 +67,8 @@ class QmlMainWindow : public QWindow
     Q_PROPERTY(int runtimeRendererBackend READ runtimeRendererBackend CONSTANT)
     Q_PROPERTY(double queueDepthAverage READ queueDepthAverage NOTIFY queueDepthAverageChanged)
     Q_PROPERTY(double pendingFrameAge READ pendingFrameAge NOTIFY pendingFrameAgeChanged)
+    // Robz Play: video frames handed to the renderer per second (real and generated alike)
+    Q_PROPERTY(double displayFps READ displayFps NOTIFY displayFpsChanged)
 
 public:
     enum class UpdateRequestReason {
@@ -151,6 +153,16 @@ public:
     Q_INVOKABLE void requestOverlayUpdate();
     Q_INVOKABLE void setOverlayInteractionActive(bool active);
     Q_INVOKABLE void setStatsOverlayActive(bool active);
+    Q_INVOKABLE void setFpsCounterActive(bool active);
+    // Shows every text of the interface again, in the language the translator is now set to.
+    void retranslateUi();
+    // Robz Play picture sharpening: 0 off, 1 low, 2 medium, 3 high. Takes effect on the next frame.
+    Q_INVOKABLE void setSharpening(int level) { sharpen_level.storeRelease(qBound(0, level, 3)); }
+    // Diagnostics (frame generation self-test): count a frame as shown without rendering it,
+    // and save what the overlay currently draws to an image file.
+    void notePresentedFrame() { presented_frames_counter.fetchAndAddRelaxed(1); }
+    bool saveStatsOverlayImage(const QString &path);
+    double displayFps() const { return display_fps; }
     Q_INVOKABLE void noteLoadingTransitionComplete();
     Q_INVOKABLE void presentStartupWarmupFrame(unsigned width, unsigned height, bool hdr);
     void armVerbosePlaceboQuietWindow();
@@ -180,6 +192,7 @@ signals:
     void directStreamChanged();
     void queueDepthAverageChanged();
     void pendingFrameAgeChanged();
+    void displayFpsChanged();
     void loadingTransitionCompleteChanged();
     void statsOverlayActiveChanged();
 
@@ -225,6 +238,9 @@ private:
                                  qint64 present_submit_interval_us);
     void drainDeferredSwaps();
     void setStreamMaxFPS(unsigned int max_fps);
+    // Robz Play: when a stage upstream already delivers frames on its own cadence (frame
+    // generation), present each one as it arrives instead of re-pacing to the stream fps.
+    void setExternalFramePacing(bool enabled) { external_frame_pacing.storeRelease(enabled ? 1 : 0); }
     void createSwapchain();
     void destroySwapchain();
     void resizeSwapchain();
@@ -318,6 +334,9 @@ private:
     bool is_window_adjustable = false;
     bool is_stream_window_adjustable = false;
     QAtomicInteger<int> dropped_frames_current = 0;
+    QAtomicInteger<int> presented_frames_counter = 0;
+    double display_fps = 0.0;
+    qint64 display_fps_window_start_us = 0;
     bool going_full = false;
     VideoMode video_mode = VideoMode::Normal;
     float zoom_factor = 0;
@@ -437,6 +456,7 @@ private:
     QAtomicInteger<int> schedule_frame_mixer_active = 0;
     double source_frame_interval_ms = 16.6667;
     double stream_configured_frame_interval_ms = 16.6667;
+    QAtomicInteger<int> external_frame_pacing = 0;
     QAtomicInteger<qint64> last_schedule_update_us = 0;
     QAtomicInteger<qint64> last_render_dispatch_us = 0;
     QAtomicInteger<qint64> last_render_entry_us = 0;
@@ -465,6 +485,8 @@ private:
     const struct pl_hook *fsr_hook = nullptr;
     const struct pl_hook *fsrcnnx_hook_8 = nullptr;
     const struct pl_hook *fsrcnnx_hook_16 = nullptr;
+    const struct pl_hook *sharpen_hooks[3] = {nullptr, nullptr, nullptr};
+    QAtomicInteger<int> sharpen_level = 0;
 
     struct {
         PFN_vkGetDeviceProcAddr vkGetDeviceProcAddr;

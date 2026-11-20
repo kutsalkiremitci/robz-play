@@ -12,7 +12,7 @@ Item {
     readonly property bool preferSeparateStreamSettingsWindows: Chiaki.window.runtimeRendererBackend === 1 && Chiaki.session
     property bool useSeparateStreamSettingsWindows: false
     Material.theme: Material.Dark
-    Material.accent: "#00a7ff"
+    Material.accent: "#D97757"
 
     function controllerButton(name) {
         let type = "deck";
@@ -169,7 +169,7 @@ Item {
 
     function showRendererFallbackDialog(reason) {
         showInfoDialog(qsTr("Renderer Fallback"),
-                       qsTr("Vulkan renderer is unavailable and chiaki-ng switched to OpenGL.\n\nReason: %1").arg(reason));
+                       qsTr("Vulkan renderer is unavailable and Robz Play switched to OpenGL.\n\nReason: %1").arg(reason));
     }
 
     function showRemindDialog(title, text, remotePlay, callback) {
@@ -247,6 +247,8 @@ Item {
             stack.replace(stack.get(0), streamViewComponent, {}, StackView.Immediate);
         else if (Chiaki.autoConnect)
             stack.replace(stack.get(0), autoConnectViewComponent, {}, StackView.Immediate);
+        else if (Chiaki.uiPreview === "stream-loading" || Chiaki.uiPreview === "stream-menu")
+            stack.replace(stack.get(0), streamViewComponent, {}, StackView.Immediate);
     }
 
     Pane {
