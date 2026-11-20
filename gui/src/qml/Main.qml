@@ -11,6 +11,28 @@ Item {
     property bool initialAsk: false
     readonly property bool preferSeparateStreamSettingsWindows: Chiaki.window.runtimeRendererBackend === 1 && Chiaki.session
     property bool useSeparateStreamSettingsWindows: false
+
+    // A few settings (renderer backend, frame delivery, vertical sync on OpenGL) only take
+    // effect in a fresh start. Changing one does not restart the application on the spot any
+    // more - whoever is in the settings is still busy there. Instead the change is noted
+    // here, the restart is offered on leaving the settings, and no stream starts on the old
+    // values in between.
+    property int startRendererBackend: 0
+    property bool startDirectFrameMapping: true
+    property bool startVSync: false
+    readonly property bool restartPending: Chiaki.settings.rendererBackend !== startRendererBackend
+        || Chiaki.settings.directFrameMapping !== startDirectFrameMapping
+        || (Chiaki.window.runtimeRendererBackend === 1 && Chiaki.settings.vSyncEnabled !== startVSync)
+
+    function askRestart() {
+        showConfirmDialog(qsTr("Restart needed"),
+            qsTr("The settings you changed take effect after Robz Play restarts.\nRestart now?"),
+            () => {
+                if (Chiaki.settings.restartApplication())
+                    Qt.quit();
+            });
+    }
+
     Material.theme: Material.Dark
     Material.accent: "#D97757"
 
@@ -244,6 +266,9 @@ Item {
     }
 
     Component.onCompleted: {
+        startRendererBackend = Chiaki.settings.rendererBackend;
+        startDirectFrameMapping = Chiaki.settings.directFrameMapping;
+        startVSync = Chiaki.settings.vSyncEnabled;
         if (Chiaki.session)
             stack.replace(stack.get(0), streamViewComponent, {}, StackView.Immediate);
         else if (Chiaki.autoConnect)
@@ -254,7 +279,7 @@ Item {
 
     Pane {
         anchors.fill: parent
-        visible: !Chiaki.window.hasVideo && !Chiaki.window.keepVideo
+        visible: !Chiaki.session || (!Chiaki.window.hasVideo && !Chiaki.window.keepVideo)
     }
 
     StackView {

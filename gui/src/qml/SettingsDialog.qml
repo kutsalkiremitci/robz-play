@@ -22,6 +22,11 @@ DialogView {
         if (startSection > 0)
             bar.currentIndex = startSection;
     }
+    // leaving the settings: offer the restart that a changed setting is waiting for
+    StackView.onRemoved: {
+        if (root.restartPending)
+            Qt.callLater(root.askRestart);
+    }
     id: dialog
     title: qsTr("Settings")
     header: qsTr("Values in brackets are the defaults")
@@ -1241,9 +1246,8 @@ DialogView {
                     C.CheckBox {
                         checked: Chiaki.settings.vSyncEnabled
                         onClicked: {
+                            // on OpenGL this needs a fresh start: see restartPending in Main.qml
                             Chiaki.settings.vSyncEnabled = checked
-                            if (Chiaki.window.runtimeRendererBackend === 1 && Chiaki.settings.restartApplication())
-                                Qt.quit()
                         }
                     }
 
@@ -1296,9 +1300,8 @@ DialogView {
                             const direct = index === 0;
                             if (direct === Chiaki.settings.directFrameMapping)
                                 return;
+                            // needs a fresh start: see restartPending in Main.qml
                             Chiaki.settings.directFrameMapping = direct;
-                            if (Chiaki.settings.restartApplication())
-                                Qt.quit();
                         }
                     }
 
@@ -1341,9 +1344,8 @@ DialogView {
                         onActivated: (index) => {
                             if (index === Chiaki.settings.rendererBackend)
                                 return;
+                            // needs a fresh start: see restartPending in Main.qml
                             Chiaki.settings.rendererBackend = index;
-                            if (Chiaki.settings.restartApplication())
-                                Qt.quit();
                         }
                     }
 
@@ -1352,6 +1354,16 @@ DialogView {
                         color: "#8F8D85"
                         font.pixelSize: 14
                         text: qsTr("(Vulkan)")
+                    }
+
+                    Label {
+                        Layout.columnSpan: 3
+                        Layout.fillWidth: true
+                        visible: root.restartPending
+                        text: qsTr("Takes effect after Robz Play restarts. You will be asked when you leave the settings.")
+                        color: "#D9A65A"
+                        font.pixelSize: 14
+                        wrapMode: Text.Wrap
                     }
 
                     Label {

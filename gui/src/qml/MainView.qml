@@ -757,6 +757,11 @@ Pane {
                                 HoverHandler { cursorShape: Qt.PointingHandCursor }
 
                                 function connectToHost() {
+                                    // a changed setting is waiting for a restart: do not start a stream on the old one
+                                    if (root.restartPending) {
+                                        root.askRestart();
+                                        return;
+                                    }
                                     if(modelData.discovered)
                                         Chiaki.connectToHost(index, modelData.name);
                                     else

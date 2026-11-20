@@ -574,8 +574,10 @@ void QmlBackend::teardownSession()
     }
 
     // Robz Play: no frame can reach the frame generation stage any more; stop its worker.
+    // Frames it had already sent towards the window belong to a run that is now over.
     if (framegen)
         framegen->stop();
+    framegen_run.fetchAndAddRelaxed(1);
     if (window)
         window->setExternalFramePacing(false);
 
@@ -1024,8 +1026,19 @@ void QmlBackend::createSession(const StreamSessionConnectInfo &connect_info)
         }
         window->setExternalFramePacing(framegen_config.enabled);
         QmlMainWindow *present_window = window;
-        framegen->start(framegen_config, [present_window](ChiakiFfmpegFrame frame, int32_t frames_lost, qint64 delivery_us) {
-            QMetaObject::invokeMethod(present_window, [present_window, frame, frames_lost, delivery_us]() mutable {
+        const quint64 present_run = framegen_run.fetchAndAddRelaxed(1) + 1;
+        framegen->start(framegen_config, [this, present_window, present_run](ChiakiFfmpegFrame frame, int32_t frames_lost, qint64 delivery_us) {
+            QMetaObject::invokeMethod(present_window, [this, present_window, present_run, frame, frames_lost, delivery_us]() mutable {
+                // The stage hands its frames over through the event queue, so the last ones can
+                // arrive after the stream has ended and the window has forgotten it. Shown then,
+                // such a frame makes the window believe video has started again: the last
+                // picture of the game stays up behind the home screen and the settings. A frame
+                // of a run that is over is dropped here instead.
+                if (framegen_run.loadRelaxed() != present_run || !session) {
+                    if (frame.frame)
+                        av_frame_free(&frame.frame);
+                    return;
+                }
                 present_window->presentFrame(frame, frames_lost, delivery_us);
             });
         });
@@ -1176,6 +1189,7 @@ void QmlBackend::createSession(const StreamSessionConnectInfo &connect_info)
     } catch (const Exception &e) {
         emit error(tr("Stream failed"), tr("Failed to initialize Stream Session: %1").arg(e.what()));
         framegen->stop();
+        framegen_run.fetchAndAddRelaxed(1);
         window->setExternalFramePacing(false);
         return;
     }

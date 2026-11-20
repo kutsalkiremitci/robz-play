@@ -295,6 +295,9 @@ private:
     QmlMainWindow *window = {};
     StreamSession *session = {};
     FrameGenStage *framegen = {};
+    // Counts the runs of the frame generation stage, so that a frame of a run that has
+    // ended can be told apart when it reaches the window late (see createSession).
+    QAtomicInteger<quint64> framegen_run = 0;
     QThread *frame_thread = {};
     QTimer *psn_reconnect_timer = {};
     QTimer *psn_auto_connect_timer = {};
