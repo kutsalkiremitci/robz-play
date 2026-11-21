@@ -14,15 +14,9 @@ Pane {
         if(!Chiaki.autoConnect && !root.initialAsk && !Chiaki.window.directStream)
         {
             root.initialAsk = true;
-            if(Chiaki.settings.addSteamShortcutAsk && (typeof Chiaki.createSteamShortcut === "function"))
-                root.showRemindDialog(qsTr("Official Steam artwork + controller layout"), qsTr("Would you like to either create a new non-Steam game for Robz Play\nor update an existing non-Steam game with the official artwork and controller layout?") + "\n\n" + qsTr("(Note: If you select no now and want to do this later, click the button or press R3 from the main menu.)"), false, () => root.showSteamShortcutDialog(true));
-            else if(Chiaki.settings.remotePlayAsk)
-            {
-                if(!Chiaki.settings.psnRefreshToken || !Chiaki.settings.psnAuthToken || !Chiaki.settings.psnAuthTokenExpiry || !Chiaki.settings.psnAccountId)
-                    root.showRemindDialog(qsTr("Remote Play via PSN"), qsTr("Would you like to connect to PSN?\nThis enables:\n- Automatic registration\n- Playing outside of your home network without port forwarding?") + "\n\n" + qsTr("(Note: If you select no now and want to do this later, go to the Remote play section of the settings.)"), true, () => root.showPSNTokenDialog(false));
-                else
-                    Chiaki.settings.remotePlayAsk = false;
-            }
+            // Robz Play: no start-up questions - neither about a Steam shortcut (it can still be
+            // made from the main menu, button or R3) nor about Remote Play via PSN (signing in to
+            // PSN is under Settings > Remote play, and setting up a console signs in anyway)
         }
     }
     Keys.onUpPressed: {
@@ -73,21 +67,22 @@ Pane {
     // Robz Play home screen: brand and navigation on the left, consoles in the middle, and
     // the frame generation panel - with a live picture of what it does - on the right.
     // Warm dark palette.
-    readonly property color cBg: "#1F1E1D"
-    readonly property color cSidebar: "#181716"
-    readonly property color cSurface: "#262624"
-    readonly property color cSurfaceHover: "#2E2D2B"
-    readonly property color cInset: "#1A1918"
-    readonly property color cBorder: "#3A3936"
-    readonly property color cText: "#FAF9F5"
-    readonly property color cMuted: "#C2C0B6"
-    readonly property color cFaint: "#8F8D85"
-    readonly property color cAccent: "#D97757"
-    readonly property color cAccentHover: "#E38A6C"
-    readonly property color cOnAccent: "#1F1E1D"
+    readonly property color cBg: "#141110"
+    readonly property color cSidebar: "#100D0C"
+    readonly property color cSurface: "#1D1816"
+    readonly property color cSurfaceHover: "#271F1C"
+    readonly property color cInset: "#171312"
+    readonly property color cBorder: "#3B302B"
+    readonly property color cText: "#FBF4EC"
+    readonly property color cMuted: "#CDBFB4"
+    readonly property color cFaint: "#A08F84"
+    readonly property color cAccent: "#E4845E"
+    readonly property color cAccentHover: "#F09A74"
+    readonly property color cOnAccent: "#141110"
     readonly property color cGood: "#8DB580"
     readonly property color cWarn: "#D9A65A"
-    readonly property string serif: "Georgia"
+    // titles in the heavy italic of the icon's letters (Segoe UI Black)
+    readonly property string display: "Segoe UI"
 
     // room for the wide layout; below it the sidebar and the panel slim down
     readonly property bool roomy: width >= 1320
@@ -147,7 +142,7 @@ Pane {
         HoverHandler { cursorShape: Qt.PointingHandCursor }
         background: Rectangle {
             radius: 10
-            color: nav.down ? "#2E2D2B" : (nav.hovered ? "#262624" : "transparent")
+            color: nav.down ? "#271F1C" : (nav.hovered ? "#1D1816" : "transparent")
         }
         contentItem: RowLayout {
             spacing: 10
@@ -155,7 +150,7 @@ Pane {
                 Layout.fillWidth: true
                 Layout.leftMargin: 14
                 text: nav.text
-                color: "#FAF9F5"
+                color: "#FBF4EC"
                 font.pixelSize: 17
                 elide: Text.ElideRight
                 verticalAlignment: Text.AlignVCenter
@@ -164,7 +159,7 @@ Pane {
                 Layout.rightMargin: 14
                 visible: nav.hint.length > 0
                 text: nav.hint
-                color: "#8F8D85"
+                color: "#A08F84"
                 font.pixelSize: 13
                 verticalAlignment: Text.AlignVCenter
             }
@@ -181,7 +176,7 @@ Pane {
         HoverHandler { cursorShape: Qt.PointingHandCursor }
         background: Rectangle {
             radius: height / 2
-            color: toggle.on ? "#D97757" : "#4A4946"
+            color: toggle.on ? "#E4845E" : "#4E403A"
             Behavior on color { ColorAnimation { duration: 120 } }
             Rectangle {
                 width: 20
@@ -189,7 +184,7 @@ Pane {
                 radius: 10
                 y: 3
                 x: toggle.on ? parent.width - width - 3 : 3
-                color: "#FAF9F5"
+                color: "#FBF4EC"
                 Behavior on x { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
             }
         }
@@ -209,7 +204,7 @@ Pane {
         HoverHandler { cursorShape: Qt.PointingHandCursor }
         background: Rectangle {
             radius: 8
-            color: segment.active ? "#D97757" : (segment.hovered ? "#2E2D2B" : "transparent")
+            color: segment.active ? "#E4845E" : (segment.hovered ? "#271F1C" : "transparent")
         }
         contentItem: Item {
             implicitWidth: segmentContent.implicitWidth
@@ -221,7 +216,7 @@ Pane {
                 Label {
                     anchors.verticalCenter: parent.verticalCenter
                     text: segment.text
-                    color: segment.active ? "#1F1E1D" : "#C2C0B6"
+                    color: segment.active ? "#141110" : "#CDBFB4"
                     font.pixelSize: 15
                     font.weight: segment.active ? Font.DemiBold : Font.Normal
                 }
@@ -231,14 +226,14 @@ Pane {
                     width: segmentBadge.implicitWidth + 12
                     height: 18
                     radius: 9
-                    color: segment.active ? "#2E1F1E1D" : "transparent"
+                    color: segment.active ? "#2E141110" : "transparent"
                     border.width: segment.active ? 0 : 1
                     border.color: "#D9A65A"
                     Label {
                         id: segmentBadge
                         anchors.centerIn: parent
                         text: segment.badge
-                        color: segment.active ? "#1F1E1D" : "#D9A65A"
+                        color: segment.active ? "#141110" : "#D9A65A"
                         font.pixelSize: 11
                     }
                 }
@@ -253,8 +248,8 @@ Pane {
         implicitWidth: segmentRow.implicitWidth + 6
         implicitHeight: 40
         radius: 10
-        color: "#1A1918"
-        border.color: "#3A3936"
+        color: "#171312"
+        border.color: "#3B302B"
         RowLayout {
             id: segmentRow
             anchors {
@@ -278,9 +273,9 @@ Pane {
         HoverHandler { cursorShape: Qt.PointingHandCursor }
         background: Rectangle {
             radius: 8
-            color: flag.active ? "#2E2D2B" : (flag.hovered ? "#262624" : "transparent")
+            color: flag.active ? "#271F1C" : (flag.hovered ? "#1D1816" : "transparent")
             border.width: flag.active ? 2 : 1
-            border.color: flag.active ? "#D97757" : "#3A3936"
+            border.color: flag.active ? "#E4845E" : "#3B302B"
         }
         contentItem: Item {
             Image {
@@ -306,8 +301,8 @@ Pane {
         HoverHandler { cursorShape: Qt.PointingHandCursor }
         background: Rectangle {
             radius: 8
-            color: cardAction.hovered ? "#1A1918" : "transparent"
-            border.color: "#3A3936"
+            color: cardAction.hovered ? "#171312" : "transparent"
+            border.color: "#3B302B"
             border.width: 1
         }
         contentItem: Item {
@@ -327,7 +322,7 @@ Pane {
                 Label {
                     anchors.verticalCenter: parent.verticalCenter
                     text: cardAction.text
-                    color: "#C2C0B6"
+                    color: "#CDBFB4"
                     font.pixelSize: 14
                 }
             }
@@ -355,9 +350,9 @@ Pane {
         HoverHandler { cursorShape: Qt.PointingHandCursor }
         background: Rectangle {
             radius: 14
-            color: tile.active ? "#2C2622" : (tile.hovered ? "#201F1E" : "#1A1918")
+            color: tile.active ? "#2C221E" : (tile.hovered ? "#1A1514" : "#171312")
             border.width: tile.active ? 2 : 1
-            border.color: tile.active ? "#D97757" : (tile.hovered ? "#5A5853" : "#3A3936")
+            border.color: tile.active ? "#E4845E" : (tile.hovered ? "#5E4E46" : "#3B302B")
         }
         contentItem: Item {
             implicitHeight: tileColumn.implicitHeight
@@ -379,19 +374,19 @@ Pane {
                         radius: 9
                         color: "transparent"
                         border.width: 2
-                        border.color: tile.active ? "#D97757" : "#6B6963"
+                        border.color: tile.active ? "#E4845E" : "#75655B"
                         Rectangle {
                             anchors.centerIn: parent
                             width: 8
                             height: 8
                             radius: 4
-                            color: "#D97757"
+                            color: "#E4845E"
                             visible: tile.active
                         }
                     }
                     Label {
                         text: tile.title
-                        color: "#FAF9F5"
+                        color: "#FBF4EC"
                         font.pixelSize: 20
                         font.weight: Font.DemiBold
                     }
@@ -418,7 +413,7 @@ Pane {
                     Layout.fillWidth: true
                     visible: tile.showSummary
                     text: tile.summary
-                    color: "#C2C0B6"
+                    color: "#CDBFB4"
                     font.pixelSize: 14
                     wrapMode: Text.Wrap
                     lineHeight: 1.15
@@ -429,13 +424,13 @@ Pane {
                 CadenceLane {
                     phase: tile.phase
                     fps: tile.laneFps
-                    tint: tile.active ? "#D97757" : "#8F8D85"
+                    tint: tile.active ? "#E4845E" : "#A08F84"
                 }
 
                 Label {
                     Layout.fillWidth: true
                     text: tile.result
-                    color: tile.active ? "#D97757" : "#8F8D85"
+                    color: tile.active ? "#E4845E" : "#A08F84"
                     font.pixelSize: 13
                     elide: Text.ElideRight
                 }
@@ -449,7 +444,7 @@ Pane {
         id: lane
         property real phase: 0
         property int fps: 30
-        property color tint: "#8F8D85"
+        property color tint: "#A08F84"
         readonly property real steps: Math.max(1, 1.8 * fps)
         readonly property real shown: Math.floor(phase * steps) / steps
         Layout.fillWidth: true
@@ -459,7 +454,7 @@ Pane {
             width: parent.width
             height: 2
             radius: 1
-            color: "#3A3936"
+            color: "#3B302B"
         }
         Rectangle {
             width: 16
@@ -501,7 +496,7 @@ Pane {
                     spacing: 12
 
                     Image {
-                        source: "qrc:/icons/robzplay.svg"
+                        source: "qrc:/icons/robzplay-kucuk.png"
                         sourceSize: Qt.size(46, 46)
                     }
 
@@ -509,7 +504,9 @@ Pane {
                         spacing: 0
                         Label {
                             text: "Robz Play"
-                            font.family: consolePane.serif
+                            font.family: consolePane.display
+                            font.weight: Font.Black
+                            font.italic: true
                             font.pixelSize: 27
                             color: consolePane.cText
                         }
@@ -751,14 +748,16 @@ Pane {
                             hoverEnabled: true
                             HoverHandler { cursorShape: Qt.PointingHandCursor }
                             onClicked: updatePopup.open()
-                            background: Rectangle {
+                            background: RobzButtonBg {
+                                id: updateBadgeBg
                                 radius: 12
-                                color: updateBadge.hovered ? consolePane.cAccentHover : consolePane.cAccent
+                                hovered: updateBadge.hovered
+                                pressed: updateBadge.pressed
                             }
                             contentItem: Label {
                                 id: updateBadgeLabel
                                 text: qsTr("Update available: %1").arg(Chiaki.updater.latestVersion)
-                                color: consolePane.cOnAccent
+                                color: updateBadgeBg.textColor
                                 font.pixelSize: 12
                                 font.weight: Font.DemiBold
                                 horizontalAlignment: Text.AlignHCenter
@@ -778,6 +777,22 @@ Pane {
         Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
+
+            // the floor of the icon's sunset along the bottom: a city on the horizon and a grid
+            // running towards it (decoration only; the cards stand in front of it)
+            Image {
+                anchors {
+                    left: parent.left
+                    right: parent.right
+                    bottom: parent.bottom
+                }
+                height: Math.min(parent.height * 0.34, 260)
+                source: "qrc:/icons/robz-zemin.png"
+                fillMode: Image.PreserveAspectCrop
+                verticalAlignment: Image.AlignBottom
+                smooth: true
+                opacity: 0.5
+            }
 
             ColumnLayout {
                 id: contentRow
@@ -801,7 +816,9 @@ Pane {
                         spacing: 4
                         Label {
                             text: qsTr("Consoles")
-                            font.family: consolePane.serif
+                            font.family: consolePane.display
+                            font.weight: Font.Black
+                            font.italic: true
                             font.pixelSize: 36
                             color: consolePane.cText
                         }
@@ -1048,16 +1065,20 @@ Pane {
                                             focusPolicy: Qt.NoFocus
                                             hoverEnabled: true
                                             onClicked: delegate.connectToHost()
-                                            background: Rectangle {
+                                            background: RobzButtonBg {
+                                                id: playBg
                                                 radius: 12
-                                                color: playButton.hovered ? consolePane.cAccentHover : consolePane.cAccent
+                                                hovered: playButton.hovered
+                                                pressed: playButton.pressed
                                             }
                                             contentItem: Label {
                                                 id: playLabel
                                                 text: delegate.usable ? qsTr("Play") : qsTr("Set up")
-                                                color: consolePane.cOnAccent
-                                                font.pixelSize: 17
-                                                font.weight: Font.DemiBold
+                                                color: playBg.textColor
+                                                font.pixelSize: 18
+                                                font.family: consolePane.display
+                                                font.weight: Font.Black
+                                                font.italic: true
                                                 horizontalAlignment: Text.AlignHCenter
                                                 verticalAlignment: Text.AlignVCenter
                                             }
@@ -1099,14 +1120,19 @@ Pane {
                                     Label {
                                         Layout.fillWidth: true
                                         text: qsTr("Connect your PlayStation")
-                                        font.family: consolePane.serif
+                                        font.family: consolePane.display
+                                        font.weight: Font.Black
+                                        font.italic: true
                                         font.pixelSize: 25
                                         color: consolePane.cText
                                     }
 
                                     Repeater {
                                         model: [
-                                            qsTr("On the PS5, open Settings › System › Remote Play and switch on Enable Remote Play."),
+                                            // first the users (a single one can send Remote Play back to
+                                            // the console's home screen), then Remote Play on each of them
+                                            qsTr("On the PS5, add a second, empty user (profile icon › Switch User › Add User) and remove your profile's login passcode if it has one. With a single user the console can send Remote Play back to its home screen. When it asks who plays, choose the second profile (or the main one if a controller is connected to this PC)."),
+                                            qsTr("Then switch on Remote Play on every profile: Settings › System › Remote Play › Enable Remote Play."),
                                             qsTr("Keep the PS5 and this PC on the same network. A cable gives the steadiest picture."),
                                             qsTr("The console then shows up here by itself. Choose Set up and type the code the PS5 shows under Link Device.")
                                         ]
@@ -1118,19 +1144,21 @@ Pane {
                                             Layout.fillWidth: true
                                             spacing: 14
 
-                                            Rectangle {
+                                            // a little tile filled like the letters of the icon
+                                            RobzButtonBg {
+                                                id: stepTile
                                                 Layout.alignment: Qt.AlignTop
-                                                implicitWidth: 30
-                                                implicitHeight: 30
-                                                radius: 15
-                                                color: consolePane.cInset
-                                                border.color: consolePane.cBorder
+                                                implicitWidth: 32
+                                                implicitHeight: 32
+                                                radius: 9
                                                 Label {
                                                     anchors.centerIn: parent
                                                     text: stepRow.index + 1
-                                                    color: consolePane.cAccent
-                                                    font.pixelSize: 15
-                                                    font.weight: Font.DemiBold
+                                                    color: stepTile.textColor
+                                                    font.pixelSize: 16
+                                                    font.family: consolePane.display
+                                                    font.weight: Font.Black
+                                                    font.italic: true
                                                 }
                                             }
 
@@ -1167,7 +1195,10 @@ Pane {
                     id: modePanel
                     Layout.fillWidth: true
                     implicitHeight: modeColumn.implicitHeight + (consolePane.tall ? 44 : 30)
-                    visible: consolePane.visibleHosts > 0 || consolePane.tall
+                    // with no console yet, the steps that get one come first: the panel shows
+                    // only where the window has room for both (the title above takes ~130 px)
+                    visible: consolePane.visibleHosts > 0
+                             || (consolePane.tall && contentRow.height >= connectSteps.implicitHeight + implicitHeight + 130)
                     radius: 16
                     color: consolePane.cSurface
                     border.color: consolePane.cBorder
@@ -1192,7 +1223,9 @@ Pane {
                                 spacing: 2
                                 Label {
                                     text: qsTr("Picture mode")
-                                    font.family: consolePane.serif
+                                    font.family: consolePane.display
+                                    font.weight: Font.Black
+                                    font.italic: true
                                     font.pixelSize: 24
                                     color: consolePane.cText
                                 }
@@ -1238,7 +1271,7 @@ Pane {
                             ModeTile {
                                 title: qsTr("60 FPS")
                                 badge: qsTr("For GTA VI")
-                                badgeTint: "#D97757"
+                                badgeTint: "#E4845E"
                                 summary: qsTr("This PC's graphics card draws the frames in between, so a 30 FPS game looks like 60.")
                                 result: qsTr("A 30 FPS game is shown at 60 FPS")
                                 laneFps: 60
@@ -1439,8 +1472,8 @@ Pane {
         Overlay.modal: Rectangle { color: "#A6000000" }
         background: Rectangle {
             radius: 18
-            color: "#262624"
-            border.color: "#3A3936"
+            color: "#1D1816"
+            border.color: "#3B302B"
         }
 
         contentItem: ColumnLayout {
@@ -1458,7 +1491,7 @@ Pane {
                 Layout.fillWidth: true
                 spacing: 16
                 Image {
-                    source: "qrc:/icons/robzplay.svg"
+                    source: "qrc:/icons/robzplay-kucuk.png"
                     sourceSize: Qt.size(52, 52)
                 }
                 ColumnLayout {
@@ -1467,7 +1500,9 @@ Pane {
                     Label {
                         Layout.fillWidth: true
                         text: qsTr("New version: %1").arg(Chiaki.updater.latestVersion)
-                        font.family: consolePane.serif
+                        font.family: consolePane.display
+                        font.weight: Font.Black
+                        font.italic: true
                         font.pixelSize: 28
                         color: consolePane.cText
                         elide: Text.ElideRight
@@ -1607,16 +1642,20 @@ Pane {
                     hoverEnabled: true
                     HoverHandler { cursorShape: Qt.PointingHandCursor }
                     onClicked: Chiaki.updater.install()
-                    background: Rectangle {
+                    background: RobzButtonBg {
+                        id: updateNowBg
                         radius: 10
-                        color: updateNowButton.hovered ? consolePane.cAccentHover : consolePane.cAccent
+                        hovered: updateNowButton.hovered
+                        pressed: updateNowButton.pressed
                     }
                     contentItem: Label {
                         id: updateNowLabel
                         text: qsTr("Update now")
-                        color: consolePane.cOnAccent
-                        font.pixelSize: 16
-                        font.weight: Font.DemiBold
+                        color: updateNowBg.textColor
+                        font.pixelSize: 17
+                        font.family: consolePane.display
+                        font.weight: Font.Black
+                        font.italic: true
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }

@@ -36,7 +36,7 @@ Item {
     }
 
     Material.theme: Material.Dark
-    Material.accent: "#D97757"
+    Material.accent: "#E4845E"
 
     function controllerButton(name) {
         let type = "deck";
@@ -277,6 +277,19 @@ Item {
             stack.replace(stack.get(0), autoConnectViewComponent, {}, StackView.Immediate);
         else if (Chiaki.uiPreview === "stream-loading" || Chiaki.uiPreview === "stream-menu")
             stack.replace(stack.get(0), streamViewComponent, {}, StackView.Immediate);
+        else if (Chiaki.uiPreview.startsWith("settings-"))
+            showSettingsDialog(parseInt(Chiaki.uiPreview.split("-")[1]));
+        else if (Chiaki.uiPreview === "psn-token")
+            showPSNTokenDialog("", false);
+        else if (Chiaki.uiPreview.startsWith("regist")) {
+            // regist-1 ... regist-4: the steps of registering a console; 5: done, 6: failed;
+            // regist-7: the account step on its second way (finding by online ID)
+            const n = parseInt(Chiaki.uiPreview.split("-")[1] || "1");
+            stack.push(registDialogComponent, {host: "192.168.1.32", ps5: true, startStep: n === 7 ? 1 : Math.min(n, 4) - 1,
+                                               accountWay: n === 7 ? 1 : 0,
+                                               previewMode: true, previewState: n === 5 ? "done" : (n === 6 ? "failed" : "")},
+                       StackView.Immediate);
+        }
     }
 
     Pane {

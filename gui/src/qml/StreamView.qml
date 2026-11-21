@@ -119,16 +119,16 @@ Item {
         font.pixelSize: 15
         background: Rectangle {
             radius: 10
-            color: menuButton.checked ? "#D97757" : (menuButton.hovered ? "#45433F" : "#2E2D2B")
+            color: menuButton.checked ? "#E4845E" : (menuButton.hovered ? "#4A3C36" : "#271F1C")
             border.width: menuButton.activeFocus ? 2 : 0
-            border.color: "#FAF9F5"
+            border.color: "#FBF4EC"
             opacity: menuButton.enabled ? 1.0 : 0.5
         }
         contentItem: Label {
             id: menuButtonLabel
             text: menuButton.text
             font: menuButton.font
-            color: menuButton.checked ? "#1F1E1D" : "#FAF9F5"
+            color: menuButton.checked ? "#141110" : "#FBF4EC"
             opacity: menuButton.enabled ? 1.0 : 0.55
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
@@ -199,7 +199,7 @@ Item {
                 bottom: parent.verticalCenter
                 bottomMargin: 44
             }
-            source: "qrc:/icons/robzplay.svg"
+            source: "qrc:/icons/robzplay.png"
             sourceSize: Qt.size(132, 132)
             visible: sessionLoading || sessionError
         }
@@ -210,8 +210,26 @@ Item {
                 top: loadingLogo.bottom
                 topMargin: 26
             }
+            id: connectingLabel
             text: qsTr("Connecting to your PlayStation...")
             font.pixelSize: 24
+            visible: sessionLoading
+        }
+
+        // Robz Play: this is when the PS5 asks which profile plays
+        Label {
+            anchors {
+                horizontalCenter: parent.horizontalCenter
+                top: connectingLabel.bottom
+                topMargin: 14
+            }
+            width: Math.min(parent.width - 80, 760)
+            horizontalAlignment: Text.AlignHCenter
+            wrapMode: Text.Wrap
+            text: qsTr("If the PS5 asks who plays, choose the <b>second profile</b>, not your main one. With a controller connected to this PC, the main profile works too.")
+            textFormat: Text.StyledText
+            color: "#CDBFB4"
+            font.pixelSize: 16
             visible: sessionLoading
         }
 
@@ -390,7 +408,7 @@ Item {
 
             Label {
                 text: qsTr("%1 FPS").arg(Math.round(Chiaki.window.displayFps))
-                color: "#D97757"
+                color: "#E4845E"
                 font.bold: true
                 font.pixelSize: 26
             }
@@ -398,7 +416,7 @@ Item {
             Label {
                 visible: fpsCounter.generating
                 text: qsTr("source %1").arg(Math.round(Chiaki.frameGen.sourceFps))
-                color: "#FAF9F5"
+                color: "#FBF4EC"
                 font.pixelSize: 13
             }
         }
@@ -580,8 +598,8 @@ Item {
                 }
                 height: 142
                 radius: 18
-                color: "#F21C1B1A"
-                border.color: "#3A3936"
+                color: "#F2171312"
+                border.color: "#3B302B"
 
                 RowLayout {
                     anchors {
@@ -616,7 +634,7 @@ Item {
                         Layout.alignment: Qt.AlignVCenter
                         implicitWidth: 1
                         implicitHeight: 84
-                        color: "#3A3936"
+                        color: "#3B302B"
                     }
 
                     ColumnLayout {
@@ -629,7 +647,7 @@ Item {
 
                             Label {
                                 text: qsTr("Volume")
-                                color: "#C2C0B6"
+                                color: "#CDBFB4"
                                 font.pixelSize: 14
                             }
 
@@ -652,7 +670,7 @@ Item {
                                 Layout.preferredWidth: 46
                                 Layout.rightMargin: 6
                                 text: ((volumeSlider.value / 128.0) * 100).toFixed(0) + "%"
-                                color: "#FAF9F5"
+                                color: "#FBF4EC"
                                 font.pixelSize: 14
                             }
 
@@ -708,7 +726,7 @@ Item {
                             Label {
                                 Layout.rightMargin: 6
                                 visible: zoomFactor.visible
-                                color: "#FAF9F5"
+                                color: "#FBF4EC"
                                 font.pixelSize: 14
                                 text: {
                                     if(zoomFactor.value === -1)
@@ -745,6 +763,19 @@ Item {
                                 checked: Chiaki.settings.showFpsCounter
                                 onToggled: Chiaki.settings.showFpsCounter = !Chiaki.settings.showFpsCounter
                                 KeyNavigation.left: stretchButton
+                                KeyNavigation.right: compareButton
+                                KeyNavigation.down: defaultButton
+                                Keys.onReturnPressed: toggled()
+                                Keys.onEscapePressed: menuController.close()
+                            }
+
+                            MenuButton {
+                                id: compareButton
+                                text: qsTr("30 / 60 comparison")
+                                checkable: true
+                                checked: Chiaki.settings.frameGenCompare
+                                onToggled: Chiaki.settings.frameGenCompare = !Chiaki.settings.frameGenCompare
+                                KeyNavigation.left: fpsCounterButton
                                 KeyNavigation.right: sharpenButton
                                 KeyNavigation.down: defaultButton
                                 Keys.onReturnPressed: toggled()
@@ -756,7 +787,7 @@ Item {
                                 readonly property int level: Math.max(0, Math.min(3, Chiaki.settings.sharpening))
                                 text: qsTr("Sharpening: %1").arg([qsTr("Off"), qsTr("Low"), qsTr("Medium"), qsTr("High")][level])
                                 onClicked: Chiaki.settings.sharpening = (level + 1) % 4
-                                KeyNavigation.left: fpsCounterButton
+                                KeyNavigation.left: compareButton
                                 KeyNavigation.right: defaultButton
                                 KeyNavigation.down: defaultButton
                                 Keys.onReturnPressed: clicked()
@@ -771,7 +802,7 @@ Item {
                             Label {
                                 Layout.rightMargin: 4
                                 text: qsTr("Renderer")
-                                color: "#C2C0B6"
+                                color: "#CDBFB4"
                                 font.pixelSize: 14
                             }
 
@@ -903,7 +934,7 @@ Item {
                         Label {
                             id: consoleNameLabel
                             Layout.alignment: Qt.AlignRight
-                            color: "#C2C0B6"
+                            color: "#CDBFB4"
                             font.pixelSize: 14
                             text: {
                                 if (!Chiaki.session)
@@ -929,7 +960,7 @@ Item {
                             Label {
                                 Layout.alignment: Qt.AlignBaseline
                                 text: "Mbps"
-                                color: "#C2C0B6"
+                                color: "#CDBFB4"
                                 font.pixelSize: 16
                             }
                         }
@@ -938,7 +969,7 @@ Item {
                             Layout.alignment: Qt.AlignRight
                             visible: Chiaki.session && Chiaki.frameGen.enabled && Chiaki.frameGen.sourceFps > 1.0 ? true : false
                             text: visible ? qsTr("Frame generation %1 → %2 FPS").arg(Math.round(Chiaki.frameGen.sourceFps)).arg(Math.round(Chiaki.frameGen.outputFps)) : ""
-                            color: "#FAF9F5"
+                            color: "#FBF4EC"
                             font.pixelSize: 14
                         }
 
@@ -956,7 +987,7 @@ Item {
 
                             Label {
                                 text: qsTr("packet loss")
-                                color: "#C2C0B6"
+                                color: "#CDBFB4"
                                 font.pixelSize: 13
                             }
 
@@ -973,7 +1004,7 @@ Item {
                             Label {
                                 visible: droppedFramesLabel.visible
                                 text: qsTr("dropped frames")
-                                color: "#C2C0B6"
+                                color: "#CDBFB4"
                                 font.pixelSize: 13
                             }
                         }

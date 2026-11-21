@@ -17,11 +17,15 @@
     <file>PlaceboColorMappingDialog.qml</file>
     <file>ProfileDialog.qml</file>
     <file>ConsolePinDialog.qml</file>
-    <file>PSNLoginDialog.qml</file>
     <file>PSNTokenDialog.qml</file>
     <file>ControllerMappingDialog.qml</file>
     <file>AutoConnectView.qml</file>
     <file>RobzBackdrop.qml</file>
+    <file>RobzButtonBg.qml</file>
+    <file>RobzPrimaryButton.qml</file>
+    <file>RobzGuideStep.qml</file>
+    <file>RobzStatusLine.qml</file>
+    <file>PsnSignInGuide.qml</file>
     <file>PsnView.qml</file>
     <file>controls/Button.qml</file>
     <file>controls/CheckBox.qml</file>

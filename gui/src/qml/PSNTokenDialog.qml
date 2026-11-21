@@ -18,20 +18,31 @@ DialogView {
         else
             qsTr("Setup Automatic PSN Remote Connection")
     }
-    buttonText: qsTr("Setup")
-    buttonEnabled: url.text.trim()
     buttonVisible: false
-    onAccepted: {
-        logDialog.open()
-        Chiaki.initPsnAuth(url.text.trim(), function(msg, ok, done) {
-            if(ok)
-                Chiaki.settings.remotePlayAsk = false;
+
+    // Robz Play: without a browser inside the app (the usual case on Windows) the sign-in goes
+    // through the web browser, step by step (PsnSignInGuide.qml), and the PSN connection is set up
+    // here on the page: "" (not yet), "working", "error" or "done"
+    property string tokenState: ""
+    property string tokenError: ""
+    property string tokenLog: ""
+    property bool showLog: false
+
+    function startToken(address) {
+        tokenState = "working";
+        tokenError = "";
+        tokenLog = "";
+        Chiaki.initPsnAuth(address, function(msg, ok, done) {
+            tokenLog += msg + "\n";
             if (!done)
-                logArea.text += msg + "\n";
-            else
-            {
-                logArea.text += msg + "\n";
-                logDialog.standardButtons = Dialog.Close;
+                return;
+            if (ok) {
+                Chiaki.settings.remotePlayAsk = false;
+                tokenState = "done";
+            } else {
+                tokenState = "error";
+                tokenError = qsTr("Sony did not accept it: %1. The code is valid for a few minutes only: open the sign-in page again and bring the new address.")
+                    .arg(String(msg).replace(/^\[[A-Z]\]\s*/, ""));
             }
         });
     }
@@ -116,7 +127,7 @@ DialogView {
                         Layout.preferredWidth: 300
                         from: 0
                         to: 100
-                        value: webView.web.loadProgress
+                        value: webView.web ? webView.web.loadProgress : 0
                         Material.roundedScale: Material.SmallScale
                         focusPolicy: Qt.NoFocus
                     }
@@ -143,15 +154,7 @@ DialogView {
                             psnTokenToolbar.visible = false;
                             nativeErrorGrid.visible = false;
                             webView.visible = false;
-                            linkgrid.visible = true;
-                            dialog.buttonVisible = true;
-                            psnurl = Chiaki.openPsnLink();
-                            if(psnurl)
-                            {
-                                openurl.selectAll();
-                                openurl.copy();
-                            }
-                            pasteUrl.forceActiveFocus(Qt.TabFocusReason);
+                            guideView.visible = true;
                         }
                     }
                 }
@@ -284,90 +287,104 @@ DialogView {
                         web.url = Chiaki.psnLoginUrl();
                         web.anchors.fill = webView;
                     } catch (error) {
-                        console.error('Create webengine view failed with error:' + error);
+                        // Robz Play: no browser inside the app (the Windows build has none) is the
+                        // usual case, not an error: the sign-in goes through the web browser
+                        console.info('No browser inside the app; signing in through the web browser (' + error + ')');
                         extBrowserButton.clicked();
                     }
                 }
             }
         }
-        GridLayout {
-            id: linkgrid
+        // the browser and the address, A to Z
+        Item {
+            id: guideView
             visible: false
-            anchors {
-                top: parent.top
-                horizontalCenter: parent.horizontalCenter
-                topMargin: 50
-            }
-            columns: 2
-            rowSpacing: 10
-            columnSpacing: 20
+            anchors.fill: parent
 
-            Label {
-                text: qsTr("Open Web Browser with copied URL")
-                visible: psnurl
-            }
+            Flickable {
+                id: guideFlick
+                anchors.fill: parent
+                contentHeight: guideColumn.implicitHeight + 72
+                clip: true
+                boundsBehavior: Flickable.StopAtBounds
+                ScrollBar.vertical: ScrollBar { policy: guideFlick.contentHeight > guideFlick.height ? ScrollBar.AlwaysOn : ScrollBar.AlwaysOff }
 
-            TextField {
-                id: openurl
-                text: psnurl
-                echoMode: Chiaki.settings.streamerMode ? TextInput.Password : TextInput.Normal
-                visible: false
-                Layout.preferredWidth: 400
-            }
+                ColumnLayout {
+                    id: guideColumn
+                    x: Math.max(32, (guideFlick.width - width) / 2)
+                    y: 36
+                    width: Math.min(820, guideFlick.width - 64)
+                    spacing: 16
 
-            C.Button {
-                id: copyUrl
-                text: qsTr("Click to Re-Copy URL")
-                onClicked: {
-                    openurl.selectAll()
-                    openurl.copy()
-                }
-                KeyNavigation.priority: KeyNavigation.BeforeItem
-                KeyNavigation.up: copyUrl
-                KeyNavigation.down: url
-                visible: psnurl
-            }
-
-            Label {
-                text: qsTr("Redirect URL from Web Browser")
-            }
-
-            TextField {
-                id: url
-                echoMode: Chiaki.settings.streamerMode ? TextInput.Password : TextInput.Normal
-                Layout.preferredWidth: 400
-                KeyNavigation.priority: {
-                    if(readOnly)
-                        KeyNavigation.BeforeItem
-                    else
-                        KeyNavigation.AfterItem
-                }
-                KeyNavigation.up: {
-                    if(psnurl)
-                        copyUrl
-                    else
-                        url
-                }
-                KeyNavigation.down: url
-                KeyNavigation.right: pasteUrl
-                C.Button {
-                    id: pasteUrl
-                    text: qsTr("Click to Paste URL")
-                    anchors {
-                        left: parent.right
-                        verticalCenter: parent.verticalCenter
-                        leftMargin: 10
+                    Label {
+                        Layout.fillWidth: true
+                        text: dialog.expired ? qsTr("Your PSN sign-in has run out") : qsTr("Sign in to PSN once")
+                        color: "#FBF4EC"
+                        font.family: "Segoe UI"
+                        font.weight: Font.Black
+                        font.italic: true
+                        font.pixelSize: 30
+                        wrapMode: Text.Wrap
                     }
-                    onClicked: url.paste()
-                    KeyNavigation.priority: KeyNavigation.BeforeItem
-                    KeyNavigation.left: url
-                    KeyNavigation.up: {
-                        if(psnurl)
-                            copyUrl
-                        else
-                            pasteUrl
+                    Label {
+                        Layout.fillWidth: true
+                        text: dialog.expired
+                              ? qsTr("Sign in again to keep playing away from home. It goes the same way as the first time.")
+                              : qsTr("This lets you play away from home and finds your consoles by itself. You sign in on Sony's own page; Robz Play never sees your password.")
+                        color: "#CDBFB4"
+                        font.pixelSize: 15
+                        wrapMode: Text.Wrap
                     }
-                    KeyNavigation.down: pasteUrl
+
+                    PsnSignInGuide {
+                        id: tokenGuide
+                        Layout.fillWidth: true
+                        Layout.topMargin: 10
+                        firstInFocusChain: true
+                        listening: guideView.visible
+                        statusKind: dialog.tokenState
+                        statusText: dialog.tokenState === "working" ? qsTr("Setting up the PSN connection…")
+                                  : dialog.tokenState === "done" ? qsTr("The PSN connection is ready.")
+                                  : dialog.tokenError
+                        onAddressReady: (address) => dialog.startToken(address)
+                        onProblem: (message) => {
+                            dialog.tokenState = "error";
+                            dialog.tokenError = message;
+                        }
+                    }
+
+                    RobzPrimaryButton {
+                        visible: dialog.tokenState === "done"
+                        Layout.leftMargin: 40
+                        text: qsTr("Done")
+                        onClicked: dialog.close()
+                    }
+
+                    // what happened, for support
+                    C.Button {
+                        visible: dialog.tokenLog.length > 0
+                        Layout.leftMargin: 32
+                        flat: true
+                        font.pixelSize: 14
+                        text: dialog.showLog ? qsTr("Hide the details") : qsTr("Show the details")
+                        onClicked: dialog.showLog = !dialog.showLog
+                    }
+                    ScrollView {
+                        visible: dialog.showLog && dialog.tokenLog.length > 0
+                        Layout.fillWidth: true
+                        Layout.leftMargin: 40
+                        Layout.preferredHeight: 130
+                        clip: true
+                        TextArea {
+                            readOnly: true
+                            text: dialog.tokenLog
+                            color: "#A08F84"
+                            font.pixelSize: 12
+                            font.family: "Consolas"
+                            wrapMode: TextEdit.Wrap
+                            background: Rectangle { color: "#171312"; radius: 8 }
+                        }
+                    }
                 }
             }
         }
