@@ -1307,12 +1307,35 @@ Pane {
                             columnSpacing: 26
                             rowSpacing: 12
 
+                            // macOS: Apple's own frame interpolation or RIFE
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: 6
+                                visible: Qt.platform.os === "osx"
+                                opacity: Chiaki.settings.frameGenEnabled ? 1.0 : 0.4
+                                enabled: Chiaki.settings.frameGenEnabled
+                                Label { text: qsTr("Frame generation engine"); color: consolePane.cMuted; font.pixelSize: 14 }
+                                SegmentGroup {
+                                    Segment {
+                                        text: "Apple"
+                                        active: Chiaki.settings.frameGenEngine === "apple"
+                                        onClicked: Chiaki.settings.frameGenEngine = "apple"
+                                    }
+                                    Segment {
+                                        text: "RIFE"
+                                        active: Chiaki.settings.frameGenEngine === "rife"
+                                        onClicked: Chiaki.settings.frameGenEngine = "rife"
+                                    }
+                                }
+                            }
+
                             // the two that only matter while frames are generated
                             ColumnLayout {
                                 Layout.fillWidth: true
                                 spacing: 6
-                                opacity: Chiaki.settings.frameGenEnabled ? 1.0 : 0.4
-                                enabled: Chiaki.settings.frameGenEnabled
+                                // motion detail is a RIFE setting; Apple's engine has none
+                                opacity: Chiaki.settings.frameGenEnabled && Chiaki.settings.frameGenEngine === "rife" ? 1.0 : 0.4
+                                enabled: Chiaki.settings.frameGenEnabled && Chiaki.settings.frameGenEngine === "rife"
                                 Label { text: qsTr("Motion detail"); color: consolePane.cMuted; font.pixelSize: 14 }
                                 SegmentGroup {
                                     Segment {

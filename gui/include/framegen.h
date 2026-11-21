@@ -52,6 +52,8 @@ public:
 		bool enabled = false;
 		QString model_dir;
 		int flow_divisor = 2;
+		// "apple" (VideoToolbox, macOS 26+) or "rife"
+		QString engine = QStringLiteral("rife");
 		// Output rate to aim for: 60 or 120 frames per second.
 		unsigned int target_fps = 60;
 		// Keep static picture elements (HUD text, map frame) from being dragged by scene motion.

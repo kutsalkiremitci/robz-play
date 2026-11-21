@@ -280,6 +280,16 @@ class Settings : public QObject
 			return (divisor == 1 || divisor == 2 || divisor == 4) ? divisor : 1;
 		}
 		void SetFrameGenFlowDivisor(int divisor)   { settings.setValue("settings/framegen_flow_divisor", divisor); }
+		// Frame generation engine: "apple" (VideoToolbox, macOS 26+) or "rife"
+		QString GetFrameGenEngine() const
+		{
+#ifdef __APPLE__
+			return settings.value("settings/framegen_engine", "apple").toString() == "rife" ? QStringLiteral("rife") : QStringLiteral("apple");
+#else
+			return QStringLiteral("rife");
+#endif
+		}
+		void SetFrameGenEngine(const QString &engine) { settings.setValue("settings/framegen_engine", engine == "rife" ? QStringLiteral("rife") : QStringLiteral("apple")); }
 		int GetFrameGenTargetFps() const
 		{
 			return settings.value("settings/framegen_target_fps", 60).toInt() >= 100 ? 120 : 60;

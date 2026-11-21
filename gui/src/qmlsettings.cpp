@@ -207,6 +207,17 @@ void QmlSettings::setFrameGenFlowDivisor(int divisor)
     emit frameGenFlowDivisorChanged();
 }
 
+QString QmlSettings::frameGenEngine() const
+{
+    return settings->GetFrameGenEngine();
+}
+
+void QmlSettings::setFrameGenEngine(const QString &engine)
+{
+    settings->SetFrameGenEngine(engine);
+    emit frameGenEngineChanged();
+}
+
 bool QmlSettings::streamerMode() const
 {
     return settings->GetStreamerMode();
@@ -2118,6 +2129,7 @@ void QmlSettings::refreshAllKeys()
     emit showStreamStatsChanged();
     emit frameGenEnabledChanged();
     emit frameGenFlowDivisorChanged();
+    emit frameGenEngineChanged();
     emit showFpsCounterChanged();
     emit sharpeningChanged();
     emit languageChanged();
