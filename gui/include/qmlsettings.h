@@ -37,6 +37,7 @@ class QmlSettings : public QObject
     Q_PROPERTY(QString language READ language WRITE setLanguage NOTIFY languageChanged)
     Q_PROPERTY(int frameGenTargetFps READ frameGenTargetFps WRITE setFrameGenTargetFps NOTIFY frameGenTargetFpsChanged)
     Q_PROPERTY(bool frameGenProtectStatic READ frameGenProtectStatic WRITE setFrameGenProtectStatic NOTIFY frameGenProtectStaticChanged)
+    Q_PROPERTY(bool frameGenCompare READ frameGenCompare WRITE setFrameGenCompare NOTIFY frameGenCompareChanged)
     Q_PROPERTY(int frameGenFlowDivisor READ frameGenFlowDivisor WRITE setFrameGenFlowDivisor NOTIFY frameGenFlowDivisorChanged)
     Q_PROPERTY(bool streamerMode READ streamerMode WRITE setStreamerMode NOTIFY streamerModeChanged)
     Q_PROPERTY(float hapticOverride READ hapticOverride WRITE setHapticOverride NOTIFY hapticOverrideChanged)
@@ -199,6 +200,8 @@ public:
     int frameGenTargetFps() const;
     void setFrameGenTargetFps(int fps);
     bool frameGenProtectStatic() const;
+    bool frameGenCompare() const;
+    void setFrameGenCompare(bool enabled);
     void setFrameGenProtectStatic(bool enabled);
     int frameGenFlowDivisor() const;
     void setFrameGenFlowDivisor(int divisor);
@@ -670,6 +673,7 @@ signals:
     void languageChanged();
     void frameGenTargetFpsChanged();
     void frameGenProtectStaticChanged();
+    void frameGenCompareChanged();
     void frameGenFlowDivisorChanged();
     void streamerModeChanged();
     void fpsLocalPS4Changed();

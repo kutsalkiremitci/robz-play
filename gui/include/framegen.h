@@ -79,6 +79,13 @@ public:
 	// Hands a decoded frame to the stage (takes ownership). Safe to call from any one thread.
 	void submit(ChiakiFfmpegFrame frame, int32_t frames_lost, qint64 delivery_us);
 
+	// Comparison view, switched on and off while a stream runs: the left half of every picture
+	// shows only the real frames (as the stream looks without frame generation), the right
+	// half the generated output, with a line between them and a label on each side.
+	// `left_label` and `right_label` take the frame rate as %1.
+	void setCompareSplit(bool on) { compare_split.store(on); }
+	void setCompareLabels(const QString &left_label, const QString &right_label);
+
 	bool enabled() const { return running.load() && config.enabled; }
 	QString status() const;
 	double sourceFps() const { return stat_source_fps.load(); }
@@ -148,6 +155,26 @@ private:
 	std::deque<Scheduled> scheduled;
 	Waiter present_waiter;
 	bool presenter_stop = false;
+
+	// comparison view (see setCompareSplit)
+	std::atomic<bool> compare_split{false};
+	std::mutex compare_label_mutex;
+	QString compare_left_label = QStringLiteral("%1 FPS");
+	QString compare_right_label = QStringLiteral("%1 FPS");
+	// worker thread: the latest real frame, untouched, for the left half
+	AVFrame *compare_prev = nullptr;
+	struct LabelBitmap
+	{
+		QString text;
+		int frame_height = 0;
+		int width = 0;
+		int height = 0;
+		std::vector<uint8_t> coverage;
+	};
+	LabelBitmap compare_left_bitmap;
+	LabelBitmap compare_right_bitmap;
+	void drawCompare(AVFrame *frame, int left_fps, int right_fps);
+	static void copyLeftHalf(AVFrame *dst, const AVFrame *src);
 
 	// worker-thread state
 	std::unique_ptr<Engine> engine;

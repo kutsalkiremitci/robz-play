@@ -13,7 +13,11 @@ extern "C" {
 #include <libavutil/pixfmt.h>
 }
 
+#include <QFont>
+#include <QFontMetrics>
+#include <QImage>
 #include <QLoggingCategory>
+#include <QPainter>
 
 #include <algorithm>
 #include <chrono>
@@ -526,6 +530,7 @@ void FrameGenStage::workerMain()
 	lock.unlock();
 	for(Item &item : leftover)
 		av_frame_free(&item.frame.frame);
+	av_frame_free(&compare_prev);
 	engine.reset();
 }
 
@@ -654,9 +659,19 @@ void FrameGenStage::process(Item &item)
 		if(cadence_samples >= CADENCE_MIN_SAMPLES && intermediates == 0)
 			setStatus(config.target_fps >= 100 ? "passing through (source already near 120 fps)" : "passing through (source already near 60 fps)");
 		flushSchedule();
+		av_frame_free(&compare_prev);
 		scheduleNow(item);
 		return;
 	}
+
+	// Comparison view: the left half keeps the previous real frame until this one is due,
+	// as the stream would show it without frame generation.
+	const bool compare = compare_split.load();
+	AVFrame *compare_cur = compare ? av_frame_clone(frame) : nullptr;
+	if(!compare)
+		av_frame_free(&compare_prev);
+	const int compare_left_fps = cadence_us > 0.0 ? (int)std::lround(1000000.0 / cadence_us) : 0;
+	const int compare_right_fps = cadence_us > 0.0 ? (int)std::lround(1000000.0 * (count + 1) / cadence_us) : 0;
 
 	// Output timeline. With n generated frames the interval is cut into n + 1 steps. The
 	// first generated frame is due one budget after the real frame arrived - the time it
@@ -742,6 +757,13 @@ void FrameGenStage::process(Item &item)
 			}
 		}
 
+		if(compare)
+		{
+			if(compare_prev)
+				copyLeftHalf(mid, compare_prev);
+			drawCompare(mid, compare_left_fps, compare_right_fps);
+		}
+
 		Item generated;
 		generated.frame.frame = mid;
 		generated.frame.duration = real_duration / (count + 1);
@@ -755,6 +777,136 @@ void FrameGenStage::process(Item &item)
 
 	item.frames_lost = lost_for_first;
 	item.frame.duration = real_duration / (count + 1);
+	if(compare && av_frame_make_writable(item.frame.frame) >= 0)
+		drawCompare(item.frame.frame, compare_left_fps, compare_right_fps);
+	av_frame_free(&compare_prev);
+	compare_prev = compare_cur;
 	schedule(item, (uint64_t)timeline_real_due_us);
 	setStatus(reduced ? "generating (GPU too slow for the full target, generating fewer frames)" : "generating");
+}
+
+// ---------------------------------------------------------------------------- comparison view
+
+void FrameGenStage::setCompareLabels(const QString &left_label, const QString &right_label)
+{
+	std::lock_guard<std::mutex> lock(compare_label_mutex);
+	compare_left_label = left_label;
+	compare_right_label = right_label;
+}
+
+void FrameGenStage::copyLeftHalf(AVFrame *dst, const AVFrame *src)
+{
+	if(!dst || !src || dst->format != src->format || dst->width != src->width || dst->height != src->height)
+		return;
+	const int w = dst->width;
+	const int h = dst->height;
+	const int half = (w / 2) & ~3;
+	for(int y = 0; y < h; y++)
+		memcpy(dst->data[0] + (size_t)y * dst->linesize[0], src->data[0] + (size_t)y * src->linesize[0], (size_t)half);
+	if(dst->format == AV_PIX_FMT_NV12)
+	{
+		for(int y = 0; y < h / 2; y++)
+			memcpy(dst->data[1] + (size_t)y * dst->linesize[1], src->data[1] + (size_t)y * src->linesize[1], (size_t)half);
+	}
+	else
+	{
+		for(int plane = 1; plane <= 2; plane++)
+			for(int y = 0; y < h / 2; y++)
+				memcpy(dst->data[plane] + (size_t)y * dst->linesize[plane], src->data[plane] + (size_t)y * src->linesize[plane], (size_t)half / 2);
+	}
+}
+
+// Draws the dividing line and the two labels into the picture itself, so they also show in
+// a recording (OBS).
+void FrameGenStage::drawCompare(AVFrame *frame, int left_fps, int right_fps)
+{
+	const int w = frame->width;
+	const int h = frame->height;
+	const bool nv12 = frame->format == AV_PIX_FMT_NV12;
+	QString left_text;
+	QString right_text;
+	{
+		std::lock_guard<std::mutex> lock(compare_label_mutex);
+		left_text = compare_left_label.arg(left_fps);
+		right_text = compare_right_label.arg(right_fps);
+	}
+
+	// a label as a coverage bitmap, rendered once per text and picture size
+	auto render = [h](LabelBitmap &bitmap, const QString &text) {
+		if(bitmap.text == text && bitmap.frame_height == h)
+			return;
+		QFont font;
+		font.setBold(true);
+		font.setPixelSize(std::max(14, h / 30));
+		const QFontMetrics metrics(font);
+		const int pad = std::max(8, h / 90);
+		bitmap.width = (metrics.horizontalAdvance(text) + 2 * pad + 3) & ~3;
+		bitmap.height = ((metrics.height() + 2 * pad) + 1) & ~1;
+		QImage image(bitmap.width, bitmap.height, QImage::Format_Grayscale8);
+		image.fill(0);
+		QPainter painter(&image);
+		painter.setRenderHint(QPainter::TextAntialiasing);
+		painter.setFont(font);
+		painter.setPen(Qt::white);
+		painter.drawText(QRect(0, 0, bitmap.width, bitmap.height), Qt::AlignCenter, text);
+		painter.end();
+		bitmap.coverage.resize((size_t)bitmap.width * bitmap.height);
+		for(int y = 0; y < bitmap.height; y++)
+			memcpy(bitmap.coverage.data() + (size_t)y * bitmap.width, image.constScanLine(y), (size_t)bitmap.width);
+		bitmap.text = text;
+		bitmap.frame_height = h;
+	};
+	render(compare_left_bitmap, left_text);
+	render(compare_right_bitmap, right_text);
+
+	// white text on a dark, colourless box
+	auto blit = [&](const LabelBitmap &bitmap, int x0, int y0) {
+		x0 &= ~1;
+		y0 &= ~1;
+		for(int y = 0; y < bitmap.height && y0 + y < h; y++)
+		{
+			uint8_t *row = frame->data[0] + (size_t)(y0 + y) * frame->linesize[0];
+			const uint8_t *cov = bitmap.coverage.data() + (size_t)y * bitmap.width;
+			for(int x = 0; x < bitmap.width && x0 + x < w; x++)
+			{
+				const int dimmed = 16 + (row[x0 + x] - 16) * 30 / 100;
+				row[x0 + x] = (uint8_t)(dimmed + (235 - dimmed) * cov[x] / 255);
+			}
+		}
+		for(int y = 0; y < bitmap.height / 2 && y0 / 2 + y < h / 2; y++)
+		{
+			if(nv12)
+			{
+				uint8_t *uv = frame->data[1] + (size_t)(y0 / 2 + y) * frame->linesize[1];
+				for(int x = x0; x < std::min(w, x0 + bitmap.width); x++)
+					uv[x] = (uint8_t)(128 + (uv[x] - 128) * 30 / 100);
+			}
+			else
+			{
+				for(int plane = 1; plane <= 2; plane++)
+				{
+					uint8_t *c = frame->data[plane] + (size_t)(y0 / 2 + y) * frame->linesize[plane];
+					for(int x = x0 / 2; x < std::min(w / 2, (x0 + bitmap.width) / 2); x++)
+						c[x] = (uint8_t)(128 + (c[x] - 128) * 30 / 100);
+				}
+			}
+		}
+	};
+	const int margin = std::max(12, h / 40);
+	blit(compare_left_bitmap, margin, margin);
+	blit(compare_right_bitmap, w / 2 + margin, margin);
+
+	// the dividing line
+	const int line = std::max(2, (h / 360) & ~1);
+	const int x_start = (w / 2 - line / 2) & ~1;
+	for(int y = 0; y < h; y++)
+		memset(frame->data[0] + (size_t)y * frame->linesize[0] + x_start, 235, (size_t)line);
+	for(int y = 0; y < h / 2; y++)
+	{
+		if(nv12)
+			memset(frame->data[1] + (size_t)y * frame->linesize[1] + x_start, 128, (size_t)line);
+		else
+			for(int plane = 1; plane <= 2; plane++)
+				memset(frame->data[plane] + (size_t)y * frame->linesize[plane] + x_start / 2, 128, (size_t)std::max(1, line / 2));
+	}
 }

@@ -310,6 +310,15 @@ QmlBackend::QmlBackend(Settings *settings, QmlMainWindow *window)
     connect(settings_qml, &QmlSettings::sharpeningChanged, this, [this]() {
         this->window->setSharpening(this->settings->GetSharpening());
     });
+    // the comparison view follows its switch at once, also during a stream
+    framegen->setCompareSplit(settings->GetFrameGenCompare());
+    framegen->setCompareLabels(tr("%1 FPS · without frame generation"), tr("%1 FPS · Robz Play"));
+    connect(settings_qml, &QmlSettings::frameGenCompareChanged, this, [this]() {
+        framegen->setCompareSplit(this->settings->GetFrameGenCompare());
+    });
+    connect(settings_qml, &QmlSettings::languageChanged, this, [this]() {
+        framegen->setCompareLabels(tr("%1 FPS · without frame generation"), tr("%1 FPS · Robz Play"));
+    });
     if (qEnvironmentVariableIsSet("ROBZPLAY_FRAMEGEN_SELFTEST")) {
         FrameGenStage::Config selftest_config;
         selftest_config.enabled = true;
@@ -998,6 +1007,18 @@ void QmlBackend::startSession(bool emit_session_changed)
     sleep_inhibit->inhibit();
 }
 
+FrameGenStage::Config QmlBackend::frameGenConfig(unsigned int stream_fps) const
+{
+    FrameGenStage::Config framegen_config;
+    framegen_config.enabled = settings->GetFrameGenEnabled();
+    framegen_config.model_dir = QCoreApplication::applicationDirPath() + "/models/" + settings->GetFrameGenModel();
+    framegen_config.flow_divisor = settings->GetFrameGenFlowDivisor();
+    framegen_config.target_fps = static_cast<unsigned int>(settings->GetFrameGenTargetFps());
+    framegen_config.protect_static = settings->GetFrameGenProtectStatic();
+    framegen_config.stream_fps = stream_fps;
+    return framegen_config;
+}
+
 void QmlBackend::createSession(const StreamSessionConnectInfo &connect_info)
 {
     pending_recovered_frame.storeRelaxed(0);
@@ -1016,13 +1037,7 @@ void QmlBackend::createSession(const StreamSessionConnectInfo &connect_info)
     window->setStreamMaxFPS(connect_info.video_profile.max_fps);
     disable_zero_copy = !settings->GetUseZeroCopy();
     {
-        FrameGenStage::Config framegen_config;
-        framegen_config.enabled = settings->GetFrameGenEnabled();
-        framegen_config.model_dir = QCoreApplication::applicationDirPath() + "/models/" + settings->GetFrameGenModel();
-        framegen_config.flow_divisor = settings->GetFrameGenFlowDivisor();
-        framegen_config.target_fps = static_cast<unsigned int>(settings->GetFrameGenTargetFps());
-        framegen_config.protect_static = settings->GetFrameGenProtectStatic();
-        framegen_config.stream_fps = connect_info.video_profile.max_fps;
+        const FrameGenStage::Config framegen_config = frameGenConfig(connect_info.video_profile.max_fps);
         if (framegen_config.enabled) {
             // frame generation reads the decoded picture, so frames must come back from the GPU
             disable_zero_copy = true;

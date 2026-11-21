@@ -292,6 +292,8 @@ private:
     void updateStreamShortcut();
     QString getExecutable();
     void teardownSession();
+    // what frame generation is asked for in a stream of `stream_fps` frames per second
+    FrameGenStage::Config frameGenConfig(unsigned int stream_fps) const;
 
     Settings *settings = {};
     QmlSettings *settings_qml = {};

@@ -183,7 +183,7 @@ add_executable(robzplay-framegen-sim EXCLUDE_FROM_ALL
 	include/framegen.h
 	src/framegen.cpp)
 target_include_directories(robzplay-framegen-sim PRIVATE include)
-target_link_libraries(robzplay-framegen-sim chiaki-lib robzfg Qt::Core FFMPEG::avcodec FFMPEG::avutil FFMPEG::avformat)
+target_link_libraries(robzplay-framegen-sim chiaki-lib robzfg Qt::Core Qt::Gui FFMPEG::avcodec FFMPEG::avutil FFMPEG::avformat)
 if(WIN32)
 	target_link_libraries(robzplay-framegen-sim winmm)
 endif()

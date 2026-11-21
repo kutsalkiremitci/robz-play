@@ -168,6 +168,17 @@ void QmlSettings::setFrameGenTargetFps(int fps)
     emit frameGenTargetFpsChanged();
 }
 
+bool QmlSettings::frameGenCompare() const
+{
+    return settings->GetFrameGenCompare();
+}
+
+void QmlSettings::setFrameGenCompare(bool enabled)
+{
+    settings->SetFrameGenCompare(enabled);
+    emit frameGenCompareChanged();
+}
+
 bool QmlSettings::frameGenProtectStatic() const
 {
     return settings->GetFrameGenProtectStatic();
@@ -1987,6 +1998,7 @@ void QmlSettings::refreshAllKeys()
     emit languageChanged();
     emit frameGenTargetFpsChanged();
     emit frameGenProtectStaticChanged();
+    emit frameGenCompareChanged();
     emit streamerModeChanged();
 #ifdef CHIAKI_GUI_ENABLE_STEAMDECK_NATIVE
     emit verticalDeckChanged();

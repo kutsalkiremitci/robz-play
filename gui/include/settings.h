@@ -303,6 +303,10 @@ class Settings : public QObject
 		void SetFrameGenModel(const QString &name) { settings.setValue("settings/framegen_model", name); }
 
 		bool GetShowStreamStats() const            { return settings.value("settings/show_stream_stats", false).toBool(); }
+		// Comparison view: the left half of the picture shows the real frames only (what the
+		// console sends: 30 FPS for a 30 FPS game), the right half what frame generation makes
+		bool GetFrameGenCompare() const             { return settings.value("settings/framegen_compare", false).toBool(); }
+		void SetFrameGenCompare(bool enabled)       { settings.setValue("settings/framegen_compare", enabled); }
 		void SetShowStreamStats(bool enabled)      { settings.setValue("settings/show_stream_stats", enabled); }
 
 		bool GetStreamerMode() const		{ return settings.value("settings/streamer_mode", false).toBool(); }
