@@ -1,0 +1,733 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Robz Play · GTA VI'yı bilgisayarında 1080p, 60 FPS oyna</title>
+<meta name="description" content="Robz Play, PS5'ine ev ağı üzerinden Remote Play ile bağlanan ücretsiz ve açık kaynak bir Windows uygulaması. PS5'te 30 FPS çalışan GTA VI'yı bilgisayarında 1080p, 60 FPS akıcılığında gösterir. Capture card gerekmez.">
+<meta name="theme-color" content="#1F1E1D">
+<link rel="icon" href="img/robzplay.svg" type="image/svg+xml">
+<link rel="canonical" href="https://kutsalkiremitci.github.io/robz-play/">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:site_name" content="Robz Play">
+<meta property="og:title" content="Robz Play · PS5'te 30 FPS, ekranında 60 FPS">
+<meta property="og:description" content="PS5 Remote Play ile 1080p, 60 FPS ve kare üretimi. GTA VI bilgisayarında 60 FPS akıcılığında. Ücretsiz, açık kaynak, capture card gerekmez.">
+<meta property="og:url" content="https://kutsalkiremitci.github.io/robz-play/">
+<meta property="og:image" content="https://kutsalkiremitci.github.io/robz-play/img/robz-play-paylasim.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="960">
+<meta property="og:image:alt" content="Robz Play tanıtım görseli: PS5'te 30 FPS, bilgisayarında 60 FPS">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="css/site.css">
+</head>
+<body>
+<a class="skip" href="#icerik">İçeriğe geç</a>
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="#" aria-label="Robz Play, sayfanın başı">
+      <img src="img/robzplay.svg" alt="" width="34" height="34">
+      Robz Play
+    </a>
+    <nav class="nav" aria-label="Bölümler">
+      <a href="#karsilastirma">Karşılaştırma</a>
+      <a href="#gerekenler">Gerekenler</a>
+      <a href="#kurulum">Kurulum</a>
+      <a href="#modlar">Modlar</a>
+      <a href="#nasil">Nasıl çalışır?</a>
+      <a href="#sss">SSS</a>
+      <a href="#destek">Destek</a>
+    </nav>
+    <a class="btn btn-primary" href="https://github.com/kutsalkiremitci/robz-play/releases/latest/download/RobzPlay-Setup.exe">İndir</a>
+  </div>
+</header>
+
+<main id="icerik">
+
+<!-- ============ Giriş ============ -->
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div>
+        <p class="eyebrow"><span>GTA VI için tasarlandı</span><span>Ücretsiz ve açık kaynak</span><span>Windows 10 ve 11</span></p>
+        <h1>PS5'te <span class="nowrap">30 FPS.</span><br><em>Ekranında <span class="nowrap">60 FPS.</span></em></h1>
+        <p class="lead">Robz Play, <strong>PS5'ine ev ağı üzerinden Remote Play ile bağlanır</strong> ve PS5'te 30 FPS çalışan <strong>GTA VI'yı bilgisayarında 1080p, 60 FPS akıcılığında</strong> gösterir. Capture card gerekmez.</p>
+        <div class="cta">
+          <a class="btn btn-primary btn-lg" href="https://github.com/kutsalkiremitci/robz-play/releases/latest/download/RobzPlay-Setup.exe">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg>
+            <span class="stack">Ücretsiz indir<small>Windows · RobzPlay-Setup.exe</small></span>
+          </a>
+          <div class="cta-secondary">
+          <a class="btn btn-discord" href="https://discord.gg/UyyEn7SHm4">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+            <span class="stack">Discord<small>Ücretsiz kurulum desteği</small></span>
+          </a>
+          <a class="btn btn-kick" href="https://kick.com/robzsogood">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M3 3h6v5h2V6h2V4h2V3h6v6h-2v2h-2v2h2v2h2v6h-6v-1h-2v-2h-2v-2H9v5H3z"/></svg>
+            <span class="stack">Kick<small>Canlı yayınlar</small></span>
+          </a>
+          </div>
+        </div>
+        <p class="cta-note">İndirme bağlantısı her zaman en son sürümü verir. Önceki sürümler ve değişiklikler: <a href="https://github.com/kutsalkiremitci/robz-play/releases">GitHub sürümleri</a>.</p>
+      </div>
+
+      <figure class="hero-shot">
+        <div class="frame">
+          <img src="img/gta-vi-60fps.webp" width="1600" height="900" alt="Robz Play ile GTA VI: sahilde kırmızı bir arabanın yanında duran karakter; sol üstteki sayaç 60 FPS ve kaynak 31 gösteriyor" fetchpriority="high">
+        </div>
+        <figcaption>Robz Play ile GTA VI. Sol üstteki sayaç ekrana verilen kare hızını (60 FPS) ve konsoldan gelen kaynağı (yaklaşık 30) gösteriyor.</figcaption>
+      </figure>
+    </div>
+
+    <ul class="facts" aria-label="Kısaca">
+      <li><b>1080p · 60 FPS</b><span>PS5 Remote Play yayını</span></li>
+      <li><b>30 → 60 FPS</b><span>Aradaki kareleri ekran kartın üretir</span></li>
+      <li><b>Capture card yok</b><span>PS5, bilgisayar ve ev ağı yeterli</span></li>
+      <li><b>Türkçe</b><span>Arayüz Türkçe açılır, İngilizcesi de var</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ Karşılaştırma ============ -->
+<section class="section" id="karsilastirma" aria-labelledby="karsilastirma-baslik">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">Farkı gör</span>
+      <h2 id="karsilastirma-baslik">30 FPS ile 60 FPS yan yana</h2>
+      <p>Aynı GTA VI kaydı: solda görüntünün 30 FPS'e indirilmiş hali, sağda Robz Play'in ekrana verdiği 60 FPS. Kamera dönüşlerinde ve araç sürerken fark hemen göze çarpar.</p>
+    </div>
+
+    <figure class="compare-media">
+      <img src="img/gta-vi-30-vs-60.webp" width="966" height="318" loading="lazy" decoding="async" alt="Animasyon: solda PS Remote Play etiketiyle 30 FPS, sağda Robz Play etiketiyle 60 FPS; sahilde toz kaldırarak dönen bir pikap">
+      <figcaption>Sol taraf temsilîdir: aynı kaydın 30 FPS'e indirilmiş halidir. Kayıt OBS ile Robz Play penceresinden alındı; animasyon gerçek hızda 60 FPS oynar.</figcaption>
+    </figure>
+
+    <div class="compare-grid">
+      <div class="table-wrap">
+        <table>
+          <caption class="sr-only">PS Remote Play ile Robz Play karşılaştırması</caption>
+          <thead>
+            <tr><th scope="col"></th><th scope="col">PS Remote Play<small>720p · 30 FPS ayarında</small></th><th scope="col">Robz Play</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">GTA VI'da gördüğün kare hızı</th><td>30 FPS</td><td class="win">60 FPS</td></tr>
+            <tr><th scope="row">Çözünürlük</th><td>720p</td><td class="win">1080p</td></tr>
+            <tr><th scope="row">Kare üretimi</th><td>Yok</td><td class="win">Var, ekran kartında</td></tr>
+            <tr><th scope="row">Kaynak kodu</th><td>Kapalı</td><td class="win">Açık (AGPL-3.0)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note">
+        <p><strong>Karşılaştırma dürüst olsun:</strong> resmî PS Remote Play uygulamasında da çözünürlük 1080p'ye, yayının kare hızı 60'a çıkarılabilir. Ama o uygulama kare üretmez; GTA VI 30 FPS çalıştığı için ekranda gördüğün hareket yine 30 FPS olur. Farkı yaratan, Robz Play'in aradaki kareleri üretmesidir.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Gerekenler ============ -->
+<section class="section" id="gerekenler" aria-labelledby="gerekenler-baslik">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">Başlamadan önce</span>
+      <h2 id="gerekenler-baslik">Neler gerekiyor?</h2>
+      <p>Ek donanım yok. Konsolun, bilgisayarın ve ikisinin bağlı olduğu ev ağı yeterli.</p>
+    </div>
+
+    <div class="req-grid">
+      <div class="card req">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9h4M8 7v4"/><circle cx="16" cy="9" r="1"/><circle cx="18" cy="11" r="1"/><path d="M7 4h10a5 5 0 0 1 5 5v3a6 6 0 0 1-10.5 4h-1A6 6 0 0 1 2 12V9a5 5 0 0 1 5-5z"/></svg></div>
+        <h3>PlayStation 5</h3>
+        <p>PS4 de olur. Konsolda Uzaktan Oynama açık olmalı (kurulum adımlarında gösteriliyor).</p>
+      </div>
+      <div class="card req">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></div>
+        <h3>Windows 10 veya 11</h3>
+        <p>64 bit bir bilgisayar. 60 FPS için 60 Hz, 120 FPS için 120 Hz veya üstü bir ekran.</p>
+      </div>
+      <div class="card req">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="11" rx="2"/><circle cx="9" cy="11.5" r="2.5"/><circle cx="16" cy="11.5" r="2.5"/><path d="M5 17v3M19 17v3"/></svg></div>
+        <h3>Vulkan destekli ayrı ekran kartı</h3>
+        <p>NVIDIA GTX/RTX, AMD Radeon RX ya da Intel Arc. Kare üretimini ekran kartı yapar; DLSS değildir, NVIDIA'ya özel değildir.</p>
+      </div>
+      <div class="card req">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="14" width="18" height="6" rx="2"/><path d="M7 17h.01M11 17h.01"/><path d="M8 10a6 6 0 0 1 8 0M5 7a10 10 0 0 1 14 0"/></svg></div>
+        <h3>Aynı ev ağı</h3>
+        <p>PS5 ile bilgisayar aynı ağda olmalı. İkisini de kabloyla modeme bağlamak en dengeli görüntüyü verir.</p>
+      </div>
+      <div class="card req">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+        <h3>PlayStation hesabı</h3>
+        <p>Konsolu uygulamaya bağlarken bir kez PSN girişi yapılır. chiaki-ng'de bağlı konsolun varsa bu da gerekmez.</p>
+      </div>
+      <div class="card req no">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg></div>
+        <h3>Gerekmeyenler</h3>
+        <p>Capture card, HDMI ayırıcı ya da ikinci bir cihaz. İşlemcinin içindeki tümleşik grafik ise yetmez: bir kare saniyeler sürer.</p>
+      </div>
+    </div>
+
+    <div class="gpu-head">
+      <h3>Ekran kartın yeter mi?</h3>
+      <p>Ekran kartının bir ara kareyi yaklaşık 10 milisaniyenin altında üretebilmesi gerekiyor.</p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th scope="col">Ekran kartı</th><th scope="col">Beklenti</th><th scope="col">Durum</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">Tümleşik grafik (Intel UHD, AMD Radeon Graphics)</th><td>Çalışmaz: bir kare saniyeler sürüyor</td><td><span class="tag tag-ok">Ölçüldü</span> AMD tümleşik: ~2,7 sn/kare</td></tr>
+          <tr><th scope="row">Giriş seviyesi ayrı kart (GTX 1650 sınıfı)</th><td>60 FPS, "Hızlı" ayrıntı modunda mümkün olabilir</td><td><span class="tag tag-guess">Tahmin</span> denenmedi</td></tr>
+          <tr><th scope="row">Orta seviye (RTX 3060, RX 6600 XT sınıfı ve üstü)</th><td>60 FPS, "Dengeli" modda</td><td><span class="tag tag-guess">Tahmin</span> denenmedi</td></tr>
+          <tr><th scope="row">RTX 4070</th><td>60 FPS "Dengeli": kare başına ~5-10 ms. 120 FPS deneysel olarak çalışıyor</td><td><span class="tag tag-ok">Ölçüldü</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small-note">Şimdiye kadar yalnızca RTX 4070 ile gerçekten denendi; diğer satırlar tahmindir ve denendikçe güncellenecek. Kartın zorlanırsa <a href="#sss">Hareket ayrıntısı</a> ayarını "Hızlı"ya al.</p>
+  </div>
+</section>
+
+<!-- ============ Kurulum ============ -->
+<section class="section" id="kurulum" aria-labelledby="kurulum-baslik">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">Adım adım</span>
+      <h2 id="kurulum-baslik">İndirmekten ilk oyuna</h2>
+      <p>İlk dört adım hazırlık, sonrakiler uygulamanın içinde. Görüntüler Robz Play 0.3.0'dan alındı; konsolun adresi ve kimliği "yayıncı modu" ile gizlendi.</p>
+    </div>
+
+    <h3 class="subhead">Hazırlık</h3>
+    <ol class="steps prep">
+      <li class="card">
+        <span class="num" aria-hidden="true">1</span>
+        <h3>Kurulum dosyasını indir</h3>
+        <p><code>RobzPlay-Setup.exe</code> her zaman en son sürümdür. Ücretsizdir; indirmek için hesap ya da kayıt gerekmez.</p>
+        <a class="btn btn-primary" href="https://github.com/kutsalkiremitci/robz-play/releases/latest/download/RobzPlay-Setup.exe">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg>
+          RobzPlay-Setup.exe
+        </a>
+      </li>
+      <li class="card">
+        <span class="num" aria-hidden="true">2</span>
+        <h3>Windows uyarısını geç</h3>
+        <p>Kurulum dosyası henüz imzalı olmadığı için Windows ilk çalıştırmada <strong>"Windows kişisel bilgisayarınızı korudu"</strong> uyarısını gösterebilir. Önce şuna, sonra buna bas:</p>
+        <ol class="path" aria-label="Uyarıyı geçmek için">
+          <li>Ek bilgi</li>
+          <li>Yine de çalıştır</li>
+        </ol>
+      </li>
+      <li class="card">
+        <span class="num" aria-hidden="true">3</span>
+        <h3>Kur ve aç</h3>
+        <p>Kurulumu tamamla; yönetici izni istemez. Robz Play <code>%LOCALAPPDATA%\Programs\Robz Play</code> klasörüne kurulur. Masaüstündeki ya da Başlat menüsündeki <strong>Robz Play</strong> kısayolundan aç.</p>
+      </li>
+      <li class="card">
+        <span class="num" aria-hidden="true">4</span>
+        <h3>PS5'i hazırla</h3>
+        <p>PS5'te Uzaktan Oynama'yı aç:</p>
+        <ol class="path" aria-label="PS5 menü yolu">
+          <li>Ayarlar</li><li>Sistem</li><li>Uzaktan Oynama</li><li>Uzaktan Oynama'yı Etkinleştir</li>
+        </ol>
+        <p>Konsol dinlenme modundayken de bağlanmak istersen buradaki iki seçeneği de aç:</p>
+        <ol class="path" aria-label="Dinlenme modu ayarları">
+          <li>Ayarlar</li><li>Sistem</li><li>Güç Tasarrufu</li><li>Dinlenme Modunda Kullanılabilen Özellikler</li>
+        </ol>
+      </li>
+    </ol>
+
+    <h3 class="subhead subhead-gap">Robz Play'de</h3>
+    <ol class="steps" start="5">
+      <li class="flow-step">
+        <span class="num" aria-hidden="true">5</span>
+        <div class="flow-text">
+          <h3>İlk açılış: konsolun kendiliğinden görünür</h3>
+          <p>Robz Play Türkçe açılır; İngilizce için sol menüdeki bayrağa bas. PS5 ile bilgisayar aynı ağdaysa konsolun ana ekranın üstünde kendiliğinden belirir. Ortada, oyunun nasıl gösterileceğini seçtiğin <strong>Görüntü modu</strong> bölümü durur.</p>
+          <p>Bilgisayarında chiaki-ng varsa Robz Play ilk açılışta onun ayarlarını ve kayıtlı konsollarını alır; konsolun zaten bağlıysa 6. adımı atla.</p>
+        </div>
+        <figure class="shot">
+          <a href="img/app-ana-ekran.webp"><img src="img/app-ana-ekran.webp" width="1584" height="891" loading="lazy" decoding="async" alt="Robz Play ana ekranı: solda menü, Kick ve Discord bağlantıları; üstte ağda bulunan PS5 ve Kur düğmesi; ortada Yalnızca yayın, 60 FPS ve 120 FPS seçenekli Görüntü modu bölümü"></a>
+          <figcaption>Ana ekran. Konsol kartında "Adres gizli" ve "ID gizli" yazıyor: görüntü alınırken yayıncı modu açıktı.</figcaption>
+        </figure>
+      </li>
+
+      <li class="flow-step">
+        <span class="num" aria-hidden="true">6</span>
+        <div class="flow-text">
+          <h3>Konsolu bağla (bir kez)</h3>
+          <p>Konsolun kartındaki <strong>Kur</strong>'a bas. Açılan <strong>Konsolu kaydet</strong> ekranında:</p>
+          <ol class="plain-list">
+            <li><strong>PSN girişi</strong>'ne bas ve PlayStation hesabınla giriş yap.</li>
+            <li>PS5'te <strong>Ayarlar › Sistem › Uzaktan Oynama › Cihazı Bağla</strong>'yı seç; ekranda bir kod çıkar.</li>
+            <li>O kodu <strong>Remote Play PIN'i</strong> alanına yaz ve sağ üstteki <strong>Kaydet</strong>'e bas.</li>
+          </ol>
+        </div>
+        <figure class="shot">
+          <a href="img/app-konsol-kur.webp"><img src="img/app-konsol-kur.webp" width="1232" height="184" loading="lazy" decoding="async" alt="Ağda bulunan konsolun kartı: Dinlenme modunda, henüz kurulmadı; sağda Kur düğmesi"></a>
+        </figure>
+        <figure class="shot">
+          <a href="img/app-konsolu-kaydet.webp"><img src="img/app-konsolu-kaydet.webp" width="1584" height="600" loading="lazy" decoding="async" alt="Konsolu kaydet ekranı: Adres, PSN hesap ID'si alanı ve yanında PSN girişi düğmesi, Remote Play PIN'i alanı, konsol türü olarak PS5 seçili; sağ üstte Kaydet"></a>
+          <figcaption>Konsolu kaydet ekranı. Adres alanı yayıncı modunda gizli görünür.</figcaption>
+        </figure>
+      </li>
+
+      <li class="flow-step">
+        <span class="num" aria-hidden="true">7</span>
+        <div class="flow-text">
+          <h3>Görüntü modunu seç</h3>
+          <p>GTA VI için <strong>60 FPS</strong>'i seç; varsayılan mod budur. Kare üretimi istemiyorsan <strong>Yalnızca yayın</strong>, güçlü bir kartın ve 120 Hz ekranın varsa deneysel <strong>120 FPS</strong>. Mod bir sonraki bağlantıda geçerli olur. Altındaki <strong>Hareket ayrıntısı</strong>, <strong>HUD ve yazıları sabit tut</strong>, <strong>Keskinleştirme</strong> ve <strong>FPS sayacı</strong> da buradan değişir.</p>
+        </div>
+        <figure class="shot">
+          <a href="img/app-goruntu-modu.webp"><img src="img/app-goruntu-modu.webp" width="1232" height="381" loading="lazy" decoding="async" alt="Görüntü modu bölümü: 60 FPS (GTA VI için) seçili; altında Hareket ayrıntısı Dengeli, HUD ve yazıları sabit tut açık, Keskinleştirme Kapalı, FPS sayacı kapalı"></a>
+        </figure>
+      </li>
+
+      <li class="flow-step">
+        <span class="num" aria-hidden="true">8</span>
+        <div class="flow-text">
+          <h3>Oyna</h3>
+          <p>Konsol kaydedildikten sonra kartında <strong>Oyna</strong> düğmesi çıkar. Bastığında Robz Play PS5'e bağlanır; 4. adımdaki dinlenme modu ayarları açıksa uyuyan konsol da uyandırılır. Bağlantı kurulunca oyun görüntüsü gelir.</p>
+        </div>
+        <figure class="shot">
+          <a href="img/app-baglaniyor.webp"><img src="img/app-baglaniyor.webp" width="1280" height="720" loading="lazy" decoding="async" alt="Bağlanma ekranı: ortada RP logosu ve PlayStation'a bağlanılıyor yazısı; altta Ctrl+O ile yayın menüsünü açma ipucu"></a>
+          <figcaption>Bağlanırken görünen ekran.</figcaption>
+        </figure>
+      </li>
+
+      <li class="flow-step">
+        <span class="num" aria-hidden="true">9</span>
+        <div class="flow-text">
+          <h3>Oyun sırasında: yayın menüsü</h3>
+          <p><kbd>Ctrl</kbd> + <kbd>O</kbd> yayın menüsünü açar: ses düzeyi, mikrofon, yakınlaştırma, keskinleştirme, FPS sayacı ve görüntü işleyici ayarları oyunu bırakmadan değişir.</p>
+        </div>
+        <figure class="shot">
+          <a href="img/app-yayin-menusu.webp"><img src="img/app-yayin-menusu-cubuk.webp" width="1564" height="158" loading="lazy" decoding="async" alt="Yayın menüsü: Ses yüzde 100, Mikrofon, Yakınlaştır, Esnet, FPS sayacı, Keskinleştirme: Kapalı; Görüntü işleyici seçenekleri Varsayılan, Yüksek kalite, HQ + Uzamsal, HQ + İleri uzamsal, Özel; Ekran ayarları"></a>
+          <figcaption>Yayın menüsü, ekranın altında açılır.</figcaption>
+        </figure>
+      </li>
+
+      <li class="flow-step">
+        <span class="num" aria-hidden="true">10</span>
+        <div class="flow-text">
+          <h3>Ayarlar</h3>
+          <p>Sol menüdeki <strong>Ayarlar</strong>'da kare üretimi, görüntü, yayın, ses, konsollar, klavye ve kontrolcü ayarları bulunur. Parantez içindeki değerler varsayılandır. <strong>Yayın</strong> sayfasında ev içi (Yerel) ve ev dışı (Uzak) bağlantı için çözünürlük, FPS, bit hızı ve kodek ayrı ayrı seçilir.</p>
+        </div>
+        <div class="shot-pair">
+          <figure class="shot">
+            <a href="img/app-ayarlar-genel.webp"><img src="img/app-ayarlar-genel.webp" width="1584" height="891" loading="lazy" decoding="async" alt="Ayarlar, Genel sayfası: Kare üretimi açık, FPS sayacı kapalı, Güncellemeleri denetle açık, hareket ayrıntısı Dengeli, kare üretimi hedefi 60 FPS, HUD ve yazıları sabit tut açık"></a>
+            <figcaption>Genel: kare üretimi ve temel ayarlar.</figcaption>
+          </figure>
+          <figure class="shot">
+            <a href="img/app-ayarlar-yayin.webp"><img src="img/app-ayarlar-yayin.webp" width="1584" height="891" loading="lazy" decoding="async" alt="Ayarlar, Yayın sayfası: Yerel ve Uzak için 1080p, 60 fps, 100 Mbps, H265"></a>
+            <figcaption>Yayın: 1080p, 60 FPS, 100 Mbps, H265.</figcaption>
+          </figure>
+        </div>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============ Görüntü modları ============ -->
+<section class="section" id="modlar" aria-labelledby="modlar-baslik">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">Ana ekranın ortasında</span>
+      <h2 id="modlar-baslik">Üç görüntü modu</h2>
+      <p>Kare üretimi zorunlu değil. Tek tıkla açılır, kapanır ya da hedefi değişir.</p>
+    </div>
+
+    <div class="modes">
+      <div class="card mode">
+        <h3>Yalnızca yayın</h3>
+        <p>Düz Remote Play: 1080p, 60 FPS yayın, konsolun gönderdiği gibi. Kare üretimi kapalı, ek gecikme yok.</p>
+        <p class="result">30 FPS çalışan GTA VI'da görülen <b>30 FPS</b></p>
+      </div>
+      <div class="card mode is-default">
+        <h3>60 FPS <span class="tag tag-accent">GTA VI için</span></h3>
+        <p>Aradaki kareleri bilgisayarının ekran kartı çizer; 30 FPS oyun 60 FPS gibi görünür. Varsayılan ve önerilen mod.</p>
+        <p class="result">30 FPS çalışan GTA VI'da görülen <b>60 FPS</b></p>
+      </div>
+      <div class="card mode">
+        <h3>120 FPS <span class="tag tag-warn">Deneysel</span></h3>
+        <p>Her iki gerçek karenin arasına üç kare üretir. Güçlü bir ekran kartı ve 120 Hz veya üstü bir ekran ister.</p>
+        <p class="result">30 FPS çalışan GTA VI'da görülen <b>120 FPS</b></p>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <h3>Bilmen gerekenler</h3>
+        <ul class="plain-list">
+          <li>Mod, bir sonraki bağlantıda geçerli olur.</li>
+          <li>Zaten 60 FPS çalışan bir oyunda "Yalnızca yayın" ile "60 FPS" aynı görüntüyü verir; fark 30 FPS'e kilitli oyunlarda ortaya çıkar.</li>
+          <li>Keskinleştirme ve FPS sayacı anında, kare üretimi ayarları bir sonraki yayında geçerli olur.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>120 FPS neden deneysel?</h3>
+        <ul class="plain-list">
+          <li>Ekran kartından 60 FPS moduna göre daha fazla güç ister.</li>
+          <li>Dört kareden üçü üretilmiş olduğu için hızlı hareketlerde bozulmalar daha kolay fark edilir.</li>
+          <li>Yalnızca tek bir sistemde (RTX 4070) denendi. Sorun yaşarsan 60 FPS'e dön.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Özellikler ============ -->
+<section class="section" id="ozellikler" aria-labelledby="ozellikler-baslik">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">Neler var?</span>
+      <h2 id="ozellikler-baslik">Öne çıkanlar</h2>
+    </div>
+
+    <div class="features">
+      <div class="card feature"><h3>1080p, 60 FPS Remote Play</h3><p>PS5'ine ev ağından bağlan ve bilgisayarından oyna. Kare üretimi olmadan da kullanılır.</p></div>
+      <div class="card feature"><h3>30 → 60 FPS</h3><p>GTA VI ve 30 FPS'e kilitli diğer PS5 ve PS4 oyunları 60 FPS akıcılığında.</p></div>
+      <div class="card feature"><h3>HUD ve yazı koruması</h3><p>Can göstergesi, mini harita, altyazı gibi sabit öğeler üretilen karelerde yerinde kalır, titremez.</p></div>
+      <div class="card feature"><h3>Keskinleştirme</h3><p>Sıkıştırılmış yayının kaybettiği netliği geri getirir; oyun sırasında anında değişir.</p></div>
+      <div class="card feature"><h3>OBS'de de görünen FPS sayacı</h3><p>Gösterilen ve kaynak FPS'i birlikte gösterir. Görüntünün içine çizildiği için kayıtlara da girer.</p></div>
+      <div class="card feature"><h3>Yayın içi menü</h3><p><kbd>Ctrl</kbd> + <kbd>O</kbd>: ses, mikrofon, yakınlaştırma, keskinleştirme, FPS sayacı.</p></div>
+      <div class="card feature"><h3>Türkçe ve İngilizce</h3><p>Uygulama Türkçe açılır; ana ekrandaki bayraklardan dil değişir.</p></div>
+      <div class="card feature"><h3>chiaki-ng'den geçiş</h3><p>İlk açılışta chiaki-ng'nin ayarlarını ve kayıtlı konsollarını alır. chiaki-ng'nin kendi ayarlarına dokunulmaz.</p></div>
+      <div class="card feature"><h3>Remote Play'in tamamı</h3><p>chiaki-ng temelli: DualSense desteği, PSN üzerinden ev dışından bağlanma, tuş eşleme, profiller.</p></div>
+    </div>
+
+    <div class="newin">
+      <h3>0.3.0 ile gelenler</h3>
+      <div class="features features-4">
+        <div class="card feature"><h3>Güncelleme bildirimi <span class="tag tag-accent">Yeni</span></h3><p>Yeni bir sürüm çıktığında "Yenilikler" penceresi değişiklikleri gösterir. "Şimdi güncelle" yeni sürümü indirir, kurar ve uygulamayı yeniden açar.</p></div>
+        <div class="card feature"><h3>Discord destek düğmesi <span class="tag tag-accent">Yeni</span></h3><p>Ana ekrandan tek tıkla ücretsiz kurulum desteğine ulaşırsın.</p></div>
+        <div class="card feature"><h3>Açılış günlüğü <span class="tag tag-accent">Yeni</span></h3><p>Her açılış bir günlük dosyasına yazılır; bir sorun olursa nerede olduğu görülür.</p></div>
+        <div class="card feature"><h3>Türkçe harfli kullanıcı adları <span class="tag tag-accent">Düzeltme</span></h3><p>Windows kullanıcı adında ğ, ı, ş gibi harfler olan bilgisayarlardaki açılış sorunu giderildi.</p></div>
+      </div>
+    </div>
+
+    <div class="defaults card">
+      <div>
+        <h3>Varsayılan ayarlar</h3>
+        <p class="muted">Robz Play bu ayarlarla geliştirilip denendi. Görüntü işleyici olarak Vulkan seçili gelir, çünkü geliştiricinin görüntüden altyazı okuyan diğer uygulaması Robz Vision OpenGL görüntüsünü yakalayamıyor.</p>
+      </div>
+      <ul class="chips" aria-label="Varsayılan ayarlar">
+        <li>Vulkan<span>görüntü işleyici</span></li>
+        <li>H265<span>kodek</span></li>
+        <li>1080p<span>çözünürlük</span></li>
+        <li>60 FPS<span>yayın</span></li>
+        <li>100 Mbps<span>bit hızı</span></li>
+        <li>%100<span>ses</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Nasıl çalışır ============ -->
+<section class="section" id="nasil" aria-labelledby="nasil-baslik">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">Sade anlatımla</span>
+      <h2 id="nasil-baslik">Nasıl çalışır?</h2>
+      <p>PS5 oyunu yine 30 FPS çalıştırır. Akıcılaşan, senin ekranında gördüğün görüntüdür.</p>
+    </div>
+
+    <ol class="pipeline" aria-label="Görüntünün yolu">
+      <li><span class="where">PS5</span><b>Oyun 30 FPS çalışır</b><p>Görüntü Remote Play ile 1080p, 60 FPS yayın olarak gönderilir; her kare iki kez gelir.</p></li>
+      <li><span class="where">Ev ağı</span><b>Bilgisayarına ulaşır</b><p>Görüntü sıkıştırılmış gelir ve FFmpeg ile çözülür.</p></li>
+      <li class="hl"><span class="where">Robz Play</span><b>Ara kare üretilir</b><p>Tekrar eden kareler ayıklanır; ekran kartı iki gerçek karenin arasındaki kareyi çizer.</p></li>
+      <li><span class="where">Ekranın</span><b>60 FPS</b><p>Saniyede 30 gerçek + 30 üretilen kare, eşit aralıklarla.</p></li>
+    </ol>
+
+    <div class="two-col">
+      <div>
+        <h3>Ara kare nereden geliyor?</h3>
+        <ol class="explain">
+          <li>Robz Play, yayındaki kopyaları ayıklayıp oyunun gerçek 30 karesini bulur.</li>
+          <li>Ekran kartında çalışan bir yapay zekâ modeli, <strong>RIFE v4.6</strong>, art arda gelen iki gerçek karedeki hareketi ölçer ve tam aradaki kareyi çizer. Model <strong>ncnn</strong> ve <strong>Vulkan</strong> ile çalışır; bu yüzden NVIDIA, AMD ve Intel kartlarda çalışabilir.</li>
+          <li>Sabit duran HUD öğeleri ayrıca korunur; hareket eden arka planın üstünde titremezler.</li>
+          <li>Kart bir kareye yetişemezse Robz Play o kareyi üretmeyi atlar; görüntü donmaz.</li>
+        </ol>
+      </div>
+      <div>
+        <h3>Ne değildir?</h3>
+        <ul class="plain-list isnt">
+          <li><strong>PS5'i hızlandırmaz.</strong> Oyun konsolda yine 30 FPS çalışır.</li>
+          <li><strong>Gecikmeyi azaltmaz, biraz artırır.</strong> Ara kareyi çizmek için bir sonraki gerçek kare beklenir (30 FPS'te yaklaşık 33 ms). Tek kişilik oyunlarda rahat oynanır; rekabetçi oyunlar için uygun değildir.</li>
+          <li><strong>HDMI kalitesi değildir.</strong> Görüntü ağ üzerinden sıkıştırılarak gelir. Keskinleştirme farkı azaltır, yok etmez.</li>
+          <li><strong>Kusursuz değildir.</strong> Çok hızlı hareketlerde ve ince desenlerde üretilen karelerde bozulmalar görülebilir.</li>
+          <li><strong>Resmî bir ürün değildir.</strong> Sony, Rockstar Games ya da Take-Two ile bağı yoktur.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Teknolojiler ============ -->
+<section class="section" id="teknolojiler" aria-labelledby="teknolojiler-baslik">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">Açık kaynağın omuzlarında</span>
+      <h2 id="teknolojiler-baslik">Kullanılan teknolojiler</h2>
+      <p>Robz Play, chiaki-ng 1.10.1'in değiştirilmiş bir sürümüdür. Kaynak kodunun tamamı <a href="https://github.com/kutsalkiremitci/robz-play">GitHub'da</a>.</p>
+    </div>
+    <ul class="tech">
+      <li><b><a href="https://github.com/chiaki-ng/chiaki-ng">chiaki-ng</a> / <a href="https://git.sr.ht/~thestr4ng3r/chiaki">Chiaki</a></b><span>Remote Play bağlantısının tamamı</span></li>
+      <li><b><a href="https://www.qt.io/">Qt 6 / QML</a></b><span>Arayüz</span></li>
+      <li><b><a href="https://code.videolan.org/videolan/libplacebo">libplacebo</a> + Vulkan</b><span>Görüntü işleme ve ekrana çizim</span></li>
+      <li><b><a href="https://ffmpeg.org/">FFmpeg</a></b><span>Yayının çözülmesi</span></li>
+      <li><b><a href="https://github.com/hzwer/Practical-RIFE">RIFE v4.6</a> + <a href="https://github.com/Tencent/ncnn">ncnn</a></b><span>Kare üretimi, ekran kartında</span></li>
+      <li><b><a href="https://nsis.sourceforge.io/">NSIS</a></b><span>Kurulum dosyası</span></li>
+      <li><b><a href="https://www.msys2.org/">MSYS2</a> / MinGW</b><span>Windows için derleme</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ SSS ============ -->
+<section class="section" id="sss" aria-labelledby="sss-baslik">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">Takıldığın yer</span>
+      <h2 id="sss-baslik">Sık sorulanlar ve sorun giderme</h2>
+      <p>Cevabı burada bulamazsan <a href="https://discord.gg/UyyEn7SHm4">Discord'a</a> yaz; kurulum desteği ücretsiz.</p>
+    </div>
+
+    <div class="faq-group">
+      <h3>Kurulum ve açılış</h3>
+
+      <details>
+        <summary>Windows "kişisel bilgisayarınızı korudu" diyor</summary>
+        <div class="answer">
+          <p>Kurulum dosyası henüz imzalı olmadığı için Windows bu uyarıyı gösterebilir. <strong>Ek bilgi</strong>'ye, ardından <strong>Yine de çalıştır</strong>'a bas. İmzalı kurulum dosyası yol haritasında.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Robz Play açılmıyor ya da hata veriyor</summary>
+        <div class="answer">
+          <p>Önce en son sürümü kur: Windows kullanıcı adında ğ, ı, ş gibi Türkçe harfler olan bilgisayarlardaki açılış sorunu 0.3.0'da düzeltildi. Sorun sürerse günlüklere bak ve tanı dosyasını hazırla (aşağıda).</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Günlükler (log) nerede?</summary>
+        <div class="answer">
+          <p>Başlat menüsündeki <strong>"Robz Play günlükleri"</strong> kısayolu günlük klasörünü açar: <code>%APPDATA%\RobzPlay\RobzPlay\log</code></p>
+          <ul>
+            <li><code>robzplay-acilis.log</code>: her açılışta yazılır; bir önceki açılış <code>robzplay-acilis-onceki.log</code> olarak saklanır. Uygulama çökerse son satırda hangi dosyada çöktüğü yazar.</li>
+            <li><code>chiaki_session_….log</code>: her yayının kendi günlüğü.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details>
+        <summary>Destek isterken hangi dosyayı göndereyim?</summary>
+        <div class="answer">
+          <p>Kurulum klasöründeki (<code>%LOCALAPPDATA%\Programs\Robz Play</code>) <strong><code>Tani.bat</code></strong> dosyasına çift tıkla. Bilgisayarın, ekran kartının ve son açılışların bilgisini masaüstüne <code>robzplay-tani.txt</code> olarak yazar. Bu dosyayı <a href="https://discord.gg/UyyEn7SHm4">Discord'da</a> sorununu anlatırken ekle.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>chiaki-ng kullanıyorum, baştan mı kuracağım?</summary>
+        <div class="answer">
+          <p>Hayır. Robz Play ilk açılışta chiaki-ng'nin ayarlarını ve kayıtlı konsollarını kendiliğinden alır; konsolu yeniden bağlaman gerekmez. chiaki-ng'nin kendi ayarlarına dokunulmaz.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Nasıl güncellerim, nasıl kaldırırım?</summary>
+        <div class="answer">
+          <p>0.3.0'dan itibaren yeni bir sürüm çıktığında Robz Play bir <strong>"Yenilikler"</strong> penceresinde değişiklikleri gösterir; <strong>"Şimdi güncelle"</strong> yeni sürümü indirir, kurar ve uygulamayı yeniden açar. İstersen yeni <code>RobzPlay-Setup.exe</code> dosyasını indirip çalıştırman da yeter; ayarların ve kayıtlı konsolların korunur.</p>
+          <p>Kaldırmak için Windows'un "Yüklü uygulamalar" listesinden Robz Play'i kaldır. Ayarların Windows kayıt defterinde kalır.</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="faq-group">
+      <h3>Bağlantı ve görüntü</h3>
+
+      <details>
+        <summary>"Oyna"ya basınca kontrolcünün bağlantısı kopuyor</summary>
+        <div class="answer">
+          <p>Yayın açılıyor ama DualSense oyunda çalışmıyor ya da bağlantısı kopuyorsa, bunun sebebi PS5'te <strong>yalnızca bir kullanıcı profili</strong> olması. Robz Play, chiaki-ng ile aynı Remote Play bağlantısını kullanır ve bu bağlantıda uzaktan gelen kontrolcü için konsolda ikinci bir kullanıcı profili gerekiyor. Yani sorun kare üretiminden değil, Remote Play'in (ve chiaki-ng'nin) bu davranışından kaynaklanıyor.</p>
+          <p><strong>Çözüm:</strong></p>
+          <ol>
+            <li>PS5'te yeni bir kullanıcı profili (ikinci bir hesap) ekle: ana ekranda sağ üstteki profil simgesini aç (ya da PS düğmesiyle kontrol merkezini aç), <strong>Kullanıcı Değiştir</strong>'i, ardından <strong>Kullanıcı Ekle</strong>'yi seç.</li>
+            <li>Robz Play'de yeniden <strong>Oyna</strong>'ya bas. PS5 bu kez iki profilin olduğu bir profil seçme ekranı gösterir.</li>
+            <li><strong>Yeni oluşturduğun profili</strong> seç ve devam et; kontrolcü çalışır.</li>
+          </ol>
+          <p><strong>GTA VI için önemli:</strong> ana hesabınla satın aldığın bir oyunu yeni profille oynayabilmek için ana hesapta o PS5 için <strong>Konsol Paylaşımı ve Çevrimdışı Oynama</strong> açık olmalı: PS5'te ana hesapla <strong>Ayarlar › Kullanıcılar ve Hesaplar › Diğer › Konsol Paylaşımı ve Çevrimdışı Oynama</strong>. Konsolda ilk kurulan hesapta bu genellikle zaten açıktır.</p>
+          <p>Menü adları PS5 sistem yazılımının sürümüne göre biraz farklı olabilir. Bu adımlardan sonra bağlantı hâlâ kopuyorsa <a href="https://discord.gg/UyyEn7SHm4">Discord'da</a> sor ve <code>robzplay-tani.txt</code> dosyasını ekle.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Konsolum ana ekranda görünmüyor</summary>
+        <div class="answer">
+          <p>PS5'te Uzaktan Oynama'nın açık olduğundan (<strong>Ayarlar › Sistem › Uzaktan Oynama</strong>) ve PS5 ile bilgisayarın aynı ağda olduğundan emin ol. Ana ekranın solundaki <strong>Konsol ara</strong> anahtarı açık olmalı. Konsol dinlenme modundaysa <strong>Ayarlar › Sistem › Güç Tasarrufu › Dinlenme Modunda Kullanılabilen Özellikler</strong> bölümündeki iki seçenek de açık olmalı.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Görüntü takılıyor ya da bozuluyor</summary>
+        <div class="answer">
+          <p>PS5'i ve bilgisayarı <strong>kabloyla modeme (router) bağla</strong>. Kablolu bağlantı en dengeli görüntüyü verir; Wi-Fi'da takılma daha sık görülür.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Ekran kartım zorlanıyor</summary>
+        <div class="answer">
+          <p>Ana ekrandaki <strong>Hareket ayrıntısı</strong> ayarını <strong>"Hızlı"</strong>ya al. Hareket, görüntünün dörtte biri çözünürlükte ölçülür ve iş yükü belirgin biçimde düşer. Kare üretimi yetişemediği anlarda Robz Play kare üretmeyi kendiliğinden atlar; görüntü donmaz. 120 FPS kullanıyorsan 60 FPS'e dön.</p>
+          <p>İşlemcinin içindeki tümleşik grafik kare üretimi için yetmez; Vulkan destekli ayrı bir ekran kartı gerekir. Kare üretimi olmadan oynamak için "Yalnızca yayın" modunu seç.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Üretilen karelerde bozulma görüyorum</summary>
+        <div class="answer">
+          <p>Hareket görüntüden tahmin edildiği için çok hızlı hareketlerde ve ince desenlerde üretilen karelerde bozulmalar görülebilir. 120 FPS modunda dört kareden üçü üretildiği için daha belirgindir. <strong>HUD ve yazıları sabit tut</strong> açık kalsın. Kartın kaldırıyorsa <strong>Hareket ayrıntısı</strong>'nı "Yüksek"e alabilirsin: daha temiz sonuç verir, ama ekran kartına yaklaşık üç kat daha ağırdır.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Gecikme var mı? Rekabetçi oyunlarda kullanılır mı?</summary>
+        <div class="answer">
+          <p>Kare üretimi biraz gecikme ekler: ara kareyi çizebilmek için bir sonraki gerçek kare beklenir (30 FPS'te yaklaşık 33 ms), Remote Play'in kendi gecikmesine ek olarak. Tek kişilik oyunlarda rahat oynanır; rekabetçi oyunlar için uygun değildir. Gecikmenin önemli olduğu oyunlarda "Yalnızca yayın" modunu seç.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Ev dışından bağlanabilir miyim?</summary>
+        <div class="answer">
+          <p>Evet, Remote Play PSN hesabıyla ev dışından bağlanmayı destekler (Ayarlar › Uzaktan oynama › PSN'e giriş yap). Ama varsayılan 100 Mbps çoğu ev internetinin yükleme hızı için fazla: <strong>Ayarlar › Yayın</strong> sayfasındaki <strong>Uzak</strong> sütununda bit hızını düşür. Zayıf bağlantıda görüntü kalitesi ve gecikme kötüleşir.</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="faq-group">
+      <h3>Genel</h3>
+
+      <details>
+        <summary>Capture card gerekiyor mu?</summary>
+        <div class="answer"><p>Hayır. Görüntü PS5'ten ağ üzerinden, Remote Play ile gelir.</p></div>
+      </details>
+
+      <details>
+        <summary>Bu DLSS mi? Ekran kartım NVIDIA değil.</summary>
+        <div class="answer">
+          <p>Hayır, DLSS değildir ve NVIDIA'ya ya da AMD'ye özel bir teknoloji kullanmaz. Kare üretimini açık kaynak RIFE v4.6 modeli ncnn ve Vulkan ile yapar; Vulkan destekleyen ayrı ekran kartlarında (NVIDIA GTX/RTX, AMD Radeon RX, Intel Arc) çalışır. Şimdiye kadar yalnızca RTX 4070 ile denendi.</p>
+          <p>DLSS oyunun içinde çalışır ve hareket bilgisini oyun motorundan alır. GTA VI ise PS5'te çalışıyor; bilgisayara yalnızca görüntü geliyor. Robz Play hareketi bu görüntüden tahmin eder. Bu yüzden her marka kartta ve Remote Play'de açılan her oyunda çalışır.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Hangi oyunlarda çalışır?</summary>
+        <div class="answer"><p>GTA VI için tasarlandı ve GTA VI oynanarak geliştirildi, ama Remote Play'in izin verdiği bütün PS5 ve PS4 oyunlarında çalışır. En büyük fark 30 FPS'e kilitli oyunlarda görülür; zaten 60 FPS çalışan bir oyunda 60 FPS modu bir şey eklemez.</p></div>
+      </details>
+
+      <details>
+        <summary>OBS ile yayın ya da kayıt yapabilir miyim?</summary>
+        <div class="answer"><p>Evet. Robz Play penceresini oyun yakalama kaynağı olarak ekle; üretilen kareler ve FPS sayacı kayda girer.</p></div>
+      </details>
+
+      <details>
+        <summary>HDR destekleniyor mu?</summary>
+        <div class="answer"><p>Kare üretimi HDR yayınla henüz denenmedi.</p></div>
+      </details>
+
+      <details>
+        <summary>Ücretli mi? Resmî bir uygulama mı?</summary>
+        <div class="answer"><p>Ücretsiz ve açık kaynaktır (AGPL-3.0). Resmî bir ürün değildir: Sony Interactive Entertainment, Rockstar Games ya da Take-Two Interactive ile bağı yoktur ve onlar tarafından onaylanmamıştır.</p></div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Destek ============ -->
+<section class="section" id="destek" aria-labelledby="destek-baslik">
+  <div class="wrap support">
+    <figure class="shot">
+      <a href="https://discord.gg/UyyEn7SHm4"><img src="img/destek-banner.webp" width="1200" height="675" loading="lazy" decoding="async" alt="Ücretsiz kurulum desteği afişi: GTA VI için, 1080p 60 FPS ve Türkçe altyazı; Robz Play ve Robz Vision kurulumunda Discord'da yardım; discord.gg/UyyEn7SHm4"></a>
+    </figure>
+    <div>
+      <span class="kicker">Ücretsiz kurulum desteği</span>
+      <h2 id="destek-baslik">Takıldıysan Discord'a gel</h2>
+      <p class="muted">Robz Play'in kurulumunda ya da ilk bağlantıda takıldıysan Discord'da yardım ediliyor. Sorunu hızlı çözmek için:</p>
+      <ol class="support-steps">
+        <li>Kurulum klasöründeki <strong>Tani.bat</strong>'a çift tıkla; masaüstüne <code>robzplay-tani.txt</code> yazılır.</li>
+        <li>Sorunu ve ne zaman olduğunu kısaca anlat.</li>
+        <li>Dosyayı mesajına ekle.</li>
+      </ol>
+      <a class="btn btn-primary btn-lg" href="https://discord.gg/UyyEn7SHm4">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+        discord.gg/UyyEn7SHm4
+      </a>
+      <p class="small-note">Hata bildirimi için <a href="https://github.com/kutsalkiremitci/robz-play/issues">GitHub'daki sorun listesi</a> de açık.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ X paylaşımı ============ -->
+<section class="section" id="paylasim" aria-labelledby="paylasim-baslik">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">Gündem olan paylaşım</span>
+      <h2 id="paylasim-baslik">X'te ses getiren tanıtım</h2>
+    </div>
+    <article class="post">
+      <a class="post-media" href="https://x.com/robzsogood/status/2123874178713715030" tabindex="-1" aria-hidden="true">
+        <img src="img/robz-play-tweet.webp" width="1200" height="960" loading="lazy" decoding="async" alt="">
+      </a>
+      <div class="post-body">
+        <div class="post-meta">
+          <img src="img/robzplay.svg" alt="" width="44" height="44">
+          <div><b>@robzsogood</b>X'te</div>
+          <svg viewBox="0 0 24 24" role="img" aria-label="X"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        </div>
+        <h3>“GTA VI PS5'te 30 FPS. Robz Play ile bilgisayarında 1080p, 60 FPS akıcılığında.”</h3>
+        <p>Robz Play'i duyuran gönderi X'te hızla yayıldı ve çok paylaşıldı. Gönderinin tamamı ve konuşmalar X'te.</p>
+        <a class="btn" href="https://x.com/robzsogood/status/2123874178713715030">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          Gönderiyi X'te aç
+        </a>
+      </div>
+    </article>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <a class="brand" href="#"><img src="img/robzplay.svg" alt="" width="34" height="34">Robz Play</a>
+        <p class="footer-tag">PS5 Remote Play ve kare üretimi. Ücretsiz, açık kaynak.</p>
+        <p>Robz Play, <a href="https://github.com/chiaki-ng/chiaki-ng">chiaki-ng</a> 1.10.1'in değiştirilmiş bir sürümüdür ve chiaki-ng gibi <a href="https://github.com/kutsalkiremitci/robz-play/blob/robzplay/COPYING">AGPL-3.0</a> ile lisanslıdır. chiaki-ng ya da Chiaki geliştiricileri tarafından hazırlanmamış ve onaylanmamıştır.</p>
+      </div>
+      <div>
+        <h2>Robz Play</h2>
+        <ul>
+          <li><a href="https://github.com/kutsalkiremitci/robz-play/releases/latest/download/RobzPlay-Setup.exe">İndir (RobzPlay-Setup.exe)</a></li>
+          <li><a href="https://github.com/kutsalkiremitci/robz-play/releases">Sürümler</a></li>
+          <li><a href="https://github.com/kutsalkiremitci/robz-play">Kaynak kodu</a></li>
+          <li><a href="https://github.com/kutsalkiremitci/robz-play/issues">Sorun bildir</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>Topluluk</h2>
+        <ul>
+          <li><a href="https://discord.gg/UyyEn7SHm4">Discord: ücretsiz destek</a></li>
+          <li><a href="https://kick.com/robzsogood">Kick: canlı yayınlar</a></li>
+          <li><a href="https://x.com/robzsogood/status/2123874178713715030">X'teki tanıtım gönderisi</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="legal">
+      <p>Teşekkürler: chiaki-ng ve Florian Märkl'in Chiaki'si (Remote Play), RIFE (hzwer) ve rife-ncnn-vulkan (nihui), ncnn, libplacebo, FFmpeg, Qt. RIFE modeli ve rife-ncnn-vulkan kodu MIT lisanslıdır.</p>
+      <p>PlayStation, PS5, PS4 ve DualSense, Sony Interactive Entertainment'ın markalarıdır. Grand Theft Auto ve GTA, Take-Two Interactive'in markalarıdır; bu sayfadaki GTA görüntüleri Rockstar Games'e aittir ve yalnızca Robz Play'in çalışmasını göstermek için kullanılmıştır. Robz Play, Sony Interactive Entertainment, Rockstar Games ya da Take-Two Interactive ile bağlantılı değildir; onlar tarafından onaylanmamış ya da desteklenmemiştir.</p>
+    </div>
+  </div>
+</footer>
+</body>
+</html>
