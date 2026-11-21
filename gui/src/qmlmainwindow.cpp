@@ -7942,6 +7942,13 @@ bool QmlMainWindow::event(QEvent *event)
         }
         QGuiApplication::sendEvent(quick_window, event);
         break;
+    case QEvent::Wheel:
+        // Robz Play: the mouse wheel scrolls the interface (lists, settings, the log viewer)
+        // like the other mouse events reach it; while the game has the input, it is not used
+        if (session && !grab_input)
+            return true;
+        QGuiApplication::sendEvent(quick_window, event);
+        break;
     case QEvent::Close:
         if (!backend->closeRequested()) {
             event->ignore();
