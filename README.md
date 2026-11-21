@@ -3,13 +3,13 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/kutsalkiremitci/robz-play/releases/latest"><img src="https://img.shields.io/github/v/release/kutsalkiremitci/robz-play?style=flat-square&amp;label=s%C3%BCr%C3%BCm&amp;color=D97757" alt="Son sürüm"></a>
-  <a href="https://github.com/kutsalkiremitci/robz-play/releases"><img src="https://img.shields.io/github/downloads/kutsalkiremitci/robz-play/total?style=flat-square&amp;label=toplam%20indirme&amp;color=D97757" alt="Toplam indirme"></a>
+  <a href="https://github.com/kutsalkiremitci/robz-play/releases/latest"><img src="https://img.shields.io/github/v/release/kutsalkiremitci/robz-play?style=flat-square&amp;label=s%C3%BCr%C3%BCm&amp;color=E4845E" alt="Son sürüm"></a>
+  <a href="https://github.com/kutsalkiremitci/robz-play/releases"><img src="https://img.shields.io/github/downloads/kutsalkiremitci/robz-play/total?style=flat-square&amp;label=toplam%20indirme&amp;color=E4845E" alt="Toplam indirme"></a>
   <a href="https://github.com/kutsalkiremitci/robz-play/stargazers"><img src="https://img.shields.io/github/stars/kutsalkiremitci/robz-play?style=flat-square&amp;logo=github&amp;label=y%C4%B1ld%C4%B1z&amp;color=D9A65A" alt="GitHub yıldızları"></a>
   <a href="COPYING"><img src="https://img.shields.io/github/license/kutsalkiremitci/robz-play?style=flat-square&amp;label=lisans&amp;color=5A5853" alt="Lisans: AGPL-3.0"></a>
   <br>
-  <img src="https://img.shields.io/badge/GTA%20VI-60%20FPS-D97757?style=flat-square" alt="GTA VI: 60 FPS">
-  <img src="https://img.shields.io/badge/PS5%20Remote%20Play-1080p-D97757?style=flat-square" alt="PS5 Remote Play: 1080p">
+  <img src="https://img.shields.io/badge/GTA%20VI-60%20FPS-E4845E?style=flat-square" alt="GTA VI: 60 FPS">
+  <img src="https://img.shields.io/badge/PS5%20Remote%20Play-1080p-E4845E?style=flat-square" alt="PS5 Remote Play: 1080p">
   <img src="https://img.shields.io/badge/Windows-10%20%7C%2011-5A5853?style=flat-square" alt="Windows 10 ve 11">
   <img src="https://img.shields.io/badge/aray%C3%BCz-T%C3%BCrk%C3%A7e%20%7C%20English-8DB580?style=flat-square" alt="Arayüz: Türkçe ve İngilizce">
   <img src="https://img.shields.io/badge/durum-erken%20s%C3%BCr%C3%BCm-D9A65A?style=flat-square" alt="Durum: erken sürüm">
@@ -23,7 +23,7 @@
   <a href="https://kutsalkiremitci.github.io/robz-play/en/"><img src="https://img.shields.io/badge/ENGLISH-5A5853?style=for-the-badge&amp;logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0NSAzMCI%2BCiAgPHJlY3Qgd2lkdGg9IjQ1IiBoZWlnaHQ9IjMwIiBmaWxsPSIjMDEyMTY5Ii8%2BCiAgPHBhdGggZD0iTTAsMCBMNDUsMzAgTTQ1LDAgTDAsMzAiIHN0cm9rZT0iI0ZGRkZGRiIgc3Ryb2tlLXdpZHRoPSI2Ii8%2BCiAgPHBhdGggZD0iTTAsMCBMNDUsMzAgTTQ1LDAgTDAsMzAiIHN0cm9rZT0iI0M4MTAyRSIgc3Ryb2tlLXdpZHRoPSIyLjIiLz4KICA8cGF0aCBkPSJNMjIuNSwwIFYzMCBNMCwxNSBINDUiIHN0cm9rZT0iI0ZGRkZGRiIgc3Ryb2tlLXdpZHRoPSI5Ii8%2BCiAgPHBhdGggZD0iTTIyLjUsMCBWMzAgTTAsMTUgSDQ1IiBzdHJva2U9IiNDODEwMkUiIHN0cm9rZS13aWR0aD0iNS40Ii8%2BCjwvc3ZnPgo%3D" alt="English website"></a>
 </p>
 
-# Robz Play
+# <img src="assets/robzplay/logo/robzplay-ikon.svg" alt="" width="46" height="46" align="top"> Robz Play
 
 **Robz Play, GTA VI için tasarlandı: PS5'te 30 FPS çalışan oyunu, bilgisayarının ekranında 1080p ve 60 FPS akıcılığında oynatır.** PS5'ine ev ağı üzerinden Remote Play ile bağlanır, aradaki kareleri bilgisayarının ekran kartı üretir. Capture card gerekmez: PS5, bilgisayar ve ikisinin bağlı olduğu ağ yeterli.
 
@@ -35,7 +35,7 @@
 Kare üretimi zorunlu değil: ana ekranın ortasındaki **Görüntü modu** bölümünden tek tıkla açılır ve kapanır. GTA VI konsollarda 30 FPS çalışıyor; kare üretimi bu yüzden yazıldı ve GTA VI oynanarak geliştirildi. Aynı yöntem 30 FPS'e kilitli bütün PS5 ve PS4 oyunlarında işe yarar.
 
 <p align="center">
-  <a href="https://github.com/kutsalkiremitci/robz-play/releases/latest/download/RobzPlay-Setup.exe"><img src="https://img.shields.io/badge/%C3%9CCRETS%C4%B0Z%20%C4%B0ND%C4%B0R-WINDOWS%2010%20%C2%B7%2011-D97757?style=for-the-badge&amp;logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMTIgM3YxMiIvPjxwYXRoIGQ9Im02LjUgOS41IDUuNSA1LjUgNS41LTUuNSIvPjxwYXRoIGQ9Ik00IDIwLjVoMTYiLz48L3N2Zz4%3D&amp;labelColor=B5573A" alt="Ücretsiz indir: RobzPlay-Setup.exe, Windows 10 ve 11"></a>
+  <a href="https://github.com/kutsalkiremitci/robz-play/releases/latest/download/RobzPlay-Setup.exe"><img src="https://img.shields.io/badge/%C3%9CCRETS%C4%B0Z%20%C4%B0ND%C4%B0R-WINDOWS%2010%20%C2%B7%2011-E4845E?style=for-the-badge&amp;logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMTIgM3YxMiIvPjxwYXRoIGQ9Im02LjUgOS41IDUuNSA1LjUgNS41LTUuNSIvPjxwYXRoIGQ9Ik00IDIwLjVoMTYiLz48L3N2Zz4%3D&amp;labelColor=C85A35" alt="Ücretsiz indir: RobzPlay-Setup.exe, Windows 10 ve 11"></a>
   <a href="https://discord.gg/UyyEn7SHm4"><img src="https://img.shields.io/badge/DISCORD-%C3%9CCRETS%C4%B0Z%20KURULUM%20DESTE%C4%9E%C4%B0-5865F2?style=for-the-badge&amp;logo=discord&amp;logoColor=white&amp;labelColor=4752C4" alt="Discord: ücretsiz kurulum desteği"></a>
   <a href="https://kick.com/robzsogood"><img src="https://img.shields.io/badge/KICK-CANLI%20YAYINLAR-53FC18?style=for-the-badge&amp;logo=kick&amp;logoColor=53FC18&amp;labelColor=0B0E0F" alt="Kick: canlı yayınlar"></a>
 </p>
@@ -104,13 +104,13 @@ Ekran kartının bir ara kareyi yaklaşık 10 milisaniyenin altında üretebilme
 
 ## Adım adım kurulum
 
-İndirmekten ilk oyuna. İlk dört adım hazırlık, sonrakiler uygulamanın içinde. Görüntüler Robz Play 0.3.0'dan alındı; konsolun adresi ve kimliği "yayıncı modu" ile gizlendi.
+İndirmekten ilk oyuna. İlk dört adım hazırlık, sonrakiler uygulamanın içinde. Görüntüler Robz Play 0.3.1'den alındı; konsolun adresi ve kimliği "yayıncı modu" ile gizlendi.
 
 ### Hazırlık
 
 #### 1. Kurulum dosyasını indir
 
-<a href="https://github.com/kutsalkiremitci/robz-play/releases/latest/download/RobzPlay-Setup.exe"><img src="https://img.shields.io/badge/%C4%B0ND%C4%B0R-ROBZPLAY--SETUP.EXE-D97757?style=for-the-badge&amp;logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMTIgM3YxMiIvPjxwYXRoIGQ9Im02LjUgOS41IDUuNSA1LjUgNS41LTUuNSIvPjxwYXRoIGQ9Ik00IDIwLjVoMTYiLz48L3N2Zz4%3D&amp;labelColor=B5573A" alt="RobzPlay-Setup.exe dosyasını indir"></a>
+<a href="https://github.com/kutsalkiremitci/robz-play/releases/latest/download/RobzPlay-Setup.exe"><img src="https://img.shields.io/badge/%C4%B0ND%C4%B0R-ROBZPLAY--SETUP.EXE-E4845E?style=for-the-badge&amp;logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMTIgM3YxMiIvPjxwYXRoIGQ9Im02LjUgOS41IDUuNSA1LjUgNS41LTUuNSIvPjxwYXRoIGQ9Ik00IDIwLjVoMTYiLz48L3N2Zz4%3D&amp;labelColor=C85A35" alt="RobzPlay-Setup.exe dosyasını indir"></a>
 
 `RobzPlay-Setup.exe` her zaman en son sürümdür. Ücretsizdir; indirmek için hesap ya da kayıt gerekmez. Her sürümün değişiklikleri ve dosyanın SHA-256 değeri [sürümler sayfasında](https://github.com/kutsalkiremitci/robz-play/releases) yazar.
 
@@ -124,7 +124,13 @@ Kurulumu tamamla; yönetici izni istemez. Robz Play `%LOCALAPPDATA%\Programs\Rob
 
 #### 4. PS5'i hazırla
 
-PS5'te Uzaktan Oynama'yı aç:
+Sıra önemli: önce kullanıcılar, sonra Uzaktan Oynama.
+
+**1) İkinci, boş bir kullanıcı ekle.** PS5'te ana ekranın sağ üstündeki profil simgesini aç (ya da PS düğmesiyle kontrol merkezini aç), **Kullanıcı Değiştir**'i, ardından **Kullanıcı Ekle**'yi seç; boş bir oyun profili yeterli. Konsolda tek kullanıcı varsa, **Oyna**'ya bastıktan sonra PS5 açılıp o kullanıcıyı kendiliğinden seçebiliyor ve Remote Play'i ana menüye geri atıyor. İki kullanıcı olunca PS5, bağlantı kurulduktan sonra kimin oynayacağını sorar: **ana profilin yerine ikinci (yan) profili** seçip devam et. Bilgisayara bir kontrolcü (DualSense) bağlıysan ana profili seçerek de devam edebilirsin.
+
+**2) Giriş şifresini kaldır.** Profilinde PS5 giriş şifresi (4 haneli şifre) varsa kaldır; bağlantı sorunlarına yol açabiliyor.
+
+**3) Uzaktan Oynama'yı her profilde aç:**
 
 > **Ayarlar › Sistem › Uzaktan Oynama › Uzaktan Oynama'yı Etkinleştir**
 
@@ -156,17 +162,21 @@ Konsolun kartındaki **Kur**'a bas.
   <img src="assets/robzplay/kurulum/konsol-kur.webp" alt="Konsol kartı: sağda Kur düğmesi" width="92%">
 </p>
 
-Açılan **Konsolu kaydet** ekranında:
+Açılan **Konsolu kaydet** ekranı dört adımda ilerler. Her adımın sağında o adımın ne işe yaradığı ve konsolda ne yapman gerektiği yazar; **Geri** ve **Devam** düğmeleri formun altındadır.
 
-1. **PSN girişi**'ne bas ve PlayStation hesabınla giriş yap.
-2. PS5'te **Ayarlar › Sistem › Uzaktan Oynama › Cihazı Bağla**'yı seç; ekranda bir kod çıkar.
-3. O kodu **Remote Play PIN'i** alanına yaz ve sağ üstteki **Kaydet**'e bas.
+1. **Konsol:** PS5 seçili ve adresi ağda bulunmuş olarak gelir. **Devam**'a bas.
+2. **Hesap:** iki yol var. Daha önce giriş yaptıysan "Hesap hazır" yazar ve bu adım geçilir.
+   - **1 · Tarayıcıda giriş yap** (önerilen, her zaman çalışır): **Giriş sayfasını aç**'a bas ve konsolda kullandığın hesapla giriş yap. Giriş bitince tarayıcı boş ya da hata gibi görünen bir sayfa açar; bu normal. Adres çubuğuna tıkla, **Ctrl+A** ve **Ctrl+C**'ye bas, Robz Play'e dön: adres kendiliğinden alınır (alınmazsa kutuya yapıştır). Adresteki kod birkaç dakika geçerli.
+   - **2 · Çevrimiçi kimlikle bul** (giriş gerekmez): PSN kullanıcı adını yaz ve **Bul**'a bas. Seni bulabilmesi için PS5'te **Ayarlar › Kullanıcılar ve Hesaplar › Gizlilik**'teki her şeyi **Herkes** yap. Bu arama Sony'nin değil: bazen ilk seferde açılmaz ya da yanıt vermez, birkaç denemede çalışır.
+3. **Eşleştirme kodu:** PS5'te **Ayarlar › Sistem › Uzaktan Oynama › Cihazı Bağla**'yı seç ve ekranda çıkan 8 haneli kodu yaz. Kodu, 2. adımda giriş yaptığın hesabın profilindeyken (ana profilinde) al: ikinci, boş profilde alınan kod "Invalid PSN ID" hatası verir.
+4. **Kaydet:** özeti kontrol et ve **Konsolu kaydet**'e bas. "Konsol kaydedildi" yazınca **Bitti**'ye bas.
 
 <p align="center">
-  <img src="assets/robzplay/kurulum/konsolu-kaydet.webp" alt="Konsolu kaydet ekranı: PSN girişi düğmesi ve Remote Play PIN'i alanı" width="92%">
+  <img src="assets/robzplay/kurulum/kurulum-hesap.webp" alt="Konsolu kaydet, 2. adım Hesap: iki yol; tarayıcıda girişin dört adımı; sağda iki yolun anlatımı" width="49%">
+  <img src="assets/robzplay/kurulum/kurulum-kod.webp" alt="Konsolu kaydet, 3. adım Eşleştirme kodu: PS5'teki menü yolu ve 8 haneli kod alanı" width="49%">
 </p>
 <p align="center">
-  <sub>Konsolu kaydet ekranı. Adres alanı yayıncı modunda gizli görünür.</sub>
+  <sub>Solda 2. adım (PlayStation hesabı, iki yol), sağda 3. adım (PS5'teki kod). Görüntüler yayıncı modu açıkken alındı.</sub>
 </p>
 
 #### 7. Görüntü modunu seç
@@ -277,6 +287,12 @@ Robz Play bu ayarlarla geliştirilip denendi:
 | Görüntü işleyici | Kodek | Çözünürlük | Yayın | Bit hızı | Ses |
 |:---:|:---:|:---:|:---:|:---:|:---:|
 | **Vulkan** | **H265** | **1080p** | **60 FPS** | **100 Mbps** | **%100** |
+
+| Hareket ayrıntısı | Keskinleştirme | FPS sayacı |
+|:---:|:---:|:---:|
+| **Yüksek** | **Yüksek** | **Açık** |
+
+Hareket ayrıntısı **Yüksek** ekran kartına **Dengeli**'den yaklaşık üç kat daha ağır; kartın zorlanırsa **Ayarlar › Genel**'den Dengeli'ye ya da Hızlı'ya al.
 
 Görüntü işleyici olarak Vulkan seçili gelir, çünkü geliştiricinin görüntüden altyazı okuyan diğer uygulaması Robz Vision OpenGL görüntüsünü yakalayamıyor. Ev dışından bağlanırken 100 Mbps çoğu ev internetinin yükleme hızı için fazladır; **Ayarlar › Yayın** sayfasındaki **Uzak** sütununda bit hızını düşür.
 
@@ -428,10 +444,11 @@ Yayın açılıyor ama DualSense oyunda çalışmıyor ya da bağlantısı kopuy
 Çözüm:
 
 1. PS5'te yeni bir kullanıcı profili (ikinci bir hesap) ekle: ana ekranda sağ üstteki profil simgesini aç (ya da PS düğmesiyle kontrol merkezini aç), **Kullanıcı Değiştir**'i, ardından **Kullanıcı Ekle**'yi seç.
-2. Robz Play'de yeniden **Oyna**'ya bas. PS5 bu kez iki profilin olduğu bir profil seçme ekranı gösterir.
-3. Yeni oluşturduğun profili seç ve devam et; kontrolcü çalışır.
+2. Profilinde PS5 giriş şifresi varsa kaldır; bağlantı sorunlarına yol açabiliyor.
+3. Robz Play'de yeniden **Oyna**'ya bas. PS5 bu kez iki profilin olduğu bir profil seçme ekranı gösterir.
+4. **İkinci (yan) profili** seç ve devam et; kontrolcü çalışır. Bilgisayara bir kontrolcü (DualSense) bağlıysan ana profille de devam edebilirsin.
 
-**GTA VI için önemli:** ana hesabınla satın aldığın bir oyunu yeni profille oynayabilmek için ana hesapta o PS5 için **Konsol Paylaşımı ve Çevrimdışı Oynama** açık olmalı: PS5'te ana hesapla **Ayarlar › Kullanıcılar ve Hesaplar › Diğer › Konsol Paylaşımı ve Çevrimdışı Oynama**. Konsolda ilk kurulan hesapta bu genellikle zaten açıktır.
+**GTA VI için önemli:** ana hesabınla satın aldığın bir oyunu ikinci profille oynayabilmek için ana hesapta o PS5 için **Konsol Paylaşımı ve Çevrimdışı Oynama** açık olmalı: PS5'te ana hesapla **Ayarlar › Kullanıcılar ve Hesaplar › Diğer › Konsol Paylaşımı ve Çevrimdışı Oynama**. Konsolda ilk kurulan hesapta bu genellikle zaten açıktır.
 
 Menü adları PS5 sistem yazılımının sürümüne göre biraz farklı olabilir. Bu adımlardan sonra bağlantı hâlâ kopuyorsa Discord'da sor ve `robzplay-tani.txt` dosyasını ekle.
 
