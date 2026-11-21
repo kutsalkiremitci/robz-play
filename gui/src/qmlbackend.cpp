@@ -1264,6 +1264,9 @@ void QmlBackend::createSession(const StreamSessionConnectInfo &connect_info)
             QString m = tr("Chiaki Session has quit") + ":\n" + chiaki_quit_reason_string(reason);
             if (!reason_str.isEmpty())
                 m += "\n" + tr("Reason") + ": \"" + reason_str + "\"";
+            // Robz Play: the console never took the connection; what most often helps
+            if (reason == CHIAKI_QUIT_REASON_SESSION_REQUEST_UNKNOWN || reason == CHIAKI_QUIT_REASON_SESSION_REQUEST_CONNECTION_REFUSED)
+                m += "\n\n" + tr("The PS5 did not accept the connection. If it is in rest mode, press the PS button on its controller to wake it, then press Play again.");
             emit sessionError(tr("Session has quit"), m);
         }
 
@@ -1318,9 +1321,6 @@ void QmlBackend::createSession(const StreamSessionConnectInfo &connect_info)
         if (session_for_connections->IsConnected())
             setDiscoveryEnabled(false);
     });
-            // Robz Play: the console never took the connection; what most often helps
-            if (reason == CHIAKI_QUIT_REASON_SESSION_REQUEST_UNKNOWN || reason == CHIAKI_QUIT_REASON_SESSION_REQUEST_CONNECTION_REFUSED)
-                m += "\n\n" + tr("The PS5 did not accept the connection. If it is in rest mode, press the PS button on its controller to wake it, then press Play again.");
     chiaki_log_mutex.lock();
     chiaki_log_ctx = session->GetChiakiLog();
     chiaki_log_mutex.unlock();
