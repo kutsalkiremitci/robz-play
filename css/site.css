@@ -115,6 +115,19 @@ kbd {
 .nav a:hover { color: var(--text); background: var(--surface); }
 .topbar .btn { padding: 0.5em 1em; font-size: 0.95rem; }
 
+/* Dil seçimi: iki küçük bayrak */
+.lang { display: flex; align-items: center; gap: 4px; }
+.lang a {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 5px; border-radius: 8px;
+  border: 1px solid transparent;
+  opacity: 0.72;
+  transition: opacity 0.15s, background-color 0.15s, border-color 0.15s;
+}
+.lang a:hover { opacity: 1; background: var(--surface); }
+.lang a[aria-current] { opacity: 1; border-color: var(--accent); background: var(--accent-soft); }
+.lang img { width: 26px; height: 17px; border-radius: 3px; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35); }
+
 /* ---------- Düğmeler ---------- */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 0.6em;
@@ -471,7 +484,7 @@ summary:hover { color: var(--accent-hover); }
 /* ---------- Duyarlı düzen ---------- */
 @media (max-width: 1000px) {
   .nav { display: none; }
-  .topbar .btn { margin-left: auto; }
+  .lang { margin-left: auto; }
   .hero-grid { grid-template-columns: 1fr; gap: 40px; }
   .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .compare-grid, .two-col, .defaults, .support { grid-template-columns: 1fr; }
@@ -511,4 +524,14 @@ summary:hover { color: var(--accent-hover); }
   th, td { padding: 12px 12px; }
   .post-body { padding: 24px; }
   .footer-grid { grid-template-columns: 1fr; }
+}
+
+/* Çok dar telefonlar: üst çubukta logo, bayraklar ve indirme düğmesi sığsın */
+@media (max-width: 380px) {
+  .topbar .wrap { gap: 8px; }
+  .topbar .btn { padding: 0.5em 0.8em; }
+  .lang a { padding: 4px; }
+}
+@media (max-width: 350px) {
+  .topbar .brand { font-size: 0; gap: 0; }
 }
