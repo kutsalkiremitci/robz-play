@@ -42,7 +42,7 @@ Rectangle {
             bottom: infoLabel.top
             bottomMargin: 36
         }
-        source: "qrc:/icons/robzplay.svg"
+        source: "qrc:/icons/robzplay.png"
         sourceSize: Qt.size(132, 132)
     }
 

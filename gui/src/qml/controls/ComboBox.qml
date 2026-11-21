@@ -13,9 +13,9 @@ ComboBox {
         implicitWidth: 120
         implicitHeight: control.Material.textFieldHeight
         radius: 10
-        color: control.popup.visible ? "#2E2D2B" : (control.hovered ? "#201F1E" : "#1A1918")
+        color: control.popup.visible ? "#271F1C" : (control.hovered ? "#1A1514" : "#171312")
         border.width: (control.visualFocus || control.popup.visible) ? 2 : 1
-        border.color: (control.visualFocus || control.popup.visible) ? "#D97757" : (control.hovered ? "#5A5853" : "#3A3936")
+        border.color: (control.visualFocus || control.popup.visible) ? "#E4845E" : (control.hovered ? "#5E4E46" : "#3B302B")
         opacity: control.enabled ? 1.0 : 0.5
     }
 

@@ -59,12 +59,12 @@ Item {
         height: 76
         Material.elevation: 0
         background: Rectangle {
-            color: "#181716"
+            color: "#100D0C"
             Rectangle {
                 anchors.bottom: parent.bottom
                 width: parent.width
                 height: 1
-                color: "#3A3936"
+                color: "#3B302B"
             }
         }
 
@@ -110,9 +110,11 @@ Item {
             anchors.centerIn: parent
             horizontalAlignment: Qt.AlignHCenter
             verticalAlignment: Qt.AlignVCenter
-            font.family: "Georgia"
+            font.family: "Segoe UI"
+            font.weight: Font.Black
+            font.italic: true
             font.pixelSize: 30
-            color: "#FAF9F5"
+            color: "#FBF4EC"
         }
 
         Label {
@@ -126,7 +128,7 @@ Item {
             horizontalAlignment: Qt.AlignHCenter
             verticalAlignment: Qt.AlignVCenter
             font.pixelSize: 13
-            color: "#8F8D85"
+            color: "#A08F84"
         }
     }
 

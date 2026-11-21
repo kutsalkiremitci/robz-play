@@ -16,7 +16,7 @@ CheckBox {
         x: control.text ? (control.mirrored ? control.width - width - control.rightPadding : control.leftPadding) : control.leftPadding + (control.availableWidth - width) / 2
         y: control.topPadding + (control.availableHeight - height) / 2
         radius: height / 2
-        color: control.checked ? "#D97757" : "#4A4946"
+        color: control.checked ? "#E4845E" : "#4E403A"
         opacity: control.enabled ? 1.0 : 0.45
         Behavior on color { ColorAnimation { duration: 120 } }
 
@@ -29,7 +29,7 @@ CheckBox {
             radius: height / 2
             color: "transparent"
             border.width: 2
-            border.color: "#FAF9F5"
+            border.color: "#FBF4EC"
             visible: control.visualFocus
         }
 
@@ -39,7 +39,7 @@ CheckBox {
             radius: 10
             y: 3
             x: control.checked ? parent.width - width - 3 : 3
-            color: "#FAF9F5"
+            color: "#FBF4EC"
             Behavior on x { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
         }
     }
