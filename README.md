@@ -104,7 +104,7 @@ Ekran kartının bir ara kareyi yaklaşık 10 milisaniyenin altında üretebilme
 
 ## Adım adım kurulum
 
-İndirmekten ilk oyuna. İlk dört adım hazırlık, sonrakiler uygulamanın içinde. Görüntüler Robz Play 0.3.1'den alındı; konsolun adresi ve kimliği "yayıncı modu" ile gizlendi.
+İndirmekten ilk oyuna. İlk dört adım hazırlık, sonrakiler uygulamanın içinde. Görüntüler Robz Play 0.4.0'dan alındı; konsolun adresi ve kimliği "yayıncı modu" ile gizlendi.
 
 ### Hazırlık
 
