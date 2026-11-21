@@ -275,8 +275,9 @@ class Settings : public QObject
 		void SetFrameGenEnabled(bool enabled)      { settings.setValue("settings/framegen_enabled", enabled); }
 		int GetFrameGenFlowDivisor() const
 		{
-			const int divisor = settings.value("settings/framegen_flow_divisor", 2).toInt();
-			return (divisor == 1 || divisor == 2 || divisor == 4) ? divisor : 2;
+			// Robz Play: High (full resolution) by default
+			const int divisor = settings.value("settings/framegen_flow_divisor", 1).toInt();
+			return (divisor == 1 || divisor == 2 || divisor == 4) ? divisor : 1;
 		}
 		void SetFrameGenFlowDivisor(int divisor)   { settings.setValue("settings/framegen_flow_divisor", divisor); }
 		int GetFrameGenTargetFps() const
@@ -295,18 +296,19 @@ class Settings : public QObject
 		QString GetLanguage() const                { return settings.value("settings/language", "tr").toString() == "en" ? QStringLiteral("en") : QStringLiteral("tr"); }
 		void SetLanguage(const QString &language)  { settings.setValue("settings/language", language == "en" ? QStringLiteral("en") : QStringLiteral("tr")); }
 		// Picture sharpening: 0 off, 1 low, 2 medium, 3 high
-		int GetSharpening() const                  { return qBound(0, settings.value("settings/sharpening", 0).toInt(), 3); }
+		// Robz Play: sharpening on High and the FPS counter on by default
+		int GetSharpening() const                  { return qBound(0, settings.value("settings/sharpening", 3).toInt(), 3); }
 		void SetSharpening(int level)              { settings.setValue("settings/sharpening", qBound(0, level, 3)); }
-		bool GetShowFpsCounter() const             { return settings.value("settings/show_fps_counter", false).toBool(); }
+		bool GetShowFpsCounter() const             { return settings.value("settings/show_fps_counter", true).toBool(); }
 		void SetShowFpsCounter(bool enabled)       { settings.setValue("settings/show_fps_counter", enabled); }
 		QString GetFrameGenModel() const           { return settings.value("settings/framegen_model", "rife-v4.6").toString(); }
 		void SetFrameGenModel(const QString &name) { settings.setValue("settings/framegen_model", name); }
-
-		bool GetShowStreamStats() const            { return settings.value("settings/show_stream_stats", false).toBool(); }
 		// Comparison view: the left half of the picture shows the real frames only (what the
 		// console sends: 30 FPS for a 30 FPS game), the right half what frame generation makes
 		bool GetFrameGenCompare() const             { return settings.value("settings/framegen_compare", false).toBool(); }
 		void SetFrameGenCompare(bool enabled)       { settings.setValue("settings/framegen_compare", enabled); }
+
+		bool GetShowStreamStats() const            { return settings.value("settings/show_stream_stats", false).toBool(); }
 		void SetShowStreamStats(bool enabled)      { settings.setValue("settings/show_stream_stats", enabled); }
 
 		bool GetStreamerMode() const		{ return settings.value("settings/streamer_mode", false).toBool(); }

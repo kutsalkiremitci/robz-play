@@ -325,8 +325,9 @@ static void ImportChiakiNgSettingsOnce()
 //
 // They are written into the settings once - for a fresh installation, for settings taken over
 // from chiaki-ng and for an update from a version without them alike - and whatever the user
-// changes afterwards stays. Raising ROBZPLAY_DEFAULTS_VERSION applies a changed set once more.
-static const int ROBZPLAY_DEFAULTS_VERSION = 1;
+// changes afterwards stays. Each version adds a set; a newer one is applied once, on its own,
+// so the user's later changes to the earlier sets are kept.
+static const int ROBZPLAY_DEFAULTS_VERSION = 2;
 
 static void ApplyRobzPlayDefaults(QSettings &s)
 {
@@ -350,16 +351,33 @@ static void ApplyRobzPlayDefaults(QSettings &s)
 	s.setValue("settings/audio_volume", 128);            // SDL_MIX_MAXVOLUME: 100 %
 }
 
+// Version 2 (2026-11-21): the frame generation's motion detail on High (full resolution), the
+// picture sharpening on High and the FPS counter on.
+static void ApplyRobzPlayDefaults2(QSettings &s)
+{
+	s.setValue("settings/framegen_flow_divisor", 1);
+	s.setValue("settings/sharpening", 3);
+	s.setValue("settings/show_fps_counter", true);
+}
+
 static void ApplyRobzPlayDefaultsOnce()
 {
 	const QString org = QCoreApplication::organizationName();
 	const QString app = QCoreApplication::applicationName();
 	QSettings own(org, app);
 	own.setFallbacksEnabled(false);
-	if(own.value("robzplay/defaults_version", 0).toInt() >= ROBZPLAY_DEFAULTS_VERSION)
+	const int done = own.value("robzplay/defaults_version", 0).toInt();
+	if(done >= ROBZPLAY_DEFAULTS_VERSION)
 		return;
+	// only the sets this installation has not had yet
+	auto apply = [done](QSettings &s) {
+		if(done < 1)
+			ApplyRobzPlayDefaults(s);
+		if(done < 2)
+			ApplyRobzPlayDefaults2(s);
+	};
 
-	ApplyRobzPlayDefaults(own);
+	apply(own);
 
 	QStringList profiles;
 	const int count = own.beginReadArray("profiles");
@@ -375,7 +393,7 @@ static void ApplyRobzPlayDefaultsOnce()
 	{
 		QSettings own_profile(org, QStringLiteral("%1-%2").arg(app, profile));
 		own_profile.setFallbacksEnabled(false);
-		ApplyRobzPlayDefaults(own_profile);
+		apply(own_profile);
 	}
 
 	own.setValue("robzplay/defaults_version", ROBZPLAY_DEFAULTS_VERSION);
