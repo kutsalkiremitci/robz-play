@@ -2,16 +2,18 @@
   <qresource prefix="/icons">
     <file>settings-20px.svg</file>
     <file>discover-off-24px.svg</file>
-    <file>chiaking.svg</file>
-    <file>robzplay.svg</file>
+    <file>robzplay.png</file>
+    <file>robzplay-kucuk.png</file>
+    <file>robzplay-16.png</file>
+    <file>robzplay-24.png</file>
+    <file>robzplay-32.png</file>
+    <file>robzplay-48.png</file>
+    <file>robz-gunbatimi.png</file>
+    <file>robz-zemin.png</file>
     <file>kick.svg</file>
     <file>discord.svg</file>
     <file>flag-tr.svg</file>
     <file>flag-en.svg</file>
-    <file>chiaking-logo.svg</file>
-    <file>chiaking-logo-white.svg</file>
-    <file>chiaki.svg</file>
-    <file>chiaki_macos.svg</file>
     <file>chiaking_macos.svg</file>
     <file>console-ps4.svg</file>
     <file>console-ps5.svg</file>

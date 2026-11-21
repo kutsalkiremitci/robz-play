@@ -10,13 +10,16 @@
 -->
 <style>
   :root {
-    --bg: #1A1918;
+    --bg: #141110;
     --text: #FAF9F5;
     --muted: #C2C0B6;
     --faint: #8F8D85;
     --accent: #D97757;
     --line: #3A3936;
-    --serif: Georgia, "Times New Roman", serif;
+    --display: "Segoe UI Black", "Segoe UI", Arial, sans-serif;
+    --letter: linear-gradient(100deg, #FFF7EE 0%, #F5C7A6 42%, #E4845E 75%, #C85A35 100%);
+    --button: linear-gradient(100deg, #FCE6D3 0%, #F2B48F 48%, #E4845E 100%);
+    --rim: 0 0 0 2px #110E0D, 0 0 0 4px rgba(233, 153, 122, 0.85);
     --sans: "Segoe UI", system-ui, Arial, sans-serif;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -24,8 +27,8 @@
   .card {
     position: relative; width: 1280px; height: 640px; overflow: hidden;
     background:
-      radial-gradient(620px 420px at 8% 108%, rgba(217, 119, 87, 0.22), transparent 70%),
-      linear-gradient(180deg, #211F1D, #121110);
+      radial-gradient(620px 420px at 18% 100%, rgba(217, 119, 87, 0.26), transparent 70%),
+      linear-gradient(180deg, #1B1514, #100D0C);
     color: var(--text); font-family: var(--sans);
   }
 
@@ -44,13 +47,27 @@
   }
 
 
-  .content { position: absolute; left: 72px; top: 64px; width: 640px; }
-  .brand { display: flex; align-items: center; gap: 18px; }
-  .brand svg { width: 64px; height: 64px; flex: none; }
-  .brand b { font: 400 46px/1 var(--serif); letter-spacing: 0.2px; }
+  .floor {
+    position: absolute; left: -40%; width: 120%; bottom: 0; height: 230px;
+    background:
+      repeating-linear-gradient(90deg, rgba(228, 132, 94, 0.26) 0 1.5px, transparent 1.5px 70px),
+      repeating-linear-gradient(0deg, rgba(228, 132, 94, 0.26) 0 1.5px, transparent 1.5px 28px);
+    transform: perspective(300px) rotateX(58deg); transform-origin: center bottom;
+    -webkit-mask-image: linear-gradient(to top, #000 10%, transparent 90%);
+    mask-image: linear-gradient(to top, #000 10%, transparent 90%);
+  }
 
-  h1 { margin-top: 50px; font: 400 76px/1.06 var(--serif); letter-spacing: -0.5px; }
-  h1 em { font-style: normal; color: var(--accent); display: block; }
+  .content { position: absolute; left: 72px; top: 60px; width: 660px; }
+  .brand { display: flex; align-items: center; gap: 18px; }
+  .brand img { width: 78px; height: 78px; flex: none; }
+  .brand b { font: italic 900 44px/1 var(--display); letter-spacing: -0.5px; }
+
+  h1 { margin-top: 40px; font: italic 900 70px/1.08 var(--display); letter-spacing: -1px; }
+  h1 em {
+    display: block; width: fit-content; padding-right: 0.12em;
+    background: var(--letter); -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 0 24px rgba(217, 119, 87, 0.4));
+  }
   .lead { margin-top: 26px; font-size: 27px; line-height: 1.4; color: var(--muted); }
   .lead strong { color: var(--text); font-weight: 600; }
 
@@ -60,7 +77,10 @@
     padding: 9px 16px; border-radius: 999px;
     background: rgba(38, 38, 36, 0.92); border: 1px solid var(--line);
   }
-  .chips span.hot { background: var(--accent); color: #1F1E1D; border-color: transparent; }
+  .chips span.hot {
+    background: var(--button); color: #1A110D; border-color: transparent; box-shadow: var(--rim);
+    font-family: var(--display); font-style: italic; font-weight: 900;
+  }
 
   .repo {
     position: absolute; left: 72px; bottom: 42px;
@@ -73,11 +93,15 @@
   .fps {
     position: absolute; right: 56px; top: 56px;
     padding: 18px 26px 16px; border-radius: 18px;
-    background: rgba(20, 19, 18, 0.78); border: 1px solid rgba(250, 249, 245, 0.10);
+    background: rgba(20, 17, 16, 0.82); border: 2px solid rgba(233, 153, 122, 0.55);
     box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
     text-align: left;
   }
-  .fps b { display: block; font: 700 64px/1 var(--sans); color: var(--accent); letter-spacing: -1px; }
+  .fps b {
+    display: block; width: fit-content; padding-right: 0.1em;
+    font: italic 900 64px/1 var(--display); letter-spacing: -1px;
+    background: var(--letter); -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
   .fps small { display: block; margin-top: 8px; font-size: 21px; color: var(--muted); }
   .fps small i { font-style: normal; color: var(--text); font-weight: 600; }
 </style>
@@ -85,17 +109,11 @@
 <body>
 <div class="card">
   <div class="shot"></div>
+  <div class="floor"></div>
 
   <div class="content">
     <div class="brand">
-      <svg viewBox="0 0 512 512" aria-hidden="true">
-        <rect width="512" height="512" rx="116" fill="#D97757"/>
-        <g fill="none" stroke="#FAF9F5" stroke-width="46" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M120 372V140h62a60 60 0 0 1 0 120h-62"/>
-          <path d="M184 260l62 112"/>
-          <path d="M300 372V140h62a60 60 0 0 1 0 120h-62"/>
-        </g>
-      </svg>
+      <img src="../logo/robzplay-ikon.svg" alt="">
       <b>Robz Play</b>
     </div>
 

@@ -47,6 +47,12 @@ VIAddVersionKey "LegalCopyright" "AGPL-3.0-only"
 
 !define MUI_ICON "${ICON}"
 !define MUI_UNICON "${ICON}"
+; the sunset of the icon beside the welcome and finish pages, the icon in the corner of the rest
+; (makensis works in the folder of this script, so the paths are relative to it)
+!define MUI_WELCOMEFINISHPAGE_BITMAP "..\assets\robzplay\logo\kurulum-yan.bmp"
+!define MUI_HEADERIMAGE
+!define MUI_HEADERIMAGE_RIGHT
+!define MUI_HEADERIMAGE_BITMAP "..\assets\robzplay\logo\kurulum-ust.bmp"
 !define MUI_ABORTWARNING
 !define MUI_WELCOMEPAGE_TEXT "$(WelcomeText)"
 !define MUI_FINISHPAGE_RUN "$INSTDIR\${APP_EXE}"

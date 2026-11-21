@@ -1,79 +1,180 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 420" width="1280" height="420" role="img" aria-label="Robz Play: GTA VI için tasarlandı. PS5'te 30 FPS çalışan oyun, bilgisayar ekranında 60 FPS akıcılığında.">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#211F1D"/>
-      <stop offset="1" stop-color="#100F0E"/>
+    <clipPath id="bnFrame"><rect width="1280" height="420" rx="28"/></clipPath>
+    <linearGradient id="bnLetter" x1="0" y1="0" x2="1" y2="0.2">
+      <stop offset="0" stop-color="#FFF7EE"/>
+      <stop offset="0.42" stop-color="#F5C7A6"/>
+      <stop offset="0.75" stop-color="#E4845E"/>
+      <stop offset="1" stop-color="#C85A35"/>
     </linearGradient>
-    <linearGradient id="glow" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#D97757" stop-opacity="0"/>
-      <stop offset="0.55" stop-color="#D97757" stop-opacity="0.20"/>
-      <stop offset="1" stop-color="#D97757" stop-opacity="0"/>
-    </linearGradient>
-    <clipPath id="frame">
-      <rect width="1280" height="420" rx="28"/>
-    </clipPath>
+    <filter id="bnGlow" x="-10%" y="-40%" width="120%" height="180%"><feGaussianBlur stdDeviation="10"/></filter>
   </defs>
+  <g clip-path="url(#bnFrame)">
+    <!-- the sunset of the icon: sky, striped sun, city, dotted palms, grid floor -->
+    <defs>
+    <linearGradient id="bnSky" x1="0" y1="0" x2="0" y2="378" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#121010"/>
+      <stop offset="1" stop-color="#2C221E"/>
+    </linearGradient>
+    <radialGradient id="bnHaze" cx="712" cy="318" r="259.6" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#D97757" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#D97757" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="bnSun" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#E7A47F"/>
+      <stop offset="0.55" stop-color="#C96A45"/>
+      <stop offset="1" stop-color="#8C3E24"/>
+    </linearGradient>
+    <mask id="bnStripes" maskUnits="userSpaceOnUse" x="0" y="0" width="1280" height="420">
+      <rect width="1280" height="420" fill="#fff"/>
+      <g fill="#000"><rect y="296.8" width="1280" height="2.8"/><rect y="310.9" width="1280" height="4.2"/><rect y="326.3" width="1280" height="5.7"/><rect y="342.8" width="1280" height="7.1"/><rect y="360.5" width="1280" height="8.4"/><rect y="380.5" width="1280" height="9.8"/></g>
+    </mask>
+    <pattern id="bnPix" width="7.0" height="7.0" patternUnits="userSpaceOnUse">
+      <rect width="5.0" height="5.0" fill="#6E5649"/>
+    </pattern>
+    <pattern id="bnWin" width="9" height="11" patternUnits="userSpaceOnUse">
+      <rect x="2" y="3" width="3" height="3" fill="#D97757" opacity="0.6"/>
+    </pattern>
+    <linearGradient id="bnFloor" x1="0" y1="378" x2="0" y2="420" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1A1615"/>
+      <stop offset="1" stop-color="#0E0D0C"/>
+    </linearGradient>
+    <linearGradient id="bnGridFade" x1="0" y1="378" x2="0" y2="420" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff" stop-opacity="0.05"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="1"/>
+    </linearGradient>
+    <mask id="bnGridMask" maskUnits="userSpaceOnUse" x="0" y="0" width="1280" height="420">
+      <rect y="378" width="1280" height="42" fill="url(#bnGridFade)"/>
+    </mask>
+</defs><rect width="1280" height="420" fill="url(#bnSky)"/><rect width="1280" height="420" fill="url(#bnHaze)"/><circle cx="712" cy="318" r="118" fill="url(#bnSun)" mask="url(#bnStripes)" opacity="0.62"/><path d="M-10.0 378.0V357.1h21.4V378.0Z M20.4 378.0V352.7h12.2V378.0Z M32.0 378.0V348.9h23.3V378.0Z M58.3 378.0V354.4h26.3V378.0Z M84.4 378.0V365.9h16.9V378.0Z M109.0 378.0V343.6h24.0V378.0Z M141.3 378.0V359.8h14.1V378.0Z M160.2 378.0V366.7h20.6V378.0Z M181.3 378.0V342.4h17.8V378.0Z M206.8 378.0V367.8h29.8V378.0Z M242.4 378.0V355.3h12.6V378.0Z M254.6 378.0V365.5h24.1V378.0Z M289.2 378.0V369.3h16.2V378.0Z M309.0 378.0V366.7h12.4V378.0Z M327.1 378.0V356.2h20.6V378.0Z M346.8 378.0V363.8h23.8V378.0Z M381.9 378.0V350.9h13.2V378.0Z M394.9 378.0V336.2h17.5V378.0Z M412.0 378.0V337.6h26.3V378.0Z M445.3 378.0V357.3h13.0V378.0Z M461.5 378.0V366.7h27.7V378.0Z M500.9 378.0V354.4h23.9V378.0Z M536.5 378.0V369.0h23.7V378.0Z M562.4 378.0V362.4h20.8V378.0Z M585.3 378.0V348.4h13.9V378.0Z M604.3 378.0V343.4h12.6V378.0Z M619.4 378.0V361.3h26.4V378.0Z M649.9 378.0V337.2h16.8V378.0Z M668.7 378.0V357.2h29.4V378.0Z M698.2 378.0V360.9h29.1V378.0Z M741.4 378.0V337.8h15.6V378.0Z M761.1 378.0V367.6h12.3V378.0Z M775.1 378.0V337.1h24.4V378.0Z M799.1 378.0V365.0h23.4V378.0Z M828.0 378.0V367.4h26.1V378.0Z M862.6 378.0V356.7h27.5V378.0Z M890.1 378.0V343.7h26.5V378.0Z M921.9 378.0V368.0h14.1V378.0Z M936.0 378.0V366.8h24.8V378.0Z M961.6 378.0V363.7h12.4V378.0Z M976.9 378.0V363.8h19.9V378.0Z M1006.2 378.0V338.0h22.9V378.0Z M1040.4 378.0V351.3h30.0V378.0Z M1077.1 378.0V367.4h30.4V378.0Z M1114.4 378.0V345.2h18.2V378.0Z M1131.8 378.0V354.4h26.2V378.0Z M1165.4 378.0V349.3h13.2V378.0Z M1184.2 378.0V341.9h16.8V378.0Z M1205.6 378.0V368.4h29.8V378.0Z M1243.3 378.0V355.9h25.8V378.0Z M1269.4 378.0V363.5h24.4V378.0Z" fill="#1D1917"/><path d="M-6.1 378.0V359.2h13.7V378.0Z M36.2 378.0V351.8h14.9V378.0Z M87.4 378.0V367.1h10.8V378.0Z M113.3 378.0V347.0h15.4V378.0Z M163.9 378.0V367.8h13.2V378.0Z M184.5 378.0V346.0h11.4V378.0Z M212.1 378.0V368.8h19.1V378.0Z M258.9 378.0V366.8h15.4V378.0Z M292.1 378.0V370.2h10.4V378.0Z M311.3 378.0V367.9h8.0V378.0Z M416.7 378.0V341.7h16.8V378.0Z M466.5 378.0V367.8h17.7V378.0Z M505.2 378.0V356.8h15.3V378.0Z M566.2 378.0V364.0h13.3V378.0Z M587.8 378.0V351.4h8.9V378.0Z M652.9 378.0V341.3h10.7V378.0Z M703.5 378.0V362.6h18.6V378.0Z M763.3 378.0V368.6h7.9V378.0Z M779.5 378.0V341.2h15.6V378.0Z M803.4 378.0V366.3h15.0V378.0Z M832.7 378.0V368.5h16.7V378.0Z M924.4 378.0V369.0h9.0V378.0Z M963.9 378.0V365.1h7.9V378.0Z M980.5 378.0V365.2h12.8V378.0Z M1010.3 378.0V342.0h14.6V378.0Z M1045.8 378.0V354.0h19.2V378.0Z M1136.6 378.0V356.7h16.8V378.0Z M1167.8 378.0V352.2h8.4V378.0Z M1210.9 378.0V369.4h19.0V378.0Z M1247.9 378.0V358.1h16.5V378.0Z M1273.8 378.0V365.0h15.6V378.0Z" fill="url(#bnWin)"/><g transform="translate(586.0 378.0) scale(0.420 0.420) translate(-65 -396)" fill="url(#bnPix)"><path d="M58 396C64 320 74 236 96 180L104 184C84 238 76 320 72 396Z"/><path d="M100 180C70 152 40 152 10 172C44 162 72 168 98 188Z"/><path d="M100 180C82 142 58 122 30 118C62 134 80 154 96 186Z"/><path d="M100 180C110 142 132 120 160 112C136 132 118 152 106 186Z"/><path d="M100 180C132 162 162 164 186 184C158 176 130 178 104 192Z"/><path d="M100 180C120 198 132 224 134 250C122 224 110 208 96 194Z"/></g><g transform="translate(1250.0 378.0) scale(-0.500 0.500) translate(-65 -396)" fill="url(#bnPix)"><path d="M58 396C64 320 74 236 96 180L104 184C84 238 76 320 72 396Z"/><path d="M100 180C70 152 40 152 10 172C44 162 72 168 98 188Z"/><path d="M100 180C82 142 58 122 30 118C62 134 80 154 96 186Z"/><path d="M100 180C110 142 132 120 160 112C136 132 118 152 106 186Z"/><path d="M100 180C132 162 162 164 186 184C158 176 130 178 104 192Z"/><path d="M100 180C120 198 132 224 134 250C122 224 110 208 96 194Z"/></g><rect y="378" width="1280" height="42" fill="url(#bnFloor)"/><g fill="#D97757" opacity="0.32" mask="url(#bnGridMask)"><rect y="379.3" width="1280" height="1.5"/><rect y="382.4" width="1280" height="1.5"/><rect y="387.1" width="1280" height="1.5"/><rect y="393.3" width="1280" height="1.5"/><rect y="400.9" width="1280" height="1.5"/><rect y="409.8" width="1280" height="1.5"/><rect y="420.0" width="1280" height="1.5"/><path d="M712.0 378.0L-1336.0 420.0" stroke="#D97757" stroke-width="1.2"/><path d="M712.0 378.0L-1020.9 420.0" stroke="#D97757" stroke-width="1.2"/><path d="M712.0 378.0L-705.8 420.0" stroke="#D97757" stroke-width="1.2"/><path d="M712.0 378.0L-390.8 420.0" stroke="#D97757" stroke-width="1.2"/><path d="M712.0 378.0L-75.7 420.0" stroke="#D97757" stroke-width="1.2"/><path d="M712.0 378.0L239.4 420.0" stroke="#D97757" stroke-width="1.2"/><path d="M712.0 378.0L554.5 420.0" stroke="#D97757" stroke-width="1.2"/><path d="M712.0 378.0L869.5 420.0" stroke="#D97757" stroke-width="1.2"/><path d="M712.0 378.0L1184.6 420.0" stroke="#D97757" stroke-width="1.2"/><path d="M712.0 378.0L1499.7 420.0" stroke="#D97757" stroke-width="1.2"/><path d="M712.0 378.0L1814.8 420.0" stroke="#D97757" stroke-width="1.2"/><path d="M712.0 378.0L2129.8 420.0" stroke="#D97757" stroke-width="1.2"/><path d="M712.0 378.0L2444.9 420.0" stroke="#D97757" stroke-width="1.2"/><path d="M712.0 378.0L2760.0 420.0" stroke="#D97757" stroke-width="1.2"/></g><rect y="376.5" width="1280" height="3.0" fill="#D97757" opacity="0.85"/>
 
-  <g clip-path="url(#frame)">
-    <rect width="1280" height="420" fill="url(#bg)"/>
-    <rect x="-900" y="230" width="3200" height="360" fill="url(#glow)" transform="rotate(-20 640 210)"/>
-
-    <!-- the watermark of the app's loading screen -->
-    <g transform="rotate(-9 640 210)" font-family="'Arial Black', 'Segoe UI Black', Impact, Arial, sans-serif" font-weight="900" text-anchor="middle">
-      <text x="760" y="150" font-size="170" letter-spacing="10" fill="#D97757" opacity="0.055">ROBZ PLAY</text>
-      <text x="560" y="350" font-size="210" letter-spacing="12" fill="#FAF9F5" opacity="0.05">ROBZ PLAY</text>
-      <text x="820" y="540" font-size="170" letter-spacing="10" fill="#D97757" opacity="0.055">ROBZ PLAY</text>
+    <!-- the icon -->
+    <svg x="60" y="48" width="132" height="132" viewBox="0 0 512 512">
+  <defs>
+    <clipPath id="rpTile"><rect x="14" y="14" width="484" height="484" rx="106"/></clipPath>
+    <linearGradient id="rpSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#141211"/>
+      <stop offset="0.72" stop-color="#2A211D"/>
+      <stop offset="1" stop-color="#121010"/>
+    </linearGradient>
+    <radialGradient id="rpHaze" cx="0.5" cy="0.58" r="0.62">
+      <stop offset="0" stop-color="#D97757" stop-opacity="0.26"/>
+      <stop offset="1" stop-color="#D97757" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="rpSun" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#E7A47F"/>
+      <stop offset="0.55" stop-color="#C96A45"/>
+      <stop offset="1" stop-color="#8C3E24"/>
+    </linearGradient>
+    <mask id="rpSunStripes">
+      <rect width="512" height="512" fill="#fff"/>
+      <g fill="#000"><rect y="232" width="512" height="4"/><rect y="252" width="512" height="6"/><rect y="274" width="512" height="8"/><rect y="298" width="512" height="10"/><rect y="324" width="512" height="12"/><rect y="352" width="512" height="14"/></g>
+    </mask>
+    <pattern id="rpPix" width="7" height="7" patternUnits="userSpaceOnUse">
+      <rect width="5" height="5" fill="#6E5649"/>
+    </pattern>
+    <pattern id="rpWin" width="9" height="11" patternUnits="userSpaceOnUse">
+      <rect x="2" y="3" width="3" height="3" fill="#D97757" opacity="0.65"/>
+    </pattern>
+    <linearGradient id="rpLetter" x1="0" y1="0" x2="1" y2="0.35">
+      <stop offset="0" stop-color="#FFF7EE"/>
+      <stop offset="0.42" stop-color="#F5C7A6"/>
+      <stop offset="0.75" stop-color="#E4845E"/>
+      <stop offset="1" stop-color="#C85A35"/>
+    </linearGradient>
+    <linearGradient id="rpRim" x1="0" y1="0" x2="1" y2="0.35">
+      <stop offset="0" stop-color="#F6DCC6"/>
+      <stop offset="0.5" stop-color="#E9997A"/>
+      <stop offset="1" stop-color="#D16540"/>
+    </linearGradient>
+    <linearGradient id="rpShine" x1="0" y1="0" x2="0.25" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.45"/>
+      <stop offset="0.38" stop-color="#FFFFFF" stop-opacity="0.12"/>
+      <stop offset="0.39" stop-color="#FFFFFF" stop-opacity="0"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="rpFrame" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#BDB1A6"/>
+      <stop offset="0.35" stop-color="#5B534D"/>
+      <stop offset="0.7" stop-color="#3A3532"/>
+      <stop offset="1" stop-color="#8E837A"/>
+    </linearGradient>
+    <filter id="rpGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="12"/>
+    </filter>
+    <path id="rpLetters" d="M0 0H94C136 0 160 24 160 62C160 90 146 110 122 120L168 200H102L66 128H60V200H0ZM60 40V90H88C104 90 112 80 112 65C112 50 104 40 88 40ZM170 0H266C308 0 332 26 332 66C332 106 308 132 266 132H230V200H170ZM230 40V92H258C275 92 284 81 284 66C284 51 275 40 258 40Z"/>
+  </defs>
+  <g clip-path="url(#rpTile)">
+    <rect width="512" height="512" fill="url(#rpSky)"/>
+    <rect width="512" height="512" fill="url(#rpHaze)"/>
+    <circle cx="256" cy="262" r="168" fill="url(#rpSun)" mask="url(#rpSunStripes)" opacity="0.62"/>
+    <g fill="#1D1917">
+      <path d="M14 396V332h26v-22h22v40h18v-64h30v52h16v58Z"/>
+      <path d="M498 396V324h-24v-34h-26v54h-18v-30h-28v44h-14v38Z"/>
     </g>
-
-    <!-- mark -->
-    <g transform="translate(72 70) scale(0.234375)">
-      <rect width="512" height="512" rx="116" fill="#D97757"/>
-      <g fill="none" stroke="#FAF9F5" stroke-width="46" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M120 372V140h62a60 60 0 0 1 0 120h-62"/>
-        <path d="M184 260l62 112"/>
-        <path d="M300 372V140h62a60 60 0 0 1 0 120h-62"/>
-      </g>
+    <g fill="url(#rpWin)">
+      <path d="M40 396V312h20v84Z M84 396V290h22v106Z"/>
+      <path d="M450 396V294h22v102Z M404 396V318h22v78Z"/>
     </g>
+    <g fill="url(#rpPix)" opacity="0.95">
+      <path d="M58 396C64 320 74 236 96 180L104 184C84 238 76 320 72 396Z"/>
+      <path d="M100 180C70 152 40 152 10 172C44 162 72 168 98 188Z"/>
+      <path d="M100 180C82 142 58 122 30 118C62 134 80 154 96 186Z"/>
+      <path d="M100 180C110 142 132 120 160 112C136 132 118 152 106 186Z"/>
+      <path d="M100 180C132 162 162 164 186 184C158 176 130 178 104 192Z"/>
+      <path d="M100 180C120 198 132 224 134 250C122 224 110 208 96 194Z"/>
+      <path d="M454 396C448 326 440 252 420 202L412 206C430 256 438 326 440 396Z"/>
+      <path d="M416 202C444 176 474 174 502 192C470 184 444 190 418 210Z"/>
+      <path d="M416 202C432 166 456 148 484 144C454 158 436 178 420 208Z"/>
+      <path d="M416 202C404 166 382 146 354 140C380 158 398 178 410 208Z"/>
+      <path d="M416 202C386 186 358 188 334 206C362 200 388 202 412 214Z"/>
+    </g>
+    <rect y="396" width="512" height="116" fill="#121010"/>
+    <rect y="395" width="512" height="3" fill="#D97757" opacity="0.85"/>
+    <g fill="#D97757" opacity="0.2">
+      <rect y="410" width="512" height="2"/>
+      <rect y="428" width="512" height="2"/>
+      <rect y="452" width="512" height="2"/>
+      <rect y="484" width="512" height="2"/>
+    </g>
+    <g transform="translate(122.8 166.0) scale(0.92) skewX(-12)">
+      <use href="#rpLetters" fill="#D97757" stroke="#D97757" stroke-width="48" stroke-linejoin="round" filter="url(#rpGlow)" opacity="0.7"/>
+      <use href="#rpLetters" fill="url(#rpRim)" stroke="url(#rpRim)" stroke-width="42" stroke-linejoin="round"/>
+      <use href="#rpLetters" fill="#110E0D" stroke="#110E0D" stroke-width="30" stroke-linejoin="round"/>
+      <use href="#rpLetters" fill="url(#rpLetter)" stroke="#FFF7EE" stroke-opacity="0.4" stroke-width="2"/>
+      <use href="#rpLetters" fill="url(#rpShine)"/>
+    </g>
+  </g>
+  <rect x="14" y="14" width="484" height="484" rx="106" fill="none" stroke="url(#rpFrame)" stroke-width="10"/>
+  <rect x="21" y="21" width="470" height="470" rx="100" fill="none" stroke="#FAF9F5" stroke-opacity="0.10" stroke-width="2"/>
+</svg>
 
-    <text x="220" y="140" font-family="Georgia, 'Times New Roman', serif" font-size="84" fill="#FAF9F5">Robz Play</text>
-    <text x="224" y="182" font-family="'Segoe UI', system-ui, -apple-system, Helvetica, Arial, sans-serif" font-size="25" fill="#C2C0B6">PS5 Remote Play + kare üretimi</text>
-
-    <text x="72" y="256" font-family="Georgia, 'Times New Roman', serif" font-size="35" fill="#FAF9F5">GTA VI için tasarlandı.</text>
-    <text x="72" y="300" font-family="Georgia, 'Times New Roman', serif" font-size="35" fill="#FAF9F5">PS5'te 30 FPS, ekranında 60 FPS.</text>
-    <text x="72" y="342" font-family="'Segoe UI', system-ui, -apple-system, Helvetica, Arial, sans-serif" font-size="21" fill="#8F8D85">1080p Remote Play. Capture card yok: PS5, bilgisayarın ve ev ağın.</text>
+    <g font-family="'Segoe UI Black', 'Arial Black', 'Helvetica Neue', Arial, sans-serif" font-weight="900" font-style="italic">
+      <text x="212" y="122" font-size="64" fill="#FBF4EC" letter-spacing="-1">Robz Play</text>
+      <text x="66" y="224" font-size="15" fill="#E4845E" letter-spacing="3">GTA VI İÇİN TASARLANDI</text>
+      <text x="64" y="274" font-size="46" fill="#FBF4EC" letter-spacing="-0.5">PS5'te 30 FPS.</text>
+      <text x="64" y="324" font-size="46" fill="#D97757" filter="url(#bnGlow)" opacity="0.55" letter-spacing="-0.5">Ekranında 60 FPS.</text>
+      <text x="64" y="324" font-size="46" fill="url(#bnLetter)" letter-spacing="-0.5">Ekranında 60 FPS.</text>
+    </g>
+    <g font-family="'Segoe UI', system-ui, -apple-system, Helvetica, Arial, sans-serif">
+      <text x="216" y="160" font-size="22" fill="#CDBFB4">PS5 Remote Play + kare üretimi</text>
+      <text x="64" y="358" font-size="17" fill="#A8988D">1080p · capture card yok · PS5, bilgisayar ve ev ağı</text>
+    </g>
 
     <!-- what it does: the frames the console sends, and the frames you see -->
     <g font-family="'Segoe UI', system-ui, -apple-system, Helvetica, Arial, sans-serif">
-      <rect x="800" y="62" width="408" height="296" rx="20" fill="#1A1918" stroke="#3A3936"/>
-
-      <text x="828" y="106" font-size="17" fill="#8F8D85">PS5'in gönderdiği</text>
-      <text x="1180" y="106" font-size="17" fill="#C2C0B6" text-anchor="end">30 FPS</text>
-      <g fill="#8F8D85">
-        <rect x="828" y="124" width="26" height="34" rx="5"/>
-        <rect x="918" y="124" width="26" height="34" rx="5"/>
-        <rect x="1008" y="124" width="26" height="34" rx="5"/>
-        <rect x="1098" y="124" width="26" height="34" rx="5"/>
-      </g>
-
-      <text x="828" y="210" font-size="17" fill="#8F8D85">Robz Play'in gösterdiği</text>
-      <text x="1180" y="210" font-size="17" font-weight="600" fill="#D97757" text-anchor="end">60 FPS</text>
-      <g fill="#8F8D85">
-        <rect x="828" y="228" width="26" height="34" rx="5"/>
-        <rect x="918" y="228" width="26" height="34" rx="5"/>
-        <rect x="1008" y="228" width="26" height="34" rx="5"/>
-        <rect x="1098" y="228" width="26" height="34" rx="5"/>
-      </g>
-      <g fill="#D97757">
-        <rect x="873" y="228" width="26" height="34" rx="5"/>
-        <rect x="963" y="228" width="26" height="34" rx="5"/>
-        <rect x="1053" y="228" width="26" height="34" rx="5"/>
-        <rect x="1143" y="228" width="26" height="34" rx="5"/>
-      </g>
-
-      <rect x="828" y="304" width="14" height="14" rx="3" fill="#8F8D85"/>
-      <text x="850" y="317" font-size="15" fill="#C2C0B6">konsoldan gelen</text>
-      <rect x="1000" y="304" width="14" height="14" rx="3" fill="#D97757"/>
-      <text x="1022" y="317" font-size="15" fill="#C2C0B6">bilgisayarın ürettiği</text>
+      <rect x="830" y="66" width="384" height="270" rx="20" fill="#141110" fill-opacity="0.92" stroke="#E9997A" stroke-opacity="0.5" stroke-width="1.5"/>
+      <text x="856" y="108" font-size="17" fill="#A8988D">Konsolun gönderdiği</text>
+      <text x="1188" y="108" font-size="17" fill="#CDBFB4" text-anchor="end">30 FPS</text>
+      <rect x="856" y="124" width="24" height="32" rx="5" fill="#8F8075"/><rect x="940" y="124" width="24" height="32" rx="5" fill="#8F8075"/><rect x="1024" y="124" width="24" height="32" rx="5" fill="#8F8075"/><rect x="1108" y="124" width="24" height="32" rx="5" fill="#8F8075"/>
+      <text x="856" y="208" font-size="17" fill="#A8988D">Robz Play'in gösterdiği</text>
+      <text x="1188" y="208" font-size="19" font-family="'Segoe UI Black', 'Arial Black', 'Helvetica Neue', Arial, sans-serif" font-weight="900" font-style="italic" fill="#E4845E" text-anchor="end">60 FPS</text>
+      <rect x="856" y="226" width="24" height="32" rx="5" fill="#8F8075"/><rect x="940" y="226" width="24" height="32" rx="5" fill="#8F8075"/><rect x="1024" y="226" width="24" height="32" rx="5" fill="#8F8075"/><rect x="1108" y="226" width="24" height="32" rx="5" fill="#8F8075"/><rect x="898" y="226" width="24" height="32" rx="5" fill="#E4845E"/><rect x="982" y="226" width="24" height="32" rx="5" fill="#E4845E"/><rect x="1066" y="226" width="24" height="32" rx="5" fill="#E4845E"/><rect x="1150" y="226" width="24" height="32" rx="5" fill="#E4845E"/>
+      <rect x="856" y="296" width="14" height="14" rx="3" fill="#8F8075"/>
+      <text x="878" y="308" font-size="15" fill="#CDBFB4">konsoldan gelen</text>
+      <rect x="1018" y="296" width="14" height="14" rx="3" fill="#E4845E"/>
+      <text x="1040" y="308" font-size="15" fill="#CDBFB4">ekran kartının ürettiği</text>
     </g>
   </g>
+  <rect x="1" y="1" width="1278" height="418" rx="27" fill="none" stroke="#E9997A" stroke-opacity="0.25" stroke-width="2"/>
 </svg>

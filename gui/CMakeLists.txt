@@ -71,6 +71,8 @@ elseif(WIN32)
 		${CMAKE_CURRENT_SOURCE_DIR}/chiaking.rc
 		@ONLY)
 	list(APPEND RESOURCE_FILES "chiaking.rc")
+	# Robz Play: rebuild the resource when the icon changes, not only when the .rc does
+	set_source_files_properties(chiaking.rc PROPERTIES OBJECT_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/robzplay.ico)
 endif()
 
 if(CHIAKI_ENABLE_STEAMDECK_NATIVE AND LINUX)

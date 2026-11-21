@@ -484,7 +484,14 @@ int real_main(int argc, char *argv[])
 #ifdef Q_OS_MACOS
 	QGuiApplication::setWindowIcon(QIcon(":/icons/chiaking_macos.svg"));
 #else
-	QGuiApplication::setWindowIcon(QIcon(":/icons/robzplay.svg"));
+	{
+		// Robz Play: the small sizes (title bar, taskbar) use the simpler drawing of the icon
+		QIcon icon;
+		for (int size : {16, 24, 32, 48})
+			icon.addFile(QString(":/icons/robzplay-%1.png").arg(size), QSize(size, size));
+		icon.addFile(":/icons/robzplay.png", QSize(512, 512));
+		QGuiApplication::setWindowIcon(icon);
+	}
 #endif
 
 	QCommandLineParser parser;
