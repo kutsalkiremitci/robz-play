@@ -460,7 +460,8 @@ void FrameGenStage::workerMain()
 	if(config.enabled)
 	{
 		robzfg::RifeInterpolator::Config rife_config;
-		rife_config.model_dir = config.model_dir.toLocal8Bit().toStdString();
+		// UTF-8: the model sits beside the executable, in a folder any user name can be part of
+		rife_config.model_dir = config.model_dir.toUtf8().toStdString();
 		rife_config.flow_divisor = config.flow_divisor;
 		rife_config.protect_static = config.protect_static;
 		std::string error;

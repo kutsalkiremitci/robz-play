@@ -21,6 +21,11 @@ SetCompressorDictSize 64
 
 !include "MUI2.nsh"
 !include "LogicLib.nsh"
+!include "FileFunc.nsh"
+
+; /UPDATE: started by Robz Play itself to install a newer version. Only the progress page is
+; shown, the installer waits for Robz Play to close, and it starts the new version at the end.
+Var UpdateMode
 
 !define APP_NAME "Robz Play"
 !define APP_EXE "RobzPlay.exe"
@@ -49,9 +54,12 @@ VIAddVersionKey "LegalCopyright" "AGPL-3.0-only"
 !define MUI_FINISHPAGE_LINK "${APP_URL}"
 !define MUI_FINISHPAGE_LINK_LOCATION "${APP_URL}"
 
+!define MUI_PAGE_CUSTOMFUNCTION_PRE SkipInUpdateMode
 !insertmacro MUI_PAGE_WELCOME
+!define MUI_PAGE_CUSTOMFUNCTION_PRE SkipInUpdateMode
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
+!define MUI_PAGE_CUSTOMFUNCTION_PRE SkipInUpdateMode
 !insertmacro MUI_PAGE_FINISH
 
 !insertmacro MUI_UNPAGE_CONFIRM
@@ -68,15 +76,39 @@ LangString RunNow ${LANG_ENGLISH} "Open Robz Play now"
 LangString AppRunning ${LANG_TURKISH} "Robz Play şu anda açık. Kapat, sonra Yeniden Dene'ye bas."
 LangString AppRunning ${LANG_ENGLISH} "Robz Play is running. Close it, then choose Retry."
 
+Function .onInit
+	StrCpy $UpdateMode 0
+	${GetParameters} $R0
+	ClearErrors
+	${GetOptions} $R0 "/UPDATE" $R1
+	${IfNot} ${Errors}
+		StrCpy $UpdateMode 1
+	${EndIf}
+FunctionEnd
+
+Function SkipInUpdateMode
+	${If} $UpdateMode == 1
+		Abort
+	${EndIf}
+FunctionEnd
+
 ; Stops until the installed executable can be written, i.e. until the application is closed.
+; During an update Robz Play is closing itself, so it is given up to 15 seconds first.
 !macro EnsureNotRunning
 	${If} ${FileExists} "$INSTDIR\${APP_EXE}"
+		StrCpy $R9 0
 		${Do}
 			ClearErrors
 			FileOpen $0 "$INSTDIR\${APP_EXE}" a
 			${IfNot} ${Errors}
 				FileClose $0
 				${ExitDo}
+			${EndIf}
+			${If} $UpdateMode == 1
+			${AndIf} $R9 < 60
+				IntOp $R9 $R9 + 1
+				Sleep 250
+				${Continue}
 			${EndIf}
 			MessageBox MB_RETRYCANCEL|MB_ICONEXCLAMATION "$(AppRunning)" /SD IDCANCEL IDRETRY +2
 			Abort
@@ -101,6 +133,9 @@ Section "Robz Play" SecMain
 
 	CreateShortcut "$SMPROGRAMS\${APP_NAME}.lnk" "$INSTDIR\${APP_EXE}"
 	CreateShortcut "$DESKTOP\${APP_NAME}.lnk" "$INSTDIR\${APP_EXE}"
+	; for support: the folder with the start-up log (robzplay-acilis.log) and the stream logs
+	CreateDirectory "$APPDATA\RobzPlay\RobzPlay\log"
+	CreateShortcut "$SMPROGRAMS\${APP_NAME} günlükleri.lnk" "$APPDATA\RobzPlay\RobzPlay\log"
 
 	WriteRegStr HKCU "${UNINST_KEY}" "DisplayName" "${APP_NAME}"
 	WriteRegStr HKCU "${UNINST_KEY}" "DisplayVersion" "${VERSION}"
@@ -113,12 +148,18 @@ Section "Robz Play" SecMain
 	WriteRegDWORD HKCU "${UNINST_KEY}" "EstimatedSize" ${SIZEKB}
 	WriteRegDWORD HKCU "${UNINST_KEY}" "NoModify" 1
 	WriteRegDWORD HKCU "${UNINST_KEY}" "NoRepair" 1
+
+	${If} $UpdateMode == 1
+		SetAutoClose true
+		Exec '"$INSTDIR\${APP_EXE}"'
+	${EndIf}
 SectionEnd
 
 Section "Uninstall"
 	!insertmacro EnsureNotRunning
 
 	Delete "$SMPROGRAMS\${APP_NAME}.lnk"
+	Delete "$SMPROGRAMS\${APP_NAME} günlükleri.lnk"
 	Delete "$DESKTOP\${APP_NAME}.lnk"
 
 	; Only what was installed is removed - never the folder as a whole, which may be one

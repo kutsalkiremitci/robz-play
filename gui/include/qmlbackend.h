@@ -6,6 +6,7 @@
 #include "qmlcontroller.h"
 #include "qmlsettings.h"
 #include "framegen.h"
+#include "updatechecker.h"
 
 #include <QObject>
 #include <QMutex>
@@ -83,6 +84,7 @@ class QmlBackend : public QObject
     Q_PROPERTY(QmlSettings* settings READ qmlSettings CONSTANT)
     Q_PROPERTY(StreamSession* session READ qmlSession NOTIFY sessionChanged)
     Q_PROPERTY(FrameGenStage* frameGen READ qmlFrameGen CONSTANT)
+    Q_PROPERTY(UpdateChecker* updater READ qmlUpdater CONSTANT)
     Q_PROPERTY(QString uiPreview READ uiPreview CONSTANT)
     Q_PROPERTY(QList<QmlController*> controllers READ qmlControllers NOTIFY controllersChanged)
     Q_PROPERTY(bool discoveryEnabled READ discoveryEnabled WRITE setDiscoveryEnabled NOTIFY discoveryEnabledChanged)
@@ -121,6 +123,7 @@ public:
     QmlSettings *qmlSettings() const;
     StreamSession *qmlSession() const;
     FrameGenStage *qmlFrameGen() const { return framegen; }
+    UpdateChecker *qmlUpdater() const { return updater; }
     // Development aid: ROBZPLAY_UI_PREVIEW=stream-loading or stream-menu opens the stream
     // screen without a console, so its look can be checked. Empty in normal use.
     QString uiPreview() const { return qEnvironmentVariable("ROBZPLAY_UI_PREVIEW"); }
@@ -295,6 +298,7 @@ private:
     QmlMainWindow *window = {};
     StreamSession *session = {};
     FrameGenStage *framegen = {};
+    UpdateChecker *updater = {};
     // Counts the runs of the frame generation stage, so that a frame of a run that has
     // ended can be told apart when it reaches the window late (see createSession).
     QAtomicInteger<quint64> framegen_run = 0;

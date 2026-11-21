@@ -691,6 +691,23 @@ DialogView {
 
                         Label {
                             Layout.alignment: Qt.AlignLeft
+                            text: qsTr("Check For Updates:")
+                        }
+
+                        C.CheckBox {
+                            checked: Chiaki.updater.autoCheck
+                            onToggled: Chiaki.updater.autoCheck = checked
+                        }
+
+                        Label {
+                            Layout.alignment: Qt.AlignLeft
+                            color: "#8F8D85"
+                            font.pixelSize: 14
+                            text: qsTr("(On)")
+                        }
+
+                        Label {
+                            Layout.alignment: Qt.AlignLeft
                             text: qsTr("Frame Generation Motion Detail:")
                         }
 
@@ -1590,10 +1607,8 @@ DialogView {
                         Layout.preferredWidth: 400
                         model: [qsTr("360p"), qsTr("540p"), qsTr("720p"), qsTr("1080p (Default)")]
                         currentIndex: Chiaki.settings.resolutionLocalPS5 - 1
-                        onActivated: (index) => {
-                            Chiaki.settings.resolutionLocalPS5 = index + 1
-                            Chiaki.settings.bitrateLocalPS5 = 0
-                        }
+                        // the bitrate stays as it is: Robz Play's default is 100 Mbps at every resolution
+                        onActivated: (index) => Chiaki.settings.resolutionLocalPS5 = index + 1
                         visible: selectedConsole == SettingsDialog.Console.PS5
                         KeyNavigation.right: resolutionRemotePS5
                         KeyNavigation.up: consoleSelection
@@ -1609,12 +1624,10 @@ DialogView {
                     C.ComboBox {
                         id: resolutionRemotePS5
                         Layout.preferredWidth: 400
-                        model: [qsTr("360p"), qsTr("540p"), qsTr("720p (Default)"), qsTr("1080p")]
+                        model: [qsTr("360p"), qsTr("540p"), qsTr("720p"), qsTr("1080p (Default)")]
                         currentIndex: Chiaki.settings.resolutionRemotePS5 - 1
-                        onActivated: (index) => {
-                            Chiaki.settings.resolutionRemotePS5 = index + 1
-                            Chiaki.settings.bitrateRemotePS5 = 0
-                        }
+                        // the bitrate stays as it is: Robz Play's default is 100 Mbps at every resolution
+                        onActivated: (index) => Chiaki.settings.resolutionRemotePS5 = index + 1
                         visible: selectedConsole == SettingsDialog.Console.PS5
                         KeyNavigation.left: resolutionLocalPS5
                         KeyNavigation.up: consoleSelection
@@ -1804,7 +1817,7 @@ DialogView {
                                 verticalCenter: parent.verticalCenter
                                 leftMargin: 10
                             }
-                            text: (parent.value) + qsTr(" Mbps") + qsTr(" (%1 Mbps)").arg(parent.bitrate.toFixed(0))
+                            text: (parent.value) + qsTr(" Mbps") + qsTr(" (%1 Mbps)").arg(100)
                         }
                     }
 
@@ -1838,7 +1851,7 @@ DialogView {
                                 verticalCenter: parent.verticalCenter
                                 leftMargin: 10
                             }
-                            text: (parent.value) + qsTr(" Mbps") + qsTr(" (%1 Mbps)").arg(parent.bitrate.toFixed(0))
+                            text: (parent.value) + qsTr(" Mbps") + qsTr(" (%1 Mbps)").arg(100)
                         }
                     }
 

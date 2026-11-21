@@ -11,7 +11,13 @@
 
 // ugly workaround because Windows does weird things and ENOTIME
 int real_main(int argc, char *argv[]);
-int main(int argc, char *argv[]) { return real_main(argc, argv); }
+void StartupLogFinish(int code);
+int main(int argc, char *argv[])
+{
+	const int code = real_main(argc, argv);
+	StartupLogFinish(code);
+	return code;
+}
 
 #include <streamsession.h>
 #include <settings.h>
@@ -21,6 +27,11 @@ int main(int argc, char *argv[]) { return real_main(argc, argv); }
 #include <qmlmainwindow.h>
 #include <robztranslator.h>
 #include <QApplication>
+#ifdef _WIN32
+#include <windows.h>
+#include <stdlib.h>
+#include <string>
+#endif
 #include <QtTypes>
 
 #ifdef CHIAKI_ENABLE_CLI
@@ -39,6 +50,11 @@ int main(int argc, char *argv[]) { return real_main(argc, argv); }
 #endif
 
 #include <QCommandLineParser>
+#include <QDateTime>
+#include <QDir>
+#include <QMutex>
+#include <QSysInfo>
+#include <signal.h>
 #include <QMap>
 #include <QSettings>
 #include <QStringList>
@@ -62,6 +78,149 @@ static const QMap<QString, CLICommand> cli_commands = {
 	{ "discover", { chiaki_cli_cmd_discover } },
 	{ "wakeup", { chiaki_cli_cmd_wakeup } }
 };
+#endif
+
+// ---------------------------------------------------------------- Robz Play start-up log
+//
+// Every launch writes what happens while the application starts - and whatever it reports
+// later outside a stream - to %APPDATA%\RobzPlay\RobzPlay\log\robzplay-acilis.log. The launch
+// before is kept as robzplay-acilis-onceki.log. A crash is noted there as well, with the module
+// it happened in. The stream logs (chiaki_session_*.log) only come to be once a stream starts,
+// so a launch that fails before that used to leave nothing behind to look at.
+//
+// ROBZPLAY_TEST_CRASH=1 makes a launch crash on purpose right after the log is open, to see
+// that a crash is recorded.
+#ifdef _WIN32
+static HANDLE startup_log_file = INVALID_HANDLE_VALUE;
+static QtMessageHandler startup_log_previous_handler = nullptr;
+static LPTOP_LEVEL_EXCEPTION_FILTER startup_log_previous_filter = nullptr;
+static QMutex startup_log_mutex;
+static qint64 startup_log_bytes = 0;
+static const qint64 STARTUP_LOG_LIMIT = 8 * 1024 * 1024;
+
+static void StartupLogRaw(const char *text, size_t length)
+{
+	if(startup_log_file == INVALID_HANDLE_VALUE)
+		return;
+	DWORD written = 0;
+	WriteFile(startup_log_file, text, static_cast<DWORD>(length), &written, nullptr);
+	startup_log_bytes += written;
+}
+
+static void StartupLogLine(const QString &line)
+{
+	const QByteArray utf8 = (QDateTime::currentDateTime().toString(QStringLiteral("HH:mm:ss.zzz ")) + line + QStringLiteral("\r\n")).toUtf8();
+	QMutexLocker locker(&startup_log_mutex);
+	if(startup_log_bytes > STARTUP_LOG_LIMIT)
+		return;
+	StartupLogRaw(utf8.constData(), static_cast<size_t>(utf8.size()));
+	if(startup_log_bytes > STARTUP_LOG_LIMIT)
+	{
+		static const char note[] = "... (günlük 8 MB'a ulaştı; bundan sonrasını yazmıyor, bir çökme yine de yazılır)\r\n";
+		StartupLogRaw(note, sizeof(note) - 1);
+	}
+}
+
+static void StartupLogMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message)
+{
+	static const char *const levels[] = { "ayrıntı", "uyarı", "HATA", "ÖLÜMCÜL HATA", "bilgi" };
+	const int index = static_cast<int>(type);
+	QString line = QStringLiteral("[%1] ").arg(QString::fromUtf8(index >= 0 && index <= 4 ? levels[index] : "?"));
+	if(context.category && strcmp(context.category, "default") != 0)
+		line += QString::fromLatin1(context.category) + QStringLiteral(": ");
+	StartupLogLine(line + message);
+	if(type == QtFatalMsg && startup_log_file != INVALID_HANDLE_VALUE)
+		FlushFileBuffers(startup_log_file);
+	if(startup_log_previous_handler)
+		startup_log_previous_handler(type, context, message);
+}
+
+// Runs inside a crash: no Qt, no allocation, no lock - only Win32 and a buffer on the stack.
+static LONG WINAPI StartupLogCrashFilter(EXCEPTION_POINTERS *info)
+{
+	if(startup_log_file != INVALID_HANDLE_VALUE && info && info->ExceptionRecord)
+	{
+		const EXCEPTION_RECORD *record = info->ExceptionRecord;
+		wchar_t module_path[MAX_PATH] = L"?";
+		HMODULE module = nullptr;
+		if(GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+				reinterpret_cast<LPCWSTR>(record->ExceptionAddress), &module))
+			GetModuleFileNameW(module, module_path, MAX_PATH);
+		const wchar_t *module_name = wcsrchr(module_path, L'\\');
+		module_name = module_name ? module_name + 1 : module_path;
+		char module_utf8[MAX_PATH * 3] = "?";
+		WideCharToMultiByte(CP_UTF8, 0, module_name, -1, module_utf8, sizeof(module_utf8), nullptr, nullptr);
+		const unsigned long long offset = module
+			? static_cast<unsigned long long>(reinterpret_cast<const char *>(record->ExceptionAddress) - reinterpret_cast<const char *>(module))
+			: 0;
+		SYSTEMTIME now;
+		GetLocalTime(&now);
+		char line[1024];
+		const int length = snprintf(line, sizeof(line),
+			"%02u:%02u:%02u.%03u ÇÖKTÜ: istisna 0x%08lX, %s+0x%llX içinde. Robz Play burada kapandı.\r\n",
+			now.wHour, now.wMinute, now.wSecond, now.wMilliseconds,
+			static_cast<unsigned long>(record->ExceptionCode), module_utf8, offset);
+		if(length > 0)
+			StartupLogRaw(line, static_cast<size_t>(length < static_cast<int>(sizeof(line)) ? length : static_cast<int>(sizeof(line)) - 1));
+		FlushFileBuffers(startup_log_file);
+	}
+	return startup_log_previous_filter ? startup_log_previous_filter(info) : EXCEPTION_CONTINUE_SEARCH;
+}
+
+static void StartupLogAbort(int)
+{
+	static const char note[] = "ÇÖKTÜ: program kendini durdurdu (abort). Nedeni hemen üstteki satırlarda.\r\n";
+	StartupLogRaw(note, sizeof(note) - 1);
+	if(startup_log_file != INVALID_HANDLE_VALUE)
+		FlushFileBuffers(startup_log_file);
+}
+
+static void StartupLogOpen()
+{
+	const wchar_t *appdata = _wgetenv(L"APPDATA");
+	if(!appdata || !*appdata)
+		return;
+	const QString dir = QString::fromWCharArray(appdata) + QLatin1Char('\\') + QCoreApplication::organizationName()
+		+ QLatin1Char('\\') + QCoreApplication::applicationName() + QStringLiteral("\\log");
+	QDir().mkpath(dir);
+	const QString path = dir + QStringLiteral("\\robzplay-acilis.log");
+	const QString previous = dir + QStringLiteral("\\robzplay-acilis-onceki.log");
+	MoveFileExW(reinterpret_cast<const wchar_t *>(path.utf16()), reinterpret_cast<const wchar_t *>(previous.utf16()), MOVEFILE_REPLACE_EXISTING);
+	startup_log_file = CreateFileW(reinterpret_cast<const wchar_t *>(path.utf16()), GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_DELETE,
+		nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+	if(startup_log_file == INVALID_HANDLE_VALUE)
+		return;
+	static const char bom[] = "\xEF\xBB\xBF";
+	StartupLogRaw(bom, 3);
+
+	std::wstring exe(32768, L'\0');
+	exe.resize(GetModuleFileNameW(nullptr, exe.data(), static_cast<DWORD>(exe.size())));
+	StartupLogLine(QStringLiteral("Robz Play %1 açılıyor (chiaki-ng %2), %3")
+		.arg(QStringLiteral(ROBZPLAY_VERSION), QStringLiteral(CHIAKI_VERSION), QDateTime::currentDateTime().toString(Qt::ISODate)));
+	StartupLogLine(QStringLiteral("Windows: %1, çekirdek %2").arg(QSysInfo::prettyProductName(), QSysInfo::kernelVersion()));
+	StartupLogLine(QStringLiteral("Program: %1").arg(QString::fromStdWString(exe)));
+
+	startup_log_previous_handler = qInstallMessageHandler(StartupLogMessageHandler);
+	startup_log_previous_filter = SetUnhandledExceptionFilter(StartupLogCrashFilter);
+	signal(SIGABRT, StartupLogAbort);
+
+	if(qEnvironmentVariableIntValue("ROBZPLAY_TEST_CRASH") == 1)
+	{
+		StartupLogLine(QStringLiteral("ROBZPLAY_TEST_CRASH: bilerek çöküyor"));
+		*static_cast<volatile int *>(nullptr) = 1;
+	}
+}
+
+void StartupLogFinish(int code)
+{
+	if(startup_log_file == INVALID_HANDLE_VALUE)
+		return;
+	StartupLogLine(QStringLiteral("Kapanış: normal, çıkış kodu %1").arg(code));
+	FlushFileBuffers(startup_log_file);
+}
+#else
+static void StartupLogOpen() {}
+void StartupLogFinish(int) {}
 #endif
 
 // Robz Play is a fork of chiaki-ng and keeps its own settings. On the very first
@@ -159,6 +318,70 @@ static void ImportChiakiNgSettingsOnce()
 	fprintf(stderr, "Robz Play: imported existing chiaki-ng settings (%d profile(s))\n", (int)profiles.size());
 }
 
+// The settings Robz Play and Robz Vision are built and tested with: the Vulkan renderer (Robz
+// Vision cannot capture the OpenGL one), H265, 1080p at 60 FPS with 100 Mbps on the home
+// network and over the internet, and the sound at full volume.
+//
+// They are written into the settings once - for a fresh installation, for settings taken over
+// from chiaki-ng and for an update from a version without them alike - and whatever the user
+// changes afterwards stays. Raising ROBZPLAY_DEFAULTS_VERSION applies a changed set once more.
+static const int ROBZPLAY_DEFAULTS_VERSION = 1;
+
+static void ApplyRobzPlayDefaults(QSettings &s)
+{
+	// names that chiaki-ng's oldest versions used; on load they would overwrite the values below
+	for(const char *legacy : { "settings/resolution", "settings/fps", "settings/codec", "settings/bitrate" })
+		s.remove(QString::fromLatin1(legacy));
+
+	s.setValue("settings/render_backend", "vulkan");
+	s.remove("settings/vulkan_startup_pending");
+	s.remove("settings/vulkan_startup_failures");
+	s.remove("settings/vulkan_fallback_version");
+
+	s.setValue("settings/codec_local_ps5", "h265");
+	s.setValue("settings/codec_remote_ps5", "h265");
+	s.setValue("settings/resolution_local_ps5", "1080p");
+	s.setValue("settings/resolution_remote_ps5", "1080p");
+	s.setValue("settings/fps_local_ps5", 60);
+	s.setValue("settings/fps_remote_ps5", 60);
+	s.setValue("settings/bitrate_local_ps5", 100000);    // kbps
+	s.setValue("settings/bitrate_remote_ps5", 100000);
+	s.setValue("settings/audio_volume", 128);            // SDL_MIX_MAXVOLUME: 100 %
+}
+
+static void ApplyRobzPlayDefaultsOnce()
+{
+	const QString org = QCoreApplication::organizationName();
+	const QString app = QCoreApplication::applicationName();
+	QSettings own(org, app);
+	own.setFallbacksEnabled(false);
+	if(own.value("robzplay/defaults_version", 0).toInt() >= ROBZPLAY_DEFAULTS_VERSION)
+		return;
+
+	ApplyRobzPlayDefaults(own);
+
+	QStringList profiles;
+	const int count = own.beginReadArray("profiles");
+	for(int i = 0; i < count; i++)
+	{
+		own.setArrayIndex(i);
+		const QString name = own.value("settings/profile_name").toString();
+		if(!name.isEmpty())
+			profiles.append(name);
+	}
+	own.endArray();
+	for(const QString &profile : std::as_const(profiles))
+	{
+		QSettings own_profile(org, QStringLiteral("%1-%2").arg(app, profile));
+		own_profile.setFallbacksEnabled(false);
+		ApplyRobzPlayDefaults(own_profile);
+	}
+
+	own.setValue("robzplay/defaults_version", ROBZPLAY_DEFAULTS_VERSION);
+	own.sync();
+	fprintf(stderr, "Robz Play: applied the Robz Play defaults (version %d, %d profile(s))\n", ROBZPLAY_DEFAULTS_VERSION, (int)profiles.size());
+}
+
 int RunStream(QGuiApplication &app, const StreamSessionConnectInfo &connect_info);
 int RunMain(QGuiApplication &app, Settings *settings, bool exit_app_on_stream_exit);
 
@@ -179,6 +402,7 @@ int real_main(int argc, char *argv[])
 		QGuiApplication::setOrganizationName(qEnvironmentVariable("ROBZPLAY_SETTINGS_ORG"));
 	QGuiApplication::setApplicationName("RobzPlay");
 	QGuiApplication::setApplicationVersion(ROBZPLAY_VERSION);
+	StartupLogOpen();
 	QGuiApplication::setApplicationDisplayName("Robz Play");
 #if defined(Q_OS_MACOS)
 	// Use a plain CAMetalLayer for Vulkan windows. Qt's own layer presents in step with each
@@ -204,11 +428,22 @@ int real_main(int argc, char *argv[])
 
 	qputenv("QTWEBENGINE_CHROMIUM_FLAGS", "--disable-gpu");
 #if defined(Q_OS_WIN)
-	const size_t cSize = strlen(argv[0])+1;
-	wchar_t wc[cSize];
-	mbstowcs (wc, argv[0], cSize);
-	QString import_path = QFileInfo(QString::fromWCharArray(wc)).dir().absolutePath() + "/qml";
-	qputenv("QML_IMPORT_PATH", import_path.toUtf8());
+	// The QML modules ship in a "qml" folder beside the executable, and Qt is told so here.
+	// The path of the executable and the variable are both handled as UTF-16. Read from
+	// argv[0] and set as UTF-8, as this used to be done, the path was garbled whenever a
+	// folder on the way had a letter outside ASCII - a Windows user name such as "bahadır",
+	// which is where a per-user installation lives - and the application then closed at
+	// once, without a window, finding none of its QML modules.
+	{
+		std::wstring exe_path(32768, L'\0');
+		const DWORD exe_path_len = GetModuleFileNameW(nullptr, exe_path.data(), static_cast<DWORD>(exe_path.size()));
+		if(exe_path_len > 0 && exe_path_len < exe_path.size())
+		{
+			exe_path.resize(exe_path_len);
+			const QString import_path = QFileInfo(QString::fromStdWString(exe_path)).dir().absolutePath() + "/qml";
+			_wputenv((L"QML_IMPORT_PATH=" + import_path.toStdWString()).c_str());
+		}
+	}
 	// Microsoft's OpenCL, OpenGL and Vulkan Compatibility Pack adds the Dozen driver (Vulkan on
 	// D3D12) beside the GPU's own, and loading it can crash the app even when it isn't used. Where
 	// Dozen is the only Vulkan driver, Vulkan then finds no device and chiaki-ng uses OpenGL,
@@ -303,6 +538,7 @@ int real_main(int argc, char *argv[])
 
 	if(!sandbox_settings || !qEnvironmentVariableIsEmpty("ROBZPLAY_IMPORT_FROM_ORG"))
 		ImportChiakiNgSettingsOnce();
+	ApplyRobzPlayDefaultsOnce();
 
 	Settings settings(parser.isSet(profile_option) ? parser.value(profile_option) : QString());
 	RobzTranslator::instance()->setLanguage(settings.GetLanguage());

@@ -286,6 +286,11 @@ class Settings : public QObject
 		void SetFrameGenTargetFps(int fps)         { settings.setValue("settings/framegen_target_fps", fps >= 100 ? 120 : 60); }
 		bool GetFrameGenProtectStatic() const      { return settings.value("settings/framegen_protect_static", true).toBool(); }
 		void SetFrameGenProtectStatic(bool enabled) { settings.setValue("settings/framegen_protect_static", enabled); }
+		// Robz Play update notices: look for a newer release, and a release not to offer again
+		bool GetUpdateCheck() const                 { return settings.value("settings/update_check", true).toBool(); }
+		void SetUpdateCheck(bool enabled)           { settings.setValue("settings/update_check", enabled); }
+		QString GetUpdateSkipVersion() const        { return settings.value("settings/update_skip_version").toString(); }
+		void SetUpdateSkipVersion(const QString &v) { settings.setValue("settings/update_skip_version", v); }
 		// Interface language: "tr" (Turkish, the default) or "en"
 		QString GetLanguage() const                { return settings.value("settings/language", "tr").toString() == "en" ? QStringLiteral("en") : QStringLiteral("tr"); }
 		void SetLanguage(const QString &language)  { settings.setValue("settings/language", language == "en" ? QStringLiteral("en") : QStringLiteral("tr")); }
@@ -409,6 +414,17 @@ class Settings : public QObject
 		// crashed inside the Vulkan driver or a Vulkan layer can be told apart on the next one
 		bool GetVulkanStartupPending() const { return settings.value("settings/vulkan_startup_pending", false).toBool(); }
 		void SetVulkanStartupPending(bool pending) { settings.setValue("settings/vulkan_startup_pending", pending); }
+		// Robz Play: Vulkan starts cut short in a row, and the version that gave up on Vulkan
+		int GetVulkanStartupFailures() const { return settings.value("settings/vulkan_startup_failures", 0).toInt(); }
+		void SetVulkanStartupFailures(int failures) { settings.setValue("settings/vulkan_startup_failures", failures); }
+		QString GetVulkanFallbackVersion() const { return settings.value("settings/vulkan_fallback_version").toString(); }
+		void SetVulkanFallbackVersion(const QString &version)
+		{
+			if(version.isEmpty())
+				settings.remove("settings/vulkan_fallback_version");
+			else
+				settings.setValue("settings/vulkan_fallback_version", version);
+		}
 		void Sync();
 
 		float GetZoomFactor() const;

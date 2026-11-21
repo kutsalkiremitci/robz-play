@@ -21,6 +21,16 @@
 #include <mutex>
 #include <sstream>
 
+#ifdef _WIN32
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <windows.h>
+#endif
+
 #include <command.h>
 #include <gpu.h>
 #include <net.h>
@@ -53,6 +63,26 @@ void setError(std::string *error, const std::string &message)
 {
 	if(error)
 		*error = message;
+}
+
+// Opens a file whose path is UTF-8. The C library of Windows takes paths in the ANSI code
+// page, which cannot spell every folder name (a user called "bahadır" on an English
+// Windows), so there the path goes through UTF-16. A path that is not UTF-8 after all - one
+// typed on the command line of the lab tool - is opened as it was given.
+FILE *openUtf8(const std::string &path, const char *mode)
+{
+#ifdef _WIN32
+	const int length = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, path.c_str(), -1, nullptr, 0);
+	if(length > 0)
+	{
+		std::wstring wide(static_cast<size_t>(length), L'\0');
+		MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, path.c_str(), -1, &wide[0], length);
+		const std::wstring wide_mode(mode, mode + strlen(mode));
+		if(FILE *file = _wfopen(wide.c_str(), wide_mode.c_str()))
+			return file;
+	}
+#endif
+	return fopen(path.c_str(), mode);
 }
 
 int paddingForModel(const std::string &model_dir)
@@ -453,15 +483,17 @@ bool RifeInterpolator::init(const Config &config, std::string *error)
 	const std::string model_path = config.model_dir + "/flownet.bin";
 	std::string param_text;
 	{
-		std::ifstream file(param_path, std::ios::binary);
+		FILE *file = openUtf8(param_path, "rb");
 		if(!file)
 		{
 			setError(error, "could not open " + param_path);
 			return false;
 		}
-		std::ostringstream buffer;
-		buffer << file.rdbuf();
-		param_text = buffer.str();
+		char chunk[65536];
+		size_t got = 0;
+		while((got = fread(chunk, 1, sizeof(chunk), file)) > 0)
+			param_text.append(chunk, got);
+		fclose(file);
 	}
 	std::string rewritten;
 	if(!rewriteParamForFields(param_text, rewritten, error))
@@ -471,10 +503,16 @@ bool RifeInterpolator::init(const Config &config, std::string *error)
 		setError(error, "could not load " + param_path);
 		return false;
 	}
-	if(d->flownet.load_model(model_path.c_str()) != 0)
 	{
-		setError(error, "could not load " + model_path);
-		return false;
+		FILE *file = openUtf8(model_path, "rb");
+		const int loaded = file ? d->flownet.load_model(file) : -1;
+		if(file)
+			fclose(file);
+		if(loaded != 0)
+		{
+			setError(error, "could not load " + model_path);
+			return false;
+		}
 	}
 
 	// the net may have switched options off that the device does not support

@@ -11,6 +11,7 @@
   <img src="https://img.shields.io/badge/aray%C3%BCz-T%C3%BCrk%C3%A7e%20%7C%20English-8DB580?style=flat-square" alt="Arayüz: Türkçe ve İngilizce">
   <img src="https://img.shields.io/badge/lisans-AGPL--3.0-5A5853?style=flat-square" alt="Lisans: AGPL-3.0">
   <a href="https://kick.com/robzsogood"><img src="https://img.shields.io/badge/Kick-robzsogood-53FC18?style=flat-square" alt="Kick: robzsogood"></a>
+  <a href="https://discord.gg/UyyEn7SHm4"><img src="https://img.shields.io/badge/Discord-destek-5865F2?style=flat-square" alt="Discord: ücretsiz destek"></a>
 </p>
 
 # Robz Play
@@ -99,6 +100,7 @@ Can göstergesi, mini harita, altyazı gibi **sabit duran HUD öğeleri ayrıca 
 | **FPS sayacı** | Gösterilen ve kaynak FPS'i birlikte gösterir. Görüntünün içine çizilir, OBS kayıtlarında da görünür. |
 | **Yayın içi menü** | `Ctrl+O` ile açılır: ses, mikrofon, yakınlaştırma, keskinleştirme, FPS sayacı, bağlantı değerleri. |
 | **Türkçe ve İngilizce** | Uygulama Türkçe açılır; ana ekrandaki bayraklardan dil değişir. |
+| **Güncelleme bildirimi** | Yeni bir sürüm çıkınca uygulama yeniliklerini senin dilinde gösterir; "Şimdi güncelle" ile indirip kurar ve yeniden açar. İstersen sonraya bırakır ya da o sürümü atlarsın. |
 | **Remote Play'in tamamı** | [chiaki-ng](https://github.com/chiaki-ng/chiaki-ng) temelli: DualSense desteği, PSN üzerinden ev dışından bağlanma, tuş eşleme, profiller. |
 
 <p align="center">
@@ -150,7 +152,7 @@ Kartın zorlanırsa **Hareket ayrıntısı** ayarını "Hızlı"ya al: hareket, 
 
 Kurulum dosyası imzalı olmadığı için Windows ilk çalıştırmada "Windows kişisel bilgisayarınızı korudu" uyarısı gösterebilir; "Ek bilgi" ve ardından "Yine de çalıştır" ile devam edilir.
 
-- **Güncellemek için** yeni `RobzPlay-Setup.exe` dosyasını çalıştırman yeterli; ayarların ve kayıtlı konsolların korunur.
+- **Güncellemek için** bir şey yapman gerekmez: yeni sürüm çıkınca Robz Play açılışta ve birkaç saatte bir bunu fark eder, yenilikleri gösterir ve "Şimdi güncelle" dersen kendisi indirip kurar. Elle güncellemek istersen yeni `RobzPlay-Setup.exe` dosyasını çalıştırman yeterli. Ayarların ve kayıtlı konsolların her iki durumda da korunur.
 - **Kaldırmak için** Windows'un "Yüklü uygulamalar" listesinden Robz Play'i kaldır. Ayarların Windows kayıt defterinde kalır.
 
 > [!TIP]
@@ -233,6 +235,15 @@ Remote Play PSN hesabıyla ev dışından bağlanmayı destekler. Kare üretimi 
 **HDR?**
 Kare üretimi HDR yayınla henüz denenmedi.
 
+## Sorun giderme
+
+Takıldığın bir yer olursa [Discord sunucumuzda](https://discord.gg/UyyEn7SHm4) ücretsiz yardım alabilirsin; uygulamanın sol menüsündeki Discord düğmesi de oraya götürür.
+
+Robz Play açılmıyorsa ya da hata veriyorsa:
+
+- **Günlükler:** Başlat menüsündeki **"Robz Play günlükleri"** kısayolu günlük klasörünü açar (`%APPDATA%\RobzPlay\RobzPlay\log`). Her açılış `robzplay-acilis.log` dosyasına yazılır; bir önceki açılış `robzplay-acilis-onceki.log` olarak saklanır. Uygulama çökerse son satırda hangi dosyada çöktüğü yazar. Yayın günlükleri `chiaki_session_…log` adıyla aynı klasördedir.
+- **Tanı:** kurulum klasöründeki (`%LOCALAPPDATA%\Programs\Robz Play`) **`Tani.bat`** dosyasına çift tıkla. Bilgisayarın, ekran kartının ve son açılışların bilgisini masaüstüne `robzplay-tani.txt` olarak yazar; sorun bildirirken bu dosyayı ekle.
+
 ## Yol haritası
 
 - İmzalı kurulum dosyası.
@@ -266,5 +277,5 @@ PlayStation, PS5, PS4 ve DualSense, Sony Interactive Entertainment'ın markalar�
 ---
 
 <p align="center">
-  Canlı yayınlar: <a href="https://kick.com/robzsogood"><b>kick.com/robzsogood</b></a>
+  Canlı yayınlar: <a href="https://kick.com/robzsogood"><b>kick.com/robzsogood</b></a> · Destek: <a href="https://discord.gg/UyyEn7SHm4"><b>Discord</b></a>
 </p>

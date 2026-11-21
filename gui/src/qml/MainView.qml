@@ -10,6 +10,7 @@ Pane {
     id: consolePane
     StackView.onActivated: {
         forceActiveFocus(Qt.TabFocusReason);
+        updateOfferTimer.restart();
         if(!Chiaki.autoConnect && !root.initialAsk && !Chiaki.window.directStream)
         {
             root.initialAsk = true;
@@ -648,15 +649,85 @@ Pane {
                     }
                 }
 
+                AbstractButton {
+                    id: discordBadge
+                    Layout.fillWidth: true
+                    Layout.topMargin: 6
+                    implicitHeight: 58
+                    focusPolicy: Qt.NoFocus
+                    hoverEnabled: true
+                    HoverHandler { cursorShape: Qt.PointingHandCursor }
+                    onClicked: Qt.openUrlExternally("https://discord.gg/UyyEn7SHm4")
+                    background: Rectangle {
+                        radius: 12
+                        color: discordBadge.hovered ? consolePane.cSurfaceHover : consolePane.cSurface
+                        border.width: 1
+                        border.color: discordBadge.hovered ? "#5865F2" : consolePane.cBorder
+                    }
+                    contentItem: RowLayout {
+                        spacing: 12
+                        Image {
+                            Layout.leftMargin: 14
+                            source: "qrc:/icons/discord.svg"
+                            sourceSize: Qt.size(26, 26)
+                        }
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: 0
+                            Label {
+                                Layout.fillWidth: true
+                                text: "discord.gg/UyyEn7SHm4"
+                                color: consolePane.cText
+                                font.pixelSize: 15
+                                font.weight: Font.DemiBold
+                                elide: Text.ElideRight
+                            }
+                            Label {
+                                text: qsTr("Get help on Discord")
+                                color: consolePane.cFaint
+                                font.pixelSize: 12
+                            }
+                        }
+                    }
+                }
+
                 RowLayout {
                     Layout.topMargin: 10
                     Layout.leftMargin: 6
                     spacing: 8
-                    Label {
+                    ColumnLayout {
                         Layout.fillWidth: true
-                        text: qsTr("Version %1").arg(Qt.application.version)
-                        color: consolePane.cFaint
-                        font.pixelSize: 12
+                        spacing: 4
+                        Label {
+                            Layout.fillWidth: true
+                            text: qsTr("Version %1").arg(Qt.application.version)
+                            color: consolePane.cFaint
+                            font.pixelSize: 12
+                        }
+                        // a newer release that is waiting: opens its notes again
+                        AbstractButton {
+                            id: updateBadge
+                            visible: Chiaki.updater.available
+                            implicitHeight: 24
+                            implicitWidth: updateBadgeLabel.implicitWidth + 20
+                            focusPolicy: Qt.NoFocus
+                            hoverEnabled: true
+                            HoverHandler { cursorShape: Qt.PointingHandCursor }
+                            onClicked: updatePopup.open()
+                            background: Rectangle {
+                                radius: 12
+                                color: updateBadge.hovered ? consolePane.cAccentHover : consolePane.cAccent
+                            }
+                            contentItem: Label {
+                                id: updateBadgeLabel
+                                text: qsTr("Update available: %1").arg(Chiaki.updater.latestVersion)
+                                color: consolePane.cOnAccent
+                                font.pixelSize: 12
+                                font.weight: Font.DemiBold
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
+                        }
                     }
                     CardAction {
                         text: qsTr("Quit")
@@ -1263,6 +1334,238 @@ Pane {
                 }
 
                 Item { Layout.fillHeight: true }
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------ update
+    // A newer release is offered once per version and run of the application, and only here
+    // on the home screen - never in the middle of a game.
+    function offerUpdate() {
+        if (!Chiaki.updater.available || updatePopup.opened)
+            return;
+        if (root.updateOfferedVersion === Chiaki.updater.latestVersion)
+            return;
+        if (consolePane.StackView.status !== StackView.Active)
+            return;
+        root.updateOfferedVersion = Chiaki.updater.latestVersion;
+        updatePopup.open();
+    }
+
+    // a moment after the home screen shows, so it does not collide with the start-up questions
+    Timer {
+        id: updateOfferTimer
+        interval: 1500
+        onTriggered: consolePane.offerUpdate()
+    }
+
+    Connections {
+        target: Chiaki.updater
+        function onOffered() { updateOfferTimer.restart(); }
+    }
+
+    Popup {
+        id: updatePopup
+        readonly property bool busy: Chiaki.updater.state === "downloading" || Chiaki.updater.state === "starting"
+        // centred on the application window, the same way the other dialogs are: the overlay's
+        // own size can still be that of the minimised window the popup was opened in
+        parent: Overlay.overlay
+        x: Math.round((root.width - width) / 2)
+        y: Math.round((root.height - height) / 2)
+        width: Math.max(420, Math.min(700, root.width - 64))
+        height: Math.max(300, Math.min(updateColumn.implicitHeight + 2 * padding, root.height - 64))
+        padding: 30
+        modal: true
+        focus: true
+        closePolicy: busy ? Popup.NoAutoClose : (Popup.CloseOnEscape | Popup.CloseOnPressOutside)
+        onOpened: updateColumn.forceActiveFocus(Qt.TabFocusReason)
+        onClosed: consolePane.forceActiveFocus(Qt.TabFocusReason)
+
+        Overlay.modal: Rectangle { color: "#A6000000" }
+        background: Rectangle {
+            radius: 18
+            color: "#262624"
+            border.color: "#3A3936"
+        }
+
+        contentItem: ColumnLayout {
+            id: updateColumn
+            spacing: 16
+            Keys.onReturnPressed: if (!updatePopup.busy) Chiaki.updater.install()
+            Keys.onEscapePressed: {
+                if (Chiaki.updater.state === "downloading")
+                    Chiaki.updater.cancel();
+                else if (!updatePopup.busy)
+                    updatePopup.close();
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 16
+                Image {
+                    source: "qrc:/icons/robzplay.svg"
+                    sourceSize: Qt.size(52, 52)
+                }
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: 2
+                    Label {
+                        Layout.fillWidth: true
+                        text: qsTr("New version: %1").arg(Chiaki.updater.latestVersion)
+                        font.family: consolePane.serif
+                        font.pixelSize: 28
+                        color: consolePane.cText
+                        elide: Text.ElideRight
+                    }
+                    Label {
+                        Layout.fillWidth: true
+                        text: qsTr("You are using %1").arg(Chiaki.updater.currentVersion)
+                        font.pixelSize: 15
+                        color: consolePane.cMuted
+                    }
+                }
+            }
+
+            Label {
+                text: qsTr("What's new")
+                font.pixelSize: 15
+                font.weight: Font.DemiBold
+                color: consolePane.cMuted
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                Layout.preferredHeight: Math.min(notesText.implicitHeight + 32, 320)
+                Layout.minimumHeight: 80
+                radius: 12
+                color: consolePane.cInset
+                border.color: consolePane.cBorder
+
+                Flickable {
+                    id: notesFlick
+                    anchors {
+                        fill: parent
+                        margins: 16
+                    }
+                    clip: true
+                    contentWidth: width
+                    contentHeight: notesText.implicitHeight
+                    boundsBehavior: Flickable.StopAtBounds
+                    ScrollBar.vertical: ScrollBar { policy: notesFlick.contentHeight > notesFlick.height ? ScrollBar.AlwaysOn : ScrollBar.AlwaysOff }
+
+                    Text {
+                        id: notesText
+                        width: notesFlick.width - 12
+                        text: Chiaki.updater.notes
+                        textFormat: Text.MarkdownText
+                        wrapMode: Text.Wrap
+                        color: consolePane.cText
+                        linkColor: consolePane.cAccent
+                        font.pixelSize: 15
+                        lineHeight: 1.2
+                        onLinkActivated: (link) => Qt.openUrlExternally(link)
+                    }
+                }
+            }
+
+            // the download, while it runs
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 6
+                visible: updatePopup.busy
+                Rectangle {
+                    Layout.fillWidth: true
+                    implicitHeight: 8
+                    radius: 4
+                    color: consolePane.cInset
+                    Rectangle {
+                        width: parent.width * Math.max(0, Math.min(1, Chiaki.updater.progress))
+                        height: parent.height
+                        radius: 4
+                        color: consolePane.cAccent
+                    }
+                }
+                Label {
+                    text: Chiaki.updater.state === "starting"
+                        ? qsTr("Starting the installer…")
+                        : qsTr("Downloading %1 of %2 MB").arg(Chiaki.updater.downloadedMb.toFixed(0)).arg(Chiaki.updater.sizeMb.toFixed(0))
+                    font.pixelSize: 14
+                    color: consolePane.cMuted
+                }
+            }
+
+            Label {
+                Layout.fillWidth: true
+                visible: Chiaki.updater.state === "error"
+                text: Chiaki.updater.errorText
+                color: consolePane.cWarn
+                font.pixelSize: 14
+                wrapMode: Text.Wrap
+            }
+
+            Label {
+                Layout.fillWidth: true
+                visible: !updatePopup.busy
+                text: qsTr("Updating closes Robz Play, installs the new version and opens it again. Your settings and consoles are kept.")
+                color: consolePane.cFaint
+                font.pixelSize: 13
+                wrapMode: Text.Wrap
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.topMargin: 4
+                spacing: 10
+
+                CardAction {
+                    visible: !updatePopup.busy
+                    text: qsTr("Open the release page")
+                    onClicked: Qt.openUrlExternally(Chiaki.updater.releaseUrl)
+                }
+                Item { Layout.fillWidth: true }
+                CardAction {
+                    visible: !updatePopup.busy
+                    text: qsTr("Skip this version")
+                    onClicked: {
+                        Chiaki.updater.skip();
+                        updatePopup.close();
+                    }
+                }
+                CardAction {
+                    visible: !updatePopup.busy
+                    text: qsTr("Later")
+                    onClicked: updatePopup.close()
+                }
+                CardAction {
+                    visible: Chiaki.updater.state === "downloading"
+                    text: qsTr("Cancel")
+                    onClicked: Chiaki.updater.cancel()
+                }
+                AbstractButton {
+                    id: updateNowButton
+                    implicitHeight: 44
+                    implicitWidth: Math.max(160, updateNowLabel.implicitWidth + 44)
+                    enabled: !updatePopup.busy
+                    opacity: enabled ? 1.0 : 0.5
+                    focusPolicy: Qt.NoFocus
+                    hoverEnabled: true
+                    HoverHandler { cursorShape: Qt.PointingHandCursor }
+                    onClicked: Chiaki.updater.install()
+                    background: Rectangle {
+                        radius: 10
+                        color: updateNowButton.hovered ? consolePane.cAccentHover : consolePane.cAccent
+                    }
+                    contentItem: Label {
+                        id: updateNowLabel
+                        text: qsTr("Update now")
+                        color: consolePane.cOnAccent
+                        font.pixelSize: 16
+                        font.weight: Font.DemiBold
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                }
             }
         }
     }

@@ -297,12 +297,15 @@ QmlBackend::QmlBackend(Settings *settings, QmlMainWindow *window)
     qmlRegisterUncreatableType<QmlSettings>(uri, 1, 0, "ChiakiSettings", {});
     qmlRegisterUncreatableType<StreamSession>(uri, 1, 0, "ChiakiSession", {});
     qmlRegisterUncreatableType<FrameGenStage>(uri, 1, 0, "RobzFrameGen", {});
+    qmlRegisterUncreatableType<UpdateChecker>(uri, 1, 0, "RobzUpdater", {});
 
     framegen = new FrameGenStage(this);
+    updater = new UpdateChecker(settings, this);
     window->setSharpening(settings->GetSharpening());
     connect(settings_qml, &QmlSettings::languageChanged, this, [this]() {
         RobzTranslator::instance()->setLanguage(this->settings->GetLanguage());
         this->window->retranslateUi();
+        this->updater->languageChanged();
     });
     connect(settings_qml, &QmlSettings::sharpeningChanged, this, [this]() {
         this->window->setSharpening(this->settings->GetSharpening());

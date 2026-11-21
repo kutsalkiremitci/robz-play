@@ -28,8 +28,17 @@ rm -rf "$STAGE" "dist/release/$NAME.zip"
 mkdir -p "$STAGE"
 cp -r dist/RobzPlay/. "$STAGE/"
 cp build/gui/RobzPlay.exe "$STAGE/RobzPlay.exe"
+# What the deploy step does not pick up. The Vulkan loader comes with every graphics driver,
+# but without one Robz Play would not even start; with it, it starts and falls back to OpenGL.
+# The JPEG library is what Qt's JPEG plugin needs. The glib network plugin is of no use on
+# Windows and could only fail to load.
+cp /mingw64/bin/vulkan-1.dll /mingw64/bin/libjpeg-8.dll "$STAGE/"
+rm -f "$STAGE/networkinformation/qglib.dll"
 mkdir -p "$STAGE/models"
 cp -r robzfg/models/. "$STAGE/models/"
+
+# for support: a double click on Tani.bat writes what is needed to see why it does not start
+cp scripts/robzplay-tani.ps1 scripts/Tani.bat "$STAGE/"
 
 mkdir -p "$STAGE/licenses"
 cp COPYING "$STAGE/licenses/COPYING.txt"
@@ -90,6 +99,22 @@ Ayrintilar, kaynak kodu ve sorun bildirimi:
 Lisans: AGPL-3.0 (licenses klasorune bak). Sony Interactive Entertainment, Rockstar Games
 ya da Take-Two Interactive ile bir bagi yoktur.
 EOF
+
+echo "== Checking that every DLL the package loads is in it or part of Windows"
+MISSING=""
+while read -r dll; do
+	case "$dll" in api-ms-*|ext-ms-*) continue ;; esac
+	[ -n "$(find "$STAGE" -iname "$dll" -print -quit)" ] && continue
+	# in System32, but installed by graphics drivers rather than by Windows
+	case "$dll" in vulkan-1.dll|opencl.dll|nvcuda.dll) MISSING="$MISSING $dll"; continue ;; esac
+	[ -f "/c/Windows/System32/$dll" ] && continue
+	MISSING="$MISSING $dll"
+done < <(find "$STAGE" \( -iname '*.dll' -o -iname '*.exe' \) -print0 | xargs -0 -n 50 objdump -p 2>/dev/null | sed -n 's/.*DLL Name: //p' | tr 'A-Z' 'a-z' | sort -u)
+if [ -n "$MISSING" ]; then
+	echo "Missing from the package:$MISSING"
+	exit 1
+fi
+echo "== All DLLs present"
 
 echo "== Compressing"
 ( cd dist/release && /c/Windows/System32/tar.exe -a -c -f "$NAME.zip" "$NAME" )

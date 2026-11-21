@@ -2642,6 +2642,7 @@ QmlMainWindow::~QmlMainWindow()
     // A normal exit isn't a crash, whether or not Vulkan showed a frame or the queued clear ran
     if (settings && render_backend == RenderBackend::Vulkan) {
         settings->SetVulkanStartupPending(false);
+        settings->SetVulkanStartupFailures(0);
         settings->Sync();
     }
 
@@ -2753,7 +2754,11 @@ QmlMainWindow::~QmlMainWindow()
         delete render_thread->parent();
     delete qml_engine;
 
+#ifdef Q_OS_WIN
+    FILE *file = _wfopen(reinterpret_cast<const wchar_t *>(shader_cache_path().utf16()), L"wb");
+#else
     FILE *file = fopen(qPrintable(shader_cache_path()), "wb");
+#endif
     if (file) {
         pl_cache_save_file(placebo_cache, file);
         fclose(file);
@@ -4933,6 +4938,17 @@ void QmlMainWindow::doneOpenGLContextCurrent()
 void QmlMainWindow::init(Settings *settings, bool exit_app_on_stream_exit)
 {
     bypass_frame_queue = settings->GetDirectFrameMapping();
+    // Robz Play: OpenGL kept after Vulkan failed to start twice in a row lasts until the next
+    // version, which tries Vulkan again
+    if (settings->GetRenderBackend() == RenderBackend::OpenGL) {
+        const QString fallback_version = settings->GetVulkanFallbackVersion();
+        if (!fallback_version.isEmpty() && fallback_version != QStringLiteral(ROBZPLAY_VERSION)) {
+            settings->SetRenderBackend(RenderBackend::Vulkan);
+            settings->SetVulkanFallbackVersion(QString());
+            settings->SetVulkanStartupFailures(0);
+            settings->Sync();
+        }
+    }
     render_backend = settings->GetRenderBackend();
     setSurfaceType(render_backend == RenderBackend::Vulkan ? QWindow::VulkanSurface : QWindow::OpenGLSurface);
     qparams = {};
@@ -5049,11 +5065,23 @@ void QmlMainWindow::init(Settings *settings, bool exit_app_on_stream_exit)
         }
 
         if (settings->GetVulkanStartupPending()) {
-            // The last launch closed before Vulkan showed a frame, which is how a crash inside the
-            // Vulkan driver or a third-party Vulkan layer looks; keep OpenGL until switched back
-            settings->SetRenderBackend(RenderBackend::OpenGL);
-            fallbackToOpenGL(tr("Robz Play closed while starting Vulkan last time, so it now uses OpenGL. "
-                                "You can switch back under Settings > Video > Renderer Backend."));
+            // The last launch closed before Vulkan showed a frame. That is how a crash inside the
+            // Vulkan driver or a third-party Vulkan layer looks - but also a launch that was only
+            // cut short: killed, started in a remote desktop session, a power cut. Robz Play is
+            // meant to run on Vulkan (Robz Vision cannot capture OpenGL), so one such launch
+            // moves only this one to OpenGL. A second one in a row keeps OpenGL, until the next
+            // version tries Vulkan again.
+            const int failures = settings->GetVulkanStartupFailures() + 1;
+            settings->SetVulkanStartupFailures(failures);
+            if (failures >= 2) {
+                settings->SetRenderBackend(RenderBackend::OpenGL);
+                settings->SetVulkanFallbackVersion(QStringLiteral(ROBZPLAY_VERSION));
+                fallbackToOpenGL(tr("Robz Play closed twice in a row while starting Vulkan, so it now uses OpenGL. "
+                                    "It tries Vulkan again after the next update; you can also switch back under Settings > Video > Renderer Backend."));
+            } else {
+                fallbackToOpenGL(tr("Robz Play closed while starting Vulkan last time, so this launch uses OpenGL. "
+                                    "Vulkan is tried again next time."));
+            }
             goto renderer_backend_ready;
         }
         settings->SetVulkanStartupPending(true);
@@ -5202,7 +5230,11 @@ renderer_backend_ready:
     };
     placebo_cache = pl_cache_create(&cache_params);
     pl_gpu_set_cache(placeboGpu(), placebo_cache);
+#ifdef Q_OS_WIN
+    FILE *file = _wfopen(reinterpret_cast<const wchar_t *>(shader_cache_path().utf16()), L"rb");
+#else
     FILE *file = fopen(qPrintable(shader_cache_path()), "rb");
+#endif
     if (file) {
         pl_cache_load_file(placebo_cache, file);
         fclose(file);
@@ -5249,6 +5281,10 @@ renderer_backend_ready:
     deferred_swap_thread->start(QThread::HighPriority);
 
     qml_engine = new QQmlEngine(this);
+#ifdef Q_OS_WIN
+    // the modules beside the executable, whatever became of QML_IMPORT_PATH on the way here
+    qml_engine->addImportPath(QCoreApplication::applicationDirPath() + QStringLiteral("/qml"));
+#endif
     qml_engine->addImageProvider(QStringLiteral("svg"), new QmlSvgProvider);
     if (!qml_engine->incubationController())
         qml_engine->setIncubationController(quick_window->incubationController());
@@ -6535,6 +6571,7 @@ void QmlMainWindow::confirmVulkanStartup()
         return;
     QMetaObject::invokeMethod(this, [this]() {
         settings->SetVulkanStartupPending(false);
+        settings->SetVulkanStartupFailures(0);
         settings->Sync();
     }, Qt::QueuedConnection);
 }

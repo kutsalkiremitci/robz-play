@@ -641,16 +641,10 @@ Item {
                                 stepSize: 1
                                 value: Chiaki.settings.audioVolume
                                 onMoved: Chiaki.settings.audioVolume = value
-                                KeyNavigation.left: closeButton
-                                KeyNavigation.right: muteButton
-                                Keys.onUpPressed: {
-                                    increase();
-                                    Chiaki.settings.audioVolume = value;
-                                }
-                                Keys.onDownPressed: {
-                                    decrease();
-                                    Chiaki.settings.audioVolume = value;
-                                }
+                                // Left and right change the volume, down goes to the row below. Down
+                                // used to lower the volume, so moving through the menu with a
+                                // controller could turn the sound all the way off.
+                                KeyNavigation.down: defaultButton
                                 Keys.onEscapePressed: menuController.close()
                             }
 
@@ -706,18 +700,8 @@ Item {
                                     Chiaki.window.ZoomFactor = value
                                     Chiaki.settings.sZoomFactor = value
                                 }
-                                KeyNavigation.left: zoomButton
-                                KeyNavigation.right: stretchButton
-                                Keys.onUpPressed: {
-                                    increase();
-                                    Chiaki.window.ZoomFactor = value;
-                                    Chiaki.settings.sZoomFactor = value;
-                                }
-                                Keys.onDownPressed: {
-                                    decrease();
-                                    Chiaki.window.ZoomFactor = value;
-                                    Chiaki.settings.sZoomFactor = value;
-                                }
+                                // left and right change the zoom, down goes to the row below
+                                KeyNavigation.down: defaultButton
                                 Keys.onEscapePressed: menuController.close()
                             }
 

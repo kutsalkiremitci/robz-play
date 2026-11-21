@@ -763,6 +763,9 @@ void QmlSettings::setRendererBackend(int backend)
         return;
 
     settings->SetRenderBackend(next_backend);
+    // the user's own choice: never undone by Robz Play's automatic Vulkan retry
+    settings->SetVulkanFallbackVersion(QString());
+    settings->SetVulkanStartupFailures(0);
     emit rendererBackendChanged();
 }
 
