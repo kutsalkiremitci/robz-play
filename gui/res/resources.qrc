@@ -1,8 +1,6 @@
 <RCC>
   <qresource prefix="/icons">
     <file>settings-20px.svg</file>
-    <file>add-24px.svg</file>
-    <file>discover-24px.svg</file>
     <file>discover-off-24px.svg</file>
     <file>chiaking.svg</file>
     <file>robzplay.svg</file>
@@ -21,8 +19,6 @@
     <file>buttons-deck.svg</file>
     <file>l1.svg</file>
     <file>r1.svg</file>
-    <file>l3.svg</file>
-    <file>r3.svg</file>
     <file>options.svg</file>
     <file>steam_hero.png</file>
     <file>steam_icon.png</file>
