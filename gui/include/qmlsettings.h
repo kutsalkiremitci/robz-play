@@ -617,6 +617,17 @@ public:
     void refreshAllPlaceboKeys();
 
     QString logDirectory() const;
+    // Robz Play logs section: the log files, newest first, as
+    // { name, kind ("startup", "previous", "session" or "other"), modified, size, problems }
+    Q_INVOKABLE QVariantList logFiles() const;
+    // the text of one log file of the log folder (its last part when it is very long), as
+    // { text, truncated }
+    Q_INVOKABLE QVariantMap readLogFile(const QString &name) const;
+    Q_INVOKABLE void openLogFile(const QString &name) const;
+    Q_INVOKABLE void openLogFolder() const;
+    // Tani.bat beside the executable: writes robzplay-tani.txt to the desktop
+    Q_INVOKABLE bool diagnosticsAvailable() const;
+    Q_INVOKABLE void runDiagnostics() const;
     QStringList availableDecoders() const;
     QStringList availableAudioOutDevices() const;
     QStringList availableAudioInDevices() const;

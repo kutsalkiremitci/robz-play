@@ -11,6 +11,12 @@
 #include <QApplication>
 #include <QCoreApplication>
 #include <QProcess>
+#include <QDateTime>
+#include <QDesktopServices>
+#include <QDir>
+#include <QFile>
+#include <QFileInfo>
+#include <QUrl>
 
 extern "C" {
 #include <libavcodec/avcodec.h>
@@ -1767,6 +1773,109 @@ void QmlSettings::setPlaceboToneMappingContrastSmoothness(float smoothness)
 QString QmlSettings::logDirectory() const
 {
     return GetLogBaseDir();
+}
+
+namespace
+{
+// a file name of the log folder, never a path that leads out of it
+QString logFilePath(const QString &name)
+{
+    if (name.isEmpty() || name.contains(QLatin1Char('/')) || name.contains(QLatin1Char('\\')) || name.contains(QLatin1String("..")))
+        return QString();
+    const QString dir = GetLogBaseDir();
+    if (dir.isEmpty())
+        return QString();
+    return QDir(dir).filePath(name);
+}
+
+// the last `max_bytes` of a file, cut at a line start
+QByteArray readTail(const QString &path, qint64 max_bytes, bool *truncated)
+{
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly))
+        return QByteArray();
+    const qint64 size = file.size();
+    *truncated = size > max_bytes;
+    if (*truncated)
+        file.seek(size - max_bytes);
+    QByteArray data = file.readAll();
+    if (*truncated) {
+        const int newline = data.indexOf('\n');
+        if (newline >= 0)
+            data.remove(0, newline + 1);
+    }
+    return data;
+}
+}
+
+QVariantList QmlSettings::logFiles() const
+{
+    QVariantList list;
+    const QString dir_path = GetLogBaseDir();
+    if (dir_path.isEmpty())
+        return list;
+    const QFileInfoList files = QDir(dir_path).entryInfoList({ QStringLiteral("*.log"), QStringLiteral("*.txt") }, QDir::Files, QDir::Time);
+    for (const QFileInfo &info : files) {
+        const QString name = info.fileName();
+        QString kind = QStringLiteral("other");
+        if (name == QLatin1String("robzplay-acilis.log"))
+            kind = QStringLiteral("startup");
+        else if (name == QLatin1String("robzplay-acilis-onceki.log"))
+            kind = QStringLiteral("previous");
+        else if (name.startsWith(QLatin1String("chiaki_session_")))
+            kind = QStringLiteral("session");
+        // errors near the end are what a support request is about
+        bool truncated = false;
+        const QByteArray tail = readTail(info.absoluteFilePath(), 64 * 1024, &truncated);
+        const bool problems = tail.contains("] [E] ") || tail.contains("[HATA]") || tail.contains("[\xc3\x96L\xc3\x9cMC\xc3\x9cL HATA]")
+            || tail.contains("\xc3\x87\xc3\x96KT\xc3\x9c");
+        QVariantMap entry;
+        entry[QStringLiteral("name")] = name;
+        entry[QStringLiteral("kind")] = kind;
+        entry[QStringLiteral("modified")] = info.lastModified().toString(QStringLiteral("dd.MM.yyyy HH:mm"));
+        entry[QStringLiteral("size")] = info.size();
+        entry[QStringLiteral("problems")] = problems;
+        list.append(entry);
+    }
+    return list;
+}
+
+QVariantMap QmlSettings::readLogFile(const QString &name) const
+{
+    QVariantMap result;
+    const QString path = logFilePath(name);
+    bool truncated = false;
+    const QByteArray data = path.isEmpty() ? QByteArray() : readTail(path, 256 * 1024, &truncated);
+    result[QStringLiteral("text")] = QString::fromUtf8(data);
+    result[QStringLiteral("truncated")] = truncated;
+    return result;
+}
+
+void QmlSettings::openLogFile(const QString &name) const
+{
+    const QString path = logFilePath(name);
+    if (!path.isEmpty())
+        QDesktopServices::openUrl(QUrl::fromLocalFile(path));
+}
+
+void QmlSettings::openLogFolder() const
+{
+    const QString dir = GetLogBaseDir();
+    if (!dir.isEmpty())
+        QDesktopServices::openUrl(QUrl::fromLocalFile(dir));
+}
+
+bool QmlSettings::diagnosticsAvailable() const
+{
+    return QFile::exists(QCoreApplication::applicationDirPath() + QStringLiteral("/Tani.bat"));
+}
+
+void QmlSettings::runDiagnostics() const
+{
+    // opened as a double click would: in its own window, which says where the file went
+    const QString bat = QCoreApplication::applicationDirPath() + QStringLiteral("/Tani.bat");
+    if (QFile::exists(bat))
+        QDesktopServices::openUrl(QUrl::fromLocalFile(bat));
 }
 
 void QmlSettings::clearKeyMapping()
