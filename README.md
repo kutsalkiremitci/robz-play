@@ -3,24 +3,24 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/kutsalkiremitci/robz-play/releases/latest"><img src="https://img.shields.io/github/v/release/kutsalkiremitci/robz-play?style=flat-square&amp;label=s%C3%BCr%C3%BCm&amp;color=D97757" alt="Son sürüm"></a>
+  <a href="https://github.com/kutsalkiremitci/robz-play/releases"><img src="https://img.shields.io/github/downloads/kutsalkiremitci/robz-play/total?style=flat-square&amp;label=toplam%20indirme&amp;color=D97757" alt="Toplam indirme"></a>
+  <a href="https://github.com/kutsalkiremitci/robz-play/stargazers"><img src="https://img.shields.io/github/stars/kutsalkiremitci/robz-play?style=flat-square&amp;logo=github&amp;label=y%C4%B1ld%C4%B1z&amp;color=D9A65A" alt="GitHub yıldızları"></a>
+  <a href="COPYING"><img src="https://img.shields.io/github/license/kutsalkiremitci/robz-play?style=flat-square&amp;label=lisans&amp;color=5A5853" alt="Lisans: AGPL-3.0"></a>
+  <br>
   <img src="https://img.shields.io/badge/GTA%20VI-60%20FPS-D97757?style=flat-square" alt="GTA VI: 60 FPS">
   <img src="https://img.shields.io/badge/PS5%20Remote%20Play-1080p-D97757?style=flat-square" alt="PS5 Remote Play: 1080p">
   <img src="https://img.shields.io/badge/Windows-10%20%7C%2011-5A5853?style=flat-square" alt="Windows 10 ve 11">
-  <a href="https://github.com/kutsalkiremitci/robz-play/releases/latest"><img src="https://img.shields.io/github/v/release/kutsalkiremitci/robz-play?style=flat-square&label=indir&color=D97757" alt="Son sürümü indir"></a>
-  <img src="https://img.shields.io/badge/durum-erken%20s%C3%BCr%C3%BCm-D9A65A?style=flat-square" alt="Durum: erken sürüm">
   <img src="https://img.shields.io/badge/aray%C3%BCz-T%C3%BCrk%C3%A7e%20%7C%20English-8DB580?style=flat-square" alt="Arayüz: Türkçe ve İngilizce">
-  <img src="https://img.shields.io/badge/lisans-AGPL--3.0-5A5853?style=flat-square" alt="Lisans: AGPL-3.0">
-  <a href="https://kick.com/robzsogood"><img src="https://img.shields.io/badge/Kick-robzsogood-53FC18?style=flat-square" alt="Kick: robzsogood"></a>
-  <a href="https://discord.gg/UyyEn7SHm4"><img src="https://img.shields.io/badge/Discord-teknik%20destek-5865F2?style=flat-square" alt="Discord: ücretsiz teknik destek"></a>
+  <img src="https://img.shields.io/badge/durum-erken%20s%C3%BCr%C3%BCm-D9A65A?style=flat-square" alt="Durum: erken sürüm">
 </p>
 
 <p align="center">
-  <b><a href="https://github.com/kutsalkiremitci/robz-play/releases/latest/download/RobzPlay-Setup.exe">İndir</a></b> ·
-  <a href="#adım-adım-kurulum">Kurulum</a> ·
-  <a href="#nasıl-çalışır">Nasıl çalışır?</a> ·
-  <a href="#sık-sorulanlar-ve-sorun-giderme">Sık sorulanlar</a> ·
-  <a href="https://discord.gg/UyyEn7SHm4">Teknik destek</a> ·
-  <a href="https://kutsalkiremitci.github.io/robz-play/">Web sitesi</a> (<a href="https://kutsalkiremitci.github.io/robz-play/en/">English</a>)
+  <a href="#adım-adım-kurulum"><img src="https://img.shields.io/badge/KURULUM-3A3936?style=for-the-badge" alt="Kurulum"></a>
+  <a href="#nasıl-çalışır"><img src="https://img.shields.io/badge/NASIL%20%C3%87ALI%C5%9EIR%3F-3A3936?style=for-the-badge" alt="Nasıl çalışır?"></a>
+  <a href="#sık-sorulanlar-ve-sorun-giderme"><img src="https://img.shields.io/badge/SIK%20SORULANLAR-3A3936?style=for-the-badge" alt="Sık sorulanlar"></a>
+  <a href="https://kutsalkiremitci.github.io/robz-play/"><img src="https://img.shields.io/badge/WEB%20S%C4%B0TES%C4%B0-5A5853?style=for-the-badge&amp;logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI%2BPGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iOS41Ii8%2BPHBhdGggZD0iTTIuNSAxMmgxOSIvPjxwYXRoIGQ9Ik0xMiAyLjVjMi42IDIuNiA0IDYgNCA5LjVzLTEuNCA2LjktNCA5LjVjLTIuNi0yLjYtNC02LTQtOS41czEuNC02LjkgNC05LjV6Ii8%2BPC9zdmc%2B" alt="Web sitesi"></a>
+  <a href="https://kutsalkiremitci.github.io/robz-play/en/"><img src="https://img.shields.io/badge/ENGLISH-5A5853?style=for-the-badge&amp;logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0NSAzMCI%2BCiAgPHJlY3Qgd2lkdGg9IjQ1IiBoZWlnaHQ9IjMwIiBmaWxsPSIjMDEyMTY5Ii8%2BCiAgPHBhdGggZD0iTTAsMCBMNDUsMzAgTTQ1LDAgTDAsMzAiIHN0cm9rZT0iI0ZGRkZGRiIgc3Ryb2tlLXdpZHRoPSI2Ii8%2BCiAgPHBhdGggZD0iTTAsMCBMNDUsMzAgTTQ1LDAgTDAsMzAiIHN0cm9rZT0iI0M4MTAyRSIgc3Ryb2tlLXdpZHRoPSIyLjIiLz4KICA8cGF0aCBkPSJNMjIuNSwwIFYzMCBNMCwxNSBINDUiIHN0cm9rZT0iI0ZGRkZGRiIgc3Ryb2tlLXdpZHRoPSI5Ii8%2BCiAgPHBhdGggZD0iTTIyLjUsMCBWMzAgTTAsMTUgSDQ1IiBzdHJva2U9IiNDODEwMkUiIHN0cm9rZS13aWR0aD0iNS40Ii8%2BCjwvc3ZnPgo%3D" alt="English website"></a>
 </p>
 
 # Robz Play
@@ -35,8 +35,9 @@
 Kare üretimi zorunlu değil: ana ekranın ortasındaki **Görüntü modu** bölümünden tek tıkla açılır ve kapanır. GTA VI konsollarda 30 FPS çalışıyor; kare üretimi bu yüzden yazıldı ve GTA VI oynanarak geliştirildi. Aynı yöntem 30 FPS'e kilitli bütün PS5 ve PS4 oyunlarında işe yarar.
 
 <p align="center">
-  <a href="https://github.com/kutsalkiremitci/robz-play/releases/latest/download/RobzPlay-Setup.exe"><b>Ücretsiz indir: RobzPlay-Setup.exe</b></a> (Windows 10 ve 11) ·
-  <a href="https://discord.gg/UyyEn7SHm4"><b>Discord: ücretsiz kurulum desteği</b></a>
+  <a href="https://github.com/kutsalkiremitci/robz-play/releases/latest/download/RobzPlay-Setup.exe"><img src="https://img.shields.io/badge/%C3%9CCRETS%C4%B0Z%20%C4%B0ND%C4%B0R-WINDOWS%2010%20%C2%B7%2011-D97757?style=for-the-badge&amp;logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMTIgM3YxMiIvPjxwYXRoIGQ9Im02LjUgOS41IDUuNSA1LjUgNS41LTUuNSIvPjxwYXRoIGQ9Ik00IDIwLjVoMTYiLz48L3N2Zz4%3D&amp;labelColor=B5573A" alt="Ücretsiz indir: RobzPlay-Setup.exe, Windows 10 ve 11"></a>
+  <a href="https://discord.gg/UyyEn7SHm4"><img src="https://img.shields.io/badge/DISCORD-%C3%9CCRETS%C4%B0Z%20KURULUM%20DESTE%C4%9E%C4%B0-5865F2?style=for-the-badge&amp;logo=discord&amp;logoColor=white&amp;labelColor=4752C4" alt="Discord: ücretsiz kurulum desteği"></a>
+  <a href="https://kick.com/robzsogood"><img src="https://img.shields.io/badge/KICK-CANLI%20YAYINLAR-53FC18?style=for-the-badge&amp;logo=kick&amp;logoColor=53FC18&amp;labelColor=0B0E0F" alt="Kick: canlı yayınlar"></a>
 </p>
 <p align="center">
   <sub>İndirme bağlantısı her zaman en son sürümü verir. Önceki sürümler ve değişiklikler: <a href="https://github.com/kutsalkiremitci/robz-play/releases">GitHub sürümleri</a>.</sub>
@@ -109,7 +110,9 @@ Ekran kartının bir ara kareyi yaklaşık 10 milisaniyenin altında üretebilme
 
 #### 1. Kurulum dosyasını indir
 
-[**`RobzPlay-Setup.exe`**](https://github.com/kutsalkiremitci/robz-play/releases/latest/download/RobzPlay-Setup.exe) her zaman en son sürümdür. Ücretsizdir; indirmek için hesap ya da kayıt gerekmez. Her sürümün değişiklikleri ve dosyanın SHA-256 değeri [sürümler sayfasında](https://github.com/kutsalkiremitci/robz-play/releases) yazar.
+<a href="https://github.com/kutsalkiremitci/robz-play/releases/latest/download/RobzPlay-Setup.exe"><img src="https://img.shields.io/badge/%C4%B0ND%C4%B0R-ROBZPLAY--SETUP.EXE-D97757?style=for-the-badge&amp;logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMTIgM3YxMiIvPjxwYXRoIGQ9Im02LjUgOS41IDUuNSA1LjUgNS41LTUuNSIvPjxwYXRoIGQ9Ik00IDIwLjVoMTYiLz48L3N2Zz4%3D&amp;labelColor=B5573A" alt="RobzPlay-Setup.exe dosyasını indir"></a>
+
+`RobzPlay-Setup.exe` her zaman en son sürümdür. Ücretsizdir; indirmek için hesap ya da kayıt gerekmez. Her sürümün değişiklikleri ve dosyanın SHA-256 değeri [sürümler sayfasında](https://github.com/kutsalkiremitci/robz-play/releases) yazar.
 
 #### 2. Windows uyarısını geç
 
@@ -364,7 +367,9 @@ Robz Play, açık kaynağın omuzlarında durur. Bu projelerin geliştiricilerin
 
 ## Sık sorulanlar ve sorun giderme
 
-Cevabı burada bulamazsan [Discord sunucumuza](https://discord.gg/UyyEn7SHm4) yaz; kurulum desteği ücretsiz. Uygulamanın sol menüsündeki **Teknik destek için Discord** düğmesi de oraya götürür.
+Cevabı burada bulamazsan Discord sunucumuza yaz; kurulum desteği ücretsiz. Uygulamanın sol menüsündeki **Teknik destek için Discord** düğmesi de oraya götürür.
+
+<a href="https://discord.gg/UyyEn7SHm4"><img src="https://img.shields.io/badge/DISCORD-TEKN%C4%B0K%20DESTEK-5865F2?style=for-the-badge&amp;logo=discord&amp;logoColor=white&amp;labelColor=4752C4" alt="Discord: teknik destek"></a>
 
 ### Kurulum ve açılış
 
@@ -548,5 +553,8 @@ PlayStation, PS5, PS4 ve DualSense, Sony Interactive Entertainment'ın markalar�
 ---
 
 <p align="center">
-  Web sitesi: <a href="https://kutsalkiremitci.github.io/robz-play/"><b>kutsalkiremitci.github.io/robz-play</b></a> · Canlı yayınlar: <a href="https://kick.com/robzsogood"><b>kick.com/robzsogood</b></a> · Teknik destek: <a href="https://discord.gg/UyyEn7SHm4"><b>Discord</b></a>
+  <a href="https://kutsalkiremitci.github.io/robz-play/"><img src="https://img.shields.io/badge/WEB%20S%C4%B0TES%C4%B0-5A5853?style=for-the-badge&amp;logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI%2BPGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iOS41Ii8%2BPHBhdGggZD0iTTIuNSAxMmgxOSIvPjxwYXRoIGQ9Ik0xMiAyLjVjMi42IDIuNiA0IDYgNCA5LjVzLTEuNCA2LjktNCA5LjVjLTIuNi0yLjYtNC02LTQtOS41czEuNC02LjkgNC05LjV6Ii8%2BPC9zdmc%2B" alt="Web sitesi"></a>
+  <a href="https://kutsalkiremitci.github.io/robz-play/en/"><img src="https://img.shields.io/badge/ENGLISH-5A5853?style=for-the-badge&amp;logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0NSAzMCI%2BCiAgPHJlY3Qgd2lkdGg9IjQ1IiBoZWlnaHQ9IjMwIiBmaWxsPSIjMDEyMTY5Ii8%2BCiAgPHBhdGggZD0iTTAsMCBMNDUsMzAgTTQ1LDAgTDAsMzAiIHN0cm9rZT0iI0ZGRkZGRiIgc3Ryb2tlLXdpZHRoPSI2Ii8%2BCiAgPHBhdGggZD0iTTAsMCBMNDUsMzAgTTQ1LDAgTDAsMzAiIHN0cm9rZT0iI0M4MTAyRSIgc3Ryb2tlLXdpZHRoPSIyLjIiLz4KICA8cGF0aCBkPSJNMjIuNSwwIFYzMCBNMCwxNSBINDUiIHN0cm9rZT0iI0ZGRkZGRiIgc3Ryb2tlLXdpZHRoPSI5Ii8%2BCiAgPHBhdGggZD0iTTIyLjUsMCBWMzAgTTAsMTUgSDQ1IiBzdHJva2U9IiNDODEwMkUiIHN0cm9rZS13aWR0aD0iNS40Ii8%2BCjwvc3ZnPgo%3D" alt="English website"></a>
+  <a href="https://discord.gg/UyyEn7SHm4"><img src="https://img.shields.io/badge/DISCORD-TEKN%C4%B0K%20DESTEK-5865F2?style=for-the-badge&amp;logo=discord&amp;logoColor=white&amp;labelColor=4752C4" alt="Discord: teknik destek"></a>
+  <a href="https://kick.com/robzsogood"><img src="https://img.shields.io/badge/KICK-CANLI%20YAYINLAR-53FC18?style=for-the-badge&amp;logo=kick&amp;logoColor=53FC18&amp;labelColor=0B0E0F" alt="Kick: canlı yayınlar"></a>
 </p>
