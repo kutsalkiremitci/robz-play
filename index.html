@@ -6,7 +6,9 @@
 <title>Robz Play · GTA VI'yı bilgisayarında 1080p, 60 FPS oyna</title>
 <meta name="description" content="Robz Play, PS5'ine ev ağı üzerinden Remote Play ile bağlanan ücretsiz ve açık kaynak bir Windows uygulaması. PS5'te 30 FPS çalışan GTA VI'yı bilgisayarında 1080p, 60 FPS akıcılığında gösterir. Capture card gerekmez.">
 <meta name="theme-color" content="#1F1E1D">
-<link rel="icon" href="img/robzplay.svg" type="image/svg+xml">
+<link rel="icon" href="img/robzplay-kucuk.svg" type="image/svg+xml">
+<link rel="icon" href="img/robzplay-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="img/robzplay-180.png">
 <link rel="canonical" href="https://kutsalkiremitci.github.io/robz-play/">
 <link rel="alternate" hreflang="tr" href="https://kutsalkiremitci.github.io/robz-play/">
 <link rel="alternate" hreflang="en" href="https://kutsalkiremitci.github.io/robz-play/en/">
@@ -31,7 +33,7 @@
 <header class="topbar">
   <div class="wrap">
     <a class="brand" href="#" aria-label="Robz Play, sayfanın başı">
-      <img src="img/robzplay.svg" alt="" width="34" height="34">
+      <img src="img/robzplay-kucuk.svg" alt="" width="34" height="34">
       Robz Play
     </a>
     <nav class="nav" aria-label="Bölümler">
@@ -171,7 +173,7 @@
       <div class="card req">
         <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
         <h3>PlayStation hesabı</h3>
-        <p>Konsolu uygulamaya bağlarken bir kez PSN girişi yapılır. chiaki-ng'de bağlı konsolun varsa bu da gerekmez.</p>
+        <p>Konsolu uygulamaya bağlarken PSN hesabın bir kez bulunur: tarayıcıda giriş yaparak ya da çevrimiçi kimliğinle. chiaki-ng'de bağlı konsolun varsa bu da gerekmez.</p>
       </div>
       <div class="card req no">
         <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg></div>
@@ -207,7 +209,7 @@
     <div class="section-head">
       <span class="kicker">Adım adım</span>
       <h2 id="kurulum-baslik">İndirmekten ilk oyuna</h2>
-      <p>İlk dört adım hazırlık, sonrakiler uygulamanın içinde. Görüntüler Robz Play 0.3.0'dan alındı; konsolun adresi ve kimliği "yayıncı modu" ile gizlendi.</p>
+      <p>İlk dört adım hazırlık, sonrakiler uygulamanın içinde. Görüntüler Robz Play 0.4.0'dan alındı; konsolun adresi ve kimliği "yayıncı modu" ile gizlendi.</p>
     </div>
 
     <h3 class="subhead">Hazırlık</h3>
@@ -238,7 +240,13 @@
       <li class="card">
         <span class="num" aria-hidden="true">4</span>
         <h3>PS5'i hazırla</h3>
-        <p>PS5'te Uzaktan Oynama'yı aç:</p>
+        <p>Sıra önemli: önce kullanıcılar, sonra Uzaktan Oynama.</p>
+        <p><strong>1) İkinci, boş bir kullanıcı ekle</strong>; boş bir oyun profili yeterli. Tek kullanıcı varsa PS5, <strong>Oyna</strong>'dan sonra o kullanıcıyı kendiliğinden seçip bağlantıyı ana menüye atabiliyor. İki kullanıcı olunca bağlantıdan sonra kimin oynayacağını sorar: <strong>ana profilin yerine ikinci (yan) profili</strong> seç. Bilgisayara bir kontrolcü bağlıysan ana profille de devam edebilirsin.</p>
+        <ol class="path" aria-label="Kullanıcı ekleme">
+          <li>Profil simgesi</li><li>Kullanıcı Değiştir</li><li>Kullanıcı Ekle</li>
+        </ol>
+        <p><strong>2) Giriş şifresini kaldır:</strong> profilinde PS5 giriş şifresi varsa kaldır; bağlantı sorunlarına yol açabiliyor.</p>
+        <p><strong>3) Uzaktan Oynama'yı her profilde aç:</strong></p>
         <ol class="path" aria-label="PS5 menü yolu">
           <li>Ayarlar</li><li>Sistem</li><li>Uzaktan Oynama</li><li>Uzaktan Oynama'yı Etkinleştir</li>
         </ol>
@@ -268,20 +276,32 @@
         <span class="num" aria-hidden="true">6</span>
         <div class="flow-text">
           <h3>Konsolu bağla (bir kez)</h3>
-          <p>Konsolun kartındaki <strong>Kur</strong>'a bas. Açılan <strong>Konsolu kaydet</strong> ekranında:</p>
+          <p>Konsolun kartındaki <strong>Kur</strong>'a bas. Açılan <strong>Konsolu kaydet</strong> ekranı dört adımda ilerler. Her adımın sağında o adımın ne işe yaradığı ve konsolda ne yapman gerektiği yazar; <strong>Geri</strong> ve <strong>Devam</strong> düğmeleri formun altındadır.</p>
           <ol class="plain-list">
-            <li><strong>PSN girişi</strong>'ne bas ve PlayStation hesabınla giriş yap.</li>
-            <li>PS5'te <strong>Ayarlar › Sistem › Uzaktan Oynama › Cihazı Bağla</strong>'yı seç; ekranda bir kod çıkar.</li>
-            <li>O kodu <strong>Remote Play PIN'i</strong> alanına yaz ve sağ üstteki <strong>Kaydet</strong>'e bas.</li>
+            <li><strong>Konsol:</strong> PS5 seçili ve adresi ağda bulunmuş olarak gelir. <strong>Devam</strong>'a bas.</li>
+            <li><strong>Hesap:</strong> iki yol var. Daha önce giriş yaptıysan "Hesap hazır" yazar ve bu adım geçilir.
+              <ul>
+                <li><strong>1 · Tarayıcıda giriş yap</strong> (önerilen, her zaman çalışır): <strong>Giriş sayfasını aç</strong>'a bas ve konsolda kullandığın hesapla giriş yap. Giriş bitince tarayıcı boş ya da hata gibi görünen bir sayfa açar; bu normal. Adres çubuğuna tıkla, <kbd>Ctrl</kbd>+<kbd>A</kbd> ve <kbd>Ctrl</kbd>+<kbd>C</kbd>'ye bas, Robz Play'e dön: adres kendiliğinden alınır, alınmazsa kutuya yapıştır. Adresteki kod birkaç dakika geçerli.</li>
+                <li><strong>2 · Çevrimiçi kimlikle bul</strong> (giriş gerekmez): PSN kullanıcı adını yaz ve <strong>Bul</strong>'a bas. Seni bulabilmesi için PS5'te <strong>Ayarlar › Kullanıcılar ve Hesaplar › Gizlilik</strong>'teki her şeyi <strong>Herkes</strong> yap. Bu arama Sony'nin değil: bazen ilk seferde açılmaz ya da yanıt vermez, birkaç denemede çalışır.</li>
+              </ul>
+            </li>
+            <li><strong>Eşleştirme kodu:</strong> PS5'te <strong>Ayarlar › Sistem › Uzaktan Oynama › Cihazı Bağla</strong>'yı seç ve ekranda çıkan 8 haneli kodu yaz. Kodu, 2. adımda giriş yaptığın hesabın profilindeyken (ana profilinde) al: ikinci, boş profilde alınan kod "Invalid PSN ID" hatası verir.</li>
+            <li><strong>Kaydet:</strong> özeti kontrol et ve <strong>Konsolu kaydet</strong>'e bas. "Konsol kaydedildi" yazınca <strong>Bitti</strong>'ye bas.</li>
           </ol>
         </div>
         <figure class="shot">
-          <a href="img/app-konsol-kur.webp"><img src="img/app-konsol-kur.webp" width="1232" height="184" loading="lazy" decoding="async" alt="Ağda bulunan konsolun kartı: Dinlenme modunda, henüz kurulmadı; sağda Kur düğmesi"></a>
+          <a href="img/app-konsol-kur.webp"><img src="img/app-konsol-kur.webp" width="1232" height="184" loading="lazy" decoding="async" alt="Ağda bulunan konsolun kartı: Açık, henüz kurulmadı; sağda Kur düğmesi"></a>
         </figure>
-        <figure class="shot">
-          <a href="img/app-konsolu-kaydet.webp"><img src="img/app-konsolu-kaydet.webp" width="1584" height="600" loading="lazy" decoding="async" alt="Konsolu kaydet ekranı: Adres, PSN hesap ID'si alanı ve yanında PSN girişi düğmesi, Remote Play PIN'i alanı, konsol türü olarak PS5 seçili; sağ üstte Kaydet"></a>
-          <figcaption>Konsolu kaydet ekranı. Adres alanı yayıncı modunda gizli görünür.</figcaption>
-        </figure>
+        <div class="shot-pair">
+          <figure class="shot">
+            <a href="img/app-kurulum-hesap.webp"><img src="img/app-kurulum-hesap.webp" width="1584" height="891" loading="lazy" decoding="async" alt="Konsolu kaydet, 2. adım Hesap: iki yol seçeneği; seçili Tarayıcıda giriş yap yolunun dört adımı (giriş sayfasını aç, giriş yap, adresi kopyala, Robz Play'e dön ve yapıştır); sağda iki yolun anlatımı ve gizlilik ayarının yeri"></a>
+            <figcaption>2. adım: PlayStation hesabı, iki yoldan biriyle. Sağ taraf iki yolu ve dikkat edilecekleri anlatır.</figcaption>
+          </figure>
+          <figure class="shot">
+            <a href="img/app-kurulum-kod.webp"><img src="img/app-kurulum-kod.webp" width="1584" height="891" loading="lazy" decoding="async" alt="Konsolu kaydet, 3. adım Eşleştirme kodu: PS5'te açılacak menü yolu Ayarlar, Sistem, Uzaktan Oynama, Cihazı Bağla; 8 haneli kod alanı; sağda kodun ne olduğu"></a>
+            <figcaption>3. adım: PS5'teki kod. Görüntüler yayıncı modu açıkken alındı.</figcaption>
+          </figure>
+        </div>
       </li>
 
       <li class="flow-step">
@@ -291,7 +311,7 @@
           <p>GTA VI için <strong>60 FPS</strong>'i seç; varsayılan mod budur. Kare üretimi istemiyorsan <strong>Yalnızca yayın</strong>, güçlü bir kartın ve 120 Hz ekranın varsa deneysel <strong>120 FPS</strong>. Mod bir sonraki bağlantıda geçerli olur. Altındaki <strong>Hareket ayrıntısı</strong>, <strong>HUD ve yazıları sabit tut</strong>, <strong>Keskinleştirme</strong> ve <strong>FPS sayacı</strong> da buradan değişir.</p>
         </div>
         <figure class="shot">
-          <a href="img/app-goruntu-modu.webp"><img src="img/app-goruntu-modu.webp" width="1232" height="381" loading="lazy" decoding="async" alt="Görüntü modu bölümü: 60 FPS (GTA VI için) seçili; altında Hareket ayrıntısı Dengeli, HUD ve yazıları sabit tut açık, Keskinleştirme Kapalı, FPS sayacı kapalı"></a>
+          <a href="img/app-goruntu-modu.webp"><img src="img/app-goruntu-modu.webp" width="1232" height="386" loading="lazy" decoding="async" alt="Görüntü modu bölümü: 60 FPS (GTA VI için) seçili; altında Hareket ayrıntısı Dengeli, HUD ve yazıları sabit tut açık, Keskinleştirme Kapalı, FPS sayacı kapalı"></a>
         </figure>
       </li>
 
@@ -302,7 +322,7 @@
           <p>Konsol kaydedildikten sonra kartında <strong>Oyna</strong> düğmesi çıkar. Bastığında Robz Play PS5'e bağlanır; 4. adımdaki dinlenme modu ayarları açıksa uyuyan konsol da uyandırılır. Bağlantı kurulunca oyun görüntüsü gelir.</p>
         </div>
         <figure class="shot">
-          <a href="img/app-baglaniyor.webp"><img src="img/app-baglaniyor.webp" width="1280" height="720" loading="lazy" decoding="async" alt="Bağlanma ekranı: ortada RP logosu ve PlayStation'a bağlanılıyor yazısı; altta Ctrl+O ile yayın menüsünü açma ipucu"></a>
+          <a href="img/app-baglaniyor.webp"><img src="img/app-baglaniyor.webp" width="1280" height="720" loading="lazy" decoding="async" alt="Bağlanma ekranı: ortada RP logosu ve PlayStation'a bağlanılıyor yazısı, arkada logodaki gün batımı; altta Ctrl+O ile yayın menüsünü açma ipucu"></a>
           <figcaption>Bağlanırken görünen ekran.</figcaption>
         </figure>
       </li>
@@ -314,7 +334,7 @@
           <p><kbd>Ctrl</kbd> + <kbd>O</kbd> yayın menüsünü açar: ses düzeyi, mikrofon, yakınlaştırma, keskinleştirme, FPS sayacı ve görüntü işleyici ayarları oyunu bırakmadan değişir.</p>
         </div>
         <figure class="shot">
-          <a href="img/app-yayin-menusu.webp"><img src="img/app-yayin-menusu-cubuk.webp" width="1564" height="158" loading="lazy" decoding="async" alt="Yayın menüsü: Ses yüzde 100, Mikrofon, Yakınlaştır, Esnet, FPS sayacı, Keskinleştirme: Kapalı; Görüntü işleyici seçenekleri Varsayılan, Yüksek kalite, HQ + Uzamsal, HQ + İleri uzamsal, Özel; Ekran ayarları"></a>
+          <a href="img/app-yayin-menusu.webp"><img src="img/app-yayin-menusu-cubuk.webp" width="1564" height="162" loading="lazy" decoding="async" alt="Yayın menüsü: Ses yüzde 100, Mikrofon, Yakınlaştır, Esnet, FPS sayacı, Keskinleştirme: Kapalı; Görüntü işleyici seçenekleri Varsayılan, Yüksek kalite, HQ + Uzamsal, HQ + İleri uzamsal, Özel; Ekran ayarları"></a>
           <figcaption>Yayın menüsü, ekranın altında açılır.</figcaption>
         </figure>
       </li>
@@ -409,12 +429,12 @@
     </div>
 
     <div class="newin">
-      <h3>0.3.0 ile gelenler</h3>
+      <h3>0.4.0 ile gelenler</h3>
       <div class="features features-4">
-        <div class="card feature"><h3>Güncelleme bildirimi <span class="tag tag-accent">Yeni</span></h3><p>Yeni bir sürüm çıktığında "Yenilikler" penceresi değişiklikleri gösterir. "Şimdi güncelle" yeni sürümü indirir, kurar ve uygulamayı yeniden açar. İstediğinde sol alttaki <strong>"Güncellemeleri denetle"</strong> ile kendin de bakabilirsin.</p></div>
-        <div class="card feature"><h3>Teknik destek için Discord <span class="tag tag-accent">Yeni</span></h3><p>Sol menüdeki Discord düğmesiyle tek tıkla ücretsiz teknik desteğe ulaşırsın.</p></div>
-        <div class="card feature"><h3>Açılış günlüğü <span class="tag tag-accent">Yeni</span></h3><p>Her açılış bir günlük dosyasına yazılır; bir sorun olursa nerede olduğu görülür.</p></div>
-        <div class="card feature"><h3>Türkçe harfli kullanıcı adları <span class="tag tag-accent">Düzeltme</span></h3><p>Windows kullanıcı adında ğ, ı, ş gibi harfler olan bilgisayarlardaki açılış sorunu giderildi.</p></div>
+        <div class="card feature"><h3>Yeni görünüm <span class="tag tag-accent">Yeni</span></h3><p>Yeni "Gün batımı" logosu ve ona göre baştan boyanmış arayüz: sıcak mercan vurgular, koyu zemin, gün batımı arka planı.</p></div>
+        <div class="card feature"><h3>Adım adım kurulum <span class="tag tag-accent">Yeni</span></h3><p>Konsol kurulumu ve PSN girişi numaralı adımlarla anlatılıyor. Hesap kimliği iki yoldan bulunur; kayıt başarısız olursa nedeni ve çözümü yazar.</p></div>
+        <div class="card feature"><h3>Günlükler ve fabrika ayarları <span class="tag tag-accent">Yeni</span></h3><p>Ayarlar'da günlükler uygulamanın içinde okunur. <strong>"Fabrika ayarlarına döndür"</strong> her şeyi silip Robz Play'i ilk kurulumdaki gibi açar.</p></div>
+        <div class="card feature"><h3>30 / 60 karşılaştırma <span class="tag tag-accent">Yeni</span></h3><p>Ekranın sol yarısı kare üretimi olmadan, sağ yarısı Robz Play ile. Farkı aynı anda görürsün; OBS kayıtlarında da görünür.</p></div>
       </div>
     </div>
 
@@ -430,6 +450,9 @@
         <li>60 FPS<span>yayın</span></li>
         <li>100 Mbps<span>bit hızı</span></li>
         <li>%100<span>ses</span></li>
+        <li>Yüksek<span>hareket ayrıntısı</span></li>
+        <li>Yüksek<span>keskinleştirme</span></li>
+        <li>Açık<span>FPS sayacı</span></li>
       </ul>
     </div>
   </div>
@@ -565,10 +588,11 @@
           <p><strong>Çözüm:</strong></p>
           <ol>
             <li>PS5'te yeni bir kullanıcı profili (ikinci bir hesap) ekle: ana ekranda sağ üstteki profil simgesini aç (ya da PS düğmesiyle kontrol merkezini aç), <strong>Kullanıcı Değiştir</strong>'i, ardından <strong>Kullanıcı Ekle</strong>'yi seç.</li>
+            <li>Profilinde PS5 giriş şifresi varsa kaldır; bağlantı sorunlarına yol açabiliyor.</li>
             <li>Robz Play'de yeniden <strong>Oyna</strong>'ya bas. PS5 bu kez iki profilin olduğu bir profil seçme ekranı gösterir.</li>
-            <li><strong>Yeni oluşturduğun profili</strong> seç ve devam et; kontrolcü çalışır.</li>
+            <li><strong>İkinci (yan) profili</strong> seç ve devam et; kontrolcü çalışır. Bilgisayara bir kontrolcü (DualSense) bağlıysan ana profille de devam edebilirsin.</li>
           </ol>
-          <p><strong>GTA VI için önemli:</strong> ana hesabınla satın aldığın bir oyunu yeni profille oynayabilmek için ana hesapta o PS5 için <strong>Konsol Paylaşımı ve Çevrimdışı Oynama</strong> açık olmalı: PS5'te ana hesapla <strong>Ayarlar › Kullanıcılar ve Hesaplar › Diğer › Konsol Paylaşımı ve Çevrimdışı Oynama</strong>. Konsolda ilk kurulan hesapta bu genellikle zaten açıktır.</p>
+          <p><strong>GTA VI için önemli:</strong> ana hesabınla satın aldığın bir oyunu ikinci profille oynayabilmek için ana hesapta o PS5 için <strong>Konsol Paylaşımı ve Çevrimdışı Oynama</strong> açık olmalı: PS5'te ana hesapla <strong>Ayarlar › Kullanıcılar ve Hesaplar › Diğer › Konsol Paylaşımı ve Çevrimdışı Oynama</strong>. Konsolda ilk kurulan hesapta bu genellikle zaten açıktır.</p>
           <p>Menü adları PS5 sistem yazılımının sürümüne göre biraz farklı olabilir. Bu adımlardan sonra bağlantı hâlâ kopuyorsa <a href="https://discord.gg/UyyEn7SHm4">Discord'da</a> sor ve <code>robzplay-tani.txt</code> dosyasını ekle.</p>
         </div>
       </details>
@@ -693,7 +717,7 @@
       </a>
       <div class="post-body">
         <div class="post-meta">
-          <img src="img/robzplay.svg" alt="" width="44" height="44">
+          <img src="img/robzplay-kucuk.svg" alt="" width="44" height="44">
           <div><b>@robzsogood</b>X'te</div>
           <svg viewBox="0 0 24 24" role="img" aria-label="X"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
         </div>
@@ -714,7 +738,7 @@
   <div class="wrap">
     <div class="footer-grid">
       <div>
-        <a class="brand" href="#"><img src="img/robzplay.svg" alt="" width="34" height="34">Robz Play</a>
+        <a class="brand" href="#"><img src="img/robzplay-kucuk.svg" alt="" width="34" height="34">Robz Play</a>
         <p class="footer-tag">PS5 Remote Play ve kare üretimi. Ücretsiz, açık kaynak.</p>
         <p>Robz Play, <a href="https://github.com/chiaki-ng/chiaki-ng">chiaki-ng</a> 1.10.1'in değiştirilmiş bir sürümüdür ve chiaki-ng gibi <a href="https://github.com/kutsalkiremitci/robz-play/blob/robzplay/COPYING">AGPL-3.0</a> ile lisanslıdır. chiaki-ng ya da Chiaki geliştiricileri tarafından hazırlanmamış ve onaylanmamıştır.</p>
       </div>

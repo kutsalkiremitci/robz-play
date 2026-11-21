@@ -6,7 +6,9 @@
 <title>Robz Play · Play GTA VI on your PC at 1080p, 60 FPS</title>
 <meta name="description" content="Robz Play is a free, open-source Windows app that connects to your PS5 over your home network with Remote Play. GTA VI runs at 30 FPS on PS5; Robz Play shows it on your PC at 1080p with 60 FPS smoothness. No capture card needed.">
 <meta name="theme-color" content="#1F1E1D">
-<link rel="icon" href="../img/robzplay.svg" type="image/svg+xml">
+<link rel="icon" href="../img/robzplay-kucuk.svg" type="image/svg+xml">
+<link rel="icon" href="../img/robzplay-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="../img/robzplay-180.png">
 <link rel="canonical" href="https://kutsalkiremitci.github.io/robz-play/en/">
 <link rel="alternate" hreflang="tr" href="https://kutsalkiremitci.github.io/robz-play/">
 <link rel="alternate" hreflang="en" href="https://kutsalkiremitci.github.io/robz-play/en/">
@@ -31,7 +33,7 @@
 <header class="topbar">
   <div class="wrap">
     <a class="brand" href="#" aria-label="Robz Play, top of the page">
-      <img src="../img/robzplay.svg" alt="" width="34" height="34">
+      <img src="../img/robzplay-kucuk.svg" alt="" width="34" height="34">
       Robz Play
     </a>
     <nav class="nav" aria-label="Sections">
@@ -171,7 +173,7 @@
       <div class="card req">
         <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
         <h3>A PlayStation account</h3>
-        <p>You sign in to PSN once, when you link the console to the app. If your console is already linked in chiaki-ng, you can skip even that.</p>
+        <p>Your PSN account is found once, when you link the console to the app: by signing in in the browser or by your online ID. If your console is already linked in chiaki-ng, you can skip even that.</p>
       </div>
       <div class="card req no">
         <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg></div>
@@ -207,8 +209,8 @@
     <div class="section-head">
       <span class="kicker">Step by step</span>
       <h2 id="kurulum-baslik">From download to your first game</h2>
-      <p>The first four steps are preparation; the rest happen in the app. The screenshots were taken from Robz Play 0.3.0, with the console's address and ID hidden by streamer mode.</p>
-      <p><strong>The screenshots show the Turkish interface.</strong> The app switches to English with the flag in its sidebar; the English button names are given in the steps.</p>
+      <p>The first four steps are preparation; the rest happen in the app. The screenshots were taken from Robz Play 0.4.0, with the console's address and ID hidden by streamer mode.</p>
+      <p><strong>Most screenshots show the Turkish interface</strong> (the console setup ones are in English). The app switches to English with the flag in its sidebar; the English button names are given in the steps.</p>
     </div>
 
     <h3 class="subhead">Preparation</h3>
@@ -239,7 +241,13 @@
       <li class="card">
         <span class="num" aria-hidden="true">4</span>
         <h3>Prepare the PS5</h3>
-        <p>Turn on Remote Play on the PS5:</p>
+        <p>The order matters: the users first, then Remote Play.</p>
+        <p><strong>1) Add a second, empty user</strong>; an empty game profile is enough. With a single user, the PS5 can pick that user by itself after you press <strong>Play</strong> and throw the connection back to its home screen. With two users it asks who plays once connected: choose <strong>the second profile, not your main one</strong>. With a controller connected to the PC, the main profile works too.</p>
+        <ol class="path" aria-label="Adding a user">
+          <li>Profile icon</li><li>Switch User</li><li>Add User</li>
+        </ol>
+        <p><strong>2) Remove the login passcode:</strong> if your profile has a PS5 login passcode, remove it; it can cause connection problems.</p>
+        <p><strong>3) Turn on Remote Play on every profile:</strong></p>
         <ol class="path" aria-label="PS5 menu path">
           <li>Settings</li><li>System</li><li>Remote Play</li><li>Enable Remote Play</li>
         </ol>
@@ -269,20 +277,32 @@
         <span class="num" aria-hidden="true">6</span>
         <div class="flow-text">
           <h3>Link your console (once)</h3>
-          <p>Press <strong>Set up</strong> (Kur) on your console's card. On the <strong>Register Console</strong> screen that opens:</p>
+          <p>Press <strong>Set up</strong> (Kur) on your console's card. The <strong>Register Console</strong> screen that opens goes in four steps. Next to each step it says what the step is for and what to do on the console; the <strong>Back</strong> and <strong>Continue</strong> buttons are under the form.</p>
           <ol class="plain-list">
-            <li>Press <strong>PSN Login</strong> and sign in with your PlayStation account.</li>
-            <li>On the PS5, choose <strong>Settings › System › Remote Play › Link Device</strong>; a code appears on the screen.</li>
-            <li>Type that code into the <strong>Remote Play PIN</strong> field and press <strong>Register</strong> at the top right.</li>
+            <li><strong>Console:</strong> PS5 is chosen and the address was found on your network. Press <strong>Continue</strong>.</li>
+            <li><strong>Account:</strong> there are two ways. If you signed in before, it says "Account ready" and the step is done.
+              <ul>
+                <li><strong>1 · Sign in in the browser</strong> (recommended, always works): press <strong>Open sign-in page</strong> and sign in with the account you use on the console. Afterwards the browser shows an empty or error-like page; that is normal. Click the address bar, press <kbd>Ctrl</kbd>+<kbd>A</kbd> and <kbd>Ctrl</kbd>+<kbd>C</kbd>, and come back to Robz Play: it picks the address up by itself, or paste it into the box. The code in the address is valid for a few minutes.</li>
+                <li><strong>2 · Find by online ID</strong> (no sign-in): type your PSN user name and press <strong>Find</strong>. For it to find you, set everything to <strong>Anyone</strong> in <strong>Settings › Users and Accounts › Privacy</strong> on the PS5. This lookup is not Sony's: sometimes it does not open or answer at first, and works after a few tries.</li>
+              </ul>
+            </li>
+            <li><strong>Pairing code:</strong> on the PS5, choose <strong>Settings › System › Remote Play › Link Device</strong> and type in the 8-digit code that appears. Get the code while the PS5 is on the profile of the account you signed in with in step 2 (your main profile): a code from the empty second profile fails with "Invalid PSN ID".</li>
+            <li><strong>Register:</strong> check the summary and press <strong>Register console</strong>. When it says "Console registered", press <strong>Done</strong>.</li>
           </ol>
         </div>
         <figure class="shot">
-          <a href="../img/app-konsol-kur.webp"><img src="../img/app-konsol-kur.webp" width="1232" height="184" loading="lazy" decoding="async" alt="The card of the console found on the network: in rest mode, not set up yet; the Set up (Kur) button on the right"></a>
+          <a href="../img/app-konsol-kur.webp"><img src="../img/app-konsol-kur.webp" width="1232" height="184" loading="lazy" decoding="async" alt="The card of the console found on the network: on, not set up yet; the Set up (Kur) button on the right"></a>
         </figure>
-        <figure class="shot">
-          <a href="../img/app-konsolu-kaydet.webp"><img src="../img/app-konsolu-kaydet.webp" width="1584" height="600" loading="lazy" decoding="async" alt="Register Console screen in Turkish: Address, the PSN account ID field with the PSN Login button next to it, the Remote Play PIN field, PS5 selected as the console type; Register at the top right"></a>
-          <figcaption>The Register Console screen. In streamer mode the address field is masked.</figcaption>
-        </figure>
+        <div class="shot-pair">
+          <figure class="shot">
+            <a href="../img/app-kurulum-hesap-en.webp"><img src="../img/app-kurulum-hesap-en.webp" width="1584" height="891" loading="lazy" decoding="async" alt="Register Console, step 2 Account: the two ways; the four steps of Sign in in the browser (open the sign-in page, sign in, copy the address, come back and paste); on the right both ways explained and where the privacy settings are"></a>
+            <figcaption>Step 2: your PlayStation account, one of two ways. The right side explains both and what to watch out for.</figcaption>
+          </figure>
+          <figure class="shot">
+            <a href="../img/app-kurulum-kod-en.webp"><img src="../img/app-kurulum-kod-en.webp" width="1584" height="891" loading="lazy" decoding="async" alt="Register Console, step 3 Pairing code: the menu path on the PS5, Settings, System, Remote Play, Link Device; the 8-digit code field; on the right what the code is"></a>
+            <figcaption>Step 3: the code from the PS5. Streamer mode was on for these screenshots.</figcaption>
+          </figure>
+        </div>
       </li>
 
       <li class="flow-step">
@@ -292,7 +312,7 @@
           <p>For GTA VI, choose <strong>60 FPS</strong>; it is the default. If you do not want frame generation, choose <strong>Stream only</strong>; if you have a powerful card and a 120 Hz screen, try the experimental <strong>120 FPS</strong>. The mode takes effect on the next connection. <strong>Motion detail</strong>, <strong>Keep HUD and text steady</strong>, <strong>Sharpening</strong> and the <strong>FPS counter</strong> are right below it.</p>
         </div>
         <figure class="shot">
-          <a href="../img/app-goruntu-modu.webp"><img src="../img/app-goruntu-modu.webp" width="1232" height="381" loading="lazy" decoding="async" alt="Picture mode section in Turkish: 60 FPS (For GTA VI) selected; below it Motion detail set to Balanced, Keep HUD and text steady on, Sharpening off, FPS counter off"></a>
+          <a href="../img/app-goruntu-modu.webp"><img src="../img/app-goruntu-modu.webp" width="1232" height="386" loading="lazy" decoding="async" alt="Picture mode section in Turkish: 60 FPS (For GTA VI) selected; below it Motion detail set to Balanced, Keep HUD and text steady on, Sharpening off, FPS counter off"></a>
         </figure>
       </li>
 
@@ -303,7 +323,7 @@
           <p>Once the console is registered, its card shows a <strong>Play</strong> button. Press it and Robz Play connects to the PS5; if the rest mode settings from step 4 are on, a sleeping console is woken up too. When the connection is made, the game appears.</p>
         </div>
         <figure class="shot">
-          <a href="../img/app-baglaniyor.webp"><img src="../img/app-baglaniyor.webp" width="1280" height="720" loading="lazy" decoding="async" alt="Connecting screen: the RP logo in the middle with the text Connecting to your PlayStation in Turkish; below it a hint about opening the stream menu with Ctrl+O"></a>
+          <a href="../img/app-baglaniyor.webp"><img src="../img/app-baglaniyor.webp" width="1280" height="720" loading="lazy" decoding="async" alt="Connecting screen: the RP logo in the middle with the text Connecting to your PlayStation in Turkish, before the sunset of the logo; below it a hint about opening the stream menu with Ctrl+O"></a>
           <figcaption>The screen you see while connecting.</figcaption>
         </figure>
       </li>
@@ -315,7 +335,7 @@
           <p><kbd>Ctrl</kbd> + <kbd>O</kbd> opens the stream menu: volume, microphone, zoom, sharpening, the FPS counter and the renderer settings change without leaving the game.</p>
         </div>
         <figure class="shot">
-          <a href="../img/app-yayin-menusu.webp"><img src="../img/app-yayin-menusu-cubuk.webp" width="1564" height="158" loading="lazy" decoding="async" alt="Stream menu in Turkish: Volume at 100 percent, Mic, Zoom, Stretch, FPS counter, Sharpening: Off; renderer presets Default, High Quality, High Quality + Spatial Upscaling, High Quality + Advanced Spatial Upscaling, Custom; Display settings"></a>
+          <a href="../img/app-yayin-menusu.webp"><img src="../img/app-yayin-menusu-cubuk.webp" width="1564" height="162" loading="lazy" decoding="async" alt="Stream menu in Turkish: Volume at 100 percent, Mic, Zoom, Stretch, FPS counter, Sharpening: Off; renderer presets Default, High Quality, High Quality + Spatial Upscaling, High Quality + Advanced Spatial Upscaling, Custom; Display settings"></a>
           <figcaption>The stream menu opens at the bottom of the screen.</figcaption>
         </figure>
       </li>
@@ -410,12 +430,12 @@
     </div>
 
     <div class="newin">
-      <h3>New in 0.3.0</h3>
+      <h3>New in 0.4.0</h3>
       <div class="features features-4">
-        <div class="card feature"><h3>Update notices <span class="tag tag-accent">New</span></h3><p>When a new version is out, a "What's new" window lists the changes. "Update now" downloads and installs the new version and reopens the app. You can also check yourself any time with <strong>"Check for updates"</strong> at the bottom left.</p></div>
-        <div class="card feature"><h3>Technical support on Discord <span class="tag tag-accent">New</span></h3><p>One click on the Discord button in the sidebar takes you to free technical support.</p></div>
-        <div class="card feature"><h3>Start-up log <span class="tag tag-accent">New</span></h3><p>Every launch is written to a log file, so if something goes wrong, you can see where.</p></div>
-        <div class="card feature"><h3>User names with Turkish letters <span class="tag tag-accent">Fix</span></h3><p>Fixed the start-up problem on PCs whose Windows user name contains letters such as ğ, ı or ş.</p></div>
+        <div class="card feature"><h3>A new look <span class="tag tag-accent">New</span></h3><p>The new "Sunset" logo and an interface repainted to match: warm coral accents, dark backgrounds, a sunset behind it all.</p></div>
+        <div class="card feature"><h3>Step-by-step setup <span class="tag tag-accent">New</span></h3><p>Setting up the console and signing in to PSN now go in numbered steps. The account ID can be found two ways; if registering fails, the app says why and what to do.</p></div>
+        <div class="card feature"><h3>Logs and factory reset <span class="tag tag-accent">New</span></h3><p>Read the logs right inside Settings. <strong>"Reset to factory settings"</strong> removes everything and opens Robz Play as on its first start.</p></div>
+        <div class="card feature"><h3>30 / 60 comparison <span class="tag tag-accent">New</span></h3><p>The left half of the screen without frame generation, the right half with Robz Play. See the difference side by side; it shows in OBS recordings too.</p></div>
       </div>
     </div>
 
@@ -431,6 +451,9 @@
         <li>60 FPS<span>stream</span></li>
         <li>100 Mbps<span>bitrate</span></li>
         <li>100%<span>volume</span></li>
+        <li>High<span>motion detail</span></li>
+        <li>High<span>sharpening</span></li>
+        <li>On<span>FPS counter</span></li>
       </ul>
     </div>
   </div>
@@ -566,10 +589,11 @@
           <p><strong>The fix:</strong></p>
           <ol>
             <li>Add a new user profile (a second account) on the PS5: on the home screen, open the profile icon at the top right (or open the control centre with the PS button), choose <strong>Switch User</strong>, then <strong>Add User</strong>.</li>
+            <li>If your profile has a PS5 login passcode, remove it; it can cause connection problems.</li>
             <li>Press <strong>Play</strong> in Robz Play again. This time the PS5 shows a profile selection screen with two profiles.</li>
-            <li>Choose <strong>the profile you just created</strong> and continue; the controller works.</li>
+            <li>Choose <strong>the second profile</strong> and continue; the controller works. With a controller (DualSense) connected to the PC, the main profile works too.</li>
           </ol>
-          <p><strong>Important for GTA VI:</strong> to play a game bought on your main account while signed in with the new profile, the main account must have <strong>Console Sharing and Offline Play</strong> turned on for that PS5. On the PS5, signed in with the main account: <strong>Settings › Users and Accounts › Other › Console Sharing and Offline Play</strong>. It is usually already on for the first account set up on the console.</p>
+          <p><strong>Important for GTA VI:</strong> to play a game bought on your main account while signed in with the second profile, the main account must have <strong>Console Sharing and Offline Play</strong> turned on for that PS5. On the PS5, signed in with the main account: <strong>Settings › Users and Accounts › Other › Console Sharing and Offline Play</strong>. It is usually already on for the first account set up on the console.</p>
           <p>Menu names may differ slightly between PS5 system software versions. If the connection still drops after these steps, ask on <a href="https://discord.gg/UyyEn7SHm4">Discord</a> and attach <code>robzplay-tani.txt</code>.</p>
         </div>
       </details>
@@ -694,7 +718,7 @@
       </a>
       <div class="post-body">
         <div class="post-meta">
-          <img src="../img/robzplay.svg" alt="" width="44" height="44">
+          <img src="../img/robzplay-kucuk.svg" alt="" width="44" height="44">
           <div><b>@robzsogood</b>on X</div>
           <svg viewBox="0 0 24 24" role="img" aria-label="X"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
         </div>
@@ -715,7 +739,7 @@
   <div class="wrap">
     <div class="footer-grid">
       <div>
-        <a class="brand" href="#"><img src="../img/robzplay.svg" alt="" width="34" height="34">Robz Play</a>
+        <a class="brand" href="#"><img src="../img/robzplay-kucuk.svg" alt="" width="34" height="34">Robz Play</a>
         <p class="footer-tag">PS5 Remote Play and frame generation. Free and open source.</p>
         <p>Robz Play is a modified version of <a href="https://github.com/chiaki-ng/chiaki-ng">chiaki-ng</a> 1.10.1 and, like chiaki-ng, is licensed under the <a href="https://github.com/kutsalkiremitci/robz-play/blob/robzplay/COPYING">AGPL-3.0</a>. It is not made or endorsed by the chiaki-ng or Chiaki developers.</p>
       </div>

@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Robz Play icon: RP before a striped sunset, palms and a city; drawn in paths -->
+  <defs>
+    <clipPath id="rpTile"><rect x="14" y="14" width="484" height="484" rx="106"/></clipPath>
+    <linearGradient id="rpSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#141211"/>
+      <stop offset="0.72" stop-color="#2A211D"/>
+      <stop offset="1" stop-color="#121010"/>
+    </linearGradient>
+    <radialGradient id="rpHaze" cx="0.5" cy="0.58" r="0.62">
+      <stop offset="0" stop-color="#D97757" stop-opacity="0.3"/>
+      <stop offset="1" stop-color="#D97757" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="rpSun" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#E7A47F"/>
+      <stop offset="0.55" stop-color="#C96A45"/>
+      <stop offset="1" stop-color="#8C3E24"/>
+    </linearGradient>
+    <mask id="rpSunStripes">
+      <rect width="512" height="512" fill="#fff"/>
+      <g fill="#000"><rect y="300" width="512" height="14"/><rect y="340" width="512" height="18"/></g>
+    </mask>
+    <pattern id="rpPix" width="7" height="7" patternUnits="userSpaceOnUse">
+      <rect width="5" height="5" fill="#6E5649"/>
+    </pattern>
+    <pattern id="rpWin" width="9" height="11" patternUnits="userSpaceOnUse">
+      <rect x="2" y="3" width="3" height="3" fill="#D97757" opacity="0.65"/>
+    </pattern>
+    <linearGradient id="rpLetter" x1="0" y1="0" x2="1" y2="0.35">
+      <stop offset="0" stop-color="#FFF7EE"/>
+      <stop offset="0.42" stop-color="#F5C7A6"/>
+      <stop offset="0.75" stop-color="#E4845E"/>
+      <stop offset="1" stop-color="#C85A35"/>
+    </linearGradient>
+    <linearGradient id="rpRim" x1="0" y1="0" x2="1" y2="0.35">
+      <stop offset="0" stop-color="#F6DCC6"/>
+      <stop offset="0.5" stop-color="#E9997A"/>
+      <stop offset="1" stop-color="#D16540"/>
+    </linearGradient>
+    <linearGradient id="rpShine" x1="0" y1="0" x2="0.25" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.45"/>
+      <stop offset="0.38" stop-color="#FFFFFF" stop-opacity="0.12"/>
+      <stop offset="0.39" stop-color="#FFFFFF" stop-opacity="0"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="rpFrame" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#BDB1A6"/>
+      <stop offset="0.35" stop-color="#5B534D"/>
+      <stop offset="0.7" stop-color="#3A3532"/>
+      <stop offset="1" stop-color="#8E837A"/>
+    </linearGradient>
+    <filter id="rpGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="14"/>
+    </filter>
+    <path id="rpLetters" d="M0 0H94C136 0 160 24 160 62C160 90 146 110 122 120L168 200H102L66 128H60V200H0ZM60 40V90H88C104 90 112 80 112 65C112 50 104 40 88 40ZM170 0H266C308 0 332 26 332 66C332 106 308 132 266 132H230V200H170ZM230 40V92H258C275 92 284 81 284 66C284 51 275 40 258 40Z"/>
+  </defs>
+  <g clip-path="url(#rpTile)">
+    <rect width="512" height="512" fill="url(#rpSky)"/>
+    <rect width="512" height="512" fill="url(#rpHaze)"/>
+    <circle cx="256" cy="250" r="190" fill="url(#rpSun)" mask="url(#rpSunStripes)" opacity="0.7"/>
+    <rect y="410" width="512" height="102" fill="#121010"/>
+    <rect y="408" width="512" height="8" fill="#D97757" opacity="0.9"/>
+    <g transform="translate(93.9 140.0) scale(1.12) skewX(-12)">
+      <use href="#rpLetters" fill="#D97757" stroke="#D97757" stroke-width="58" stroke-linejoin="round" filter="url(#rpGlow)" opacity="0.8"/>
+      <use href="#rpLetters" fill="url(#rpRim)" stroke="url(#rpRim)" stroke-width="52" stroke-linejoin="round"/>
+      <use href="#rpLetters" fill="#110E0D" stroke="#110E0D" stroke-width="38" stroke-linejoin="round"/>
+      <use href="#rpLetters" fill="url(#rpLetter)" stroke="#FFF7EE" stroke-opacity="0.4" stroke-width="2"/>
+      <use href="#rpLetters" fill="url(#rpShine)"/>
+    </g>
+  </g>
+  <rect x="14" y="14" width="484" height="484" rx="106" fill="none" stroke="url(#rpFrame)" stroke-width="16"/>
+  <rect x="21" y="21" width="470" height="470" rx="100" fill="none" stroke="#FAF9F5" stroke-opacity="0.10" stroke-width="2"/>
+</svg>
