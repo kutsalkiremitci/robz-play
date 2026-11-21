@@ -119,6 +119,7 @@ DialogView {
         case 6: item = controllerMappingChange; break;
         case 7: item = firstRemoteFocusableItem(); break;
         case 8: item = profile; break;
+        case 9: item = logOpenFolderButton; break;
         }
         if (item)
             item.forceActiveFocus(Qt.TabFocusReason);
@@ -134,6 +135,7 @@ DialogView {
         case 6: return controllersFlick;
         case 7: return remoteFlick;
         case 8: return configFlick;
+        case 9: return logFlick;
         default: return null;
         }
     }
@@ -442,6 +444,12 @@ DialogView {
                     visible: bar.currentIndex == 7
                 }
             }
+
+            TabButton {
+                id: logsTab
+                text: qsTr("Logs")
+                focusPolicy: Qt.NoFocus
+            }
         }
 
         Rectangle {
@@ -452,13 +460,13 @@ DialogView {
                 bottom: parent.bottom
             }
             width: 300
-            color: "#181716"
+            color: "#100D0C"
 
             Rectangle {
                 anchors.right: parent.right
                 width: 1
                 height: parent.height
-                color: "#3A3936"
+                color: "#3B302B"
             }
 
             Column {
@@ -481,7 +489,8 @@ DialogView {
                         { title: qsTr("Keyboard"), note: qsTr("Keys for controller buttons") },
                         { title: qsTr("Controllers"), note: qsTr("Button mapping") },
                         { title: qsTr("Remote play"), note: qsTr("PSN sign-in") },
-                        { title: qsTr("Profiles and data"), note: qsTr("Profiles, import, export, logs") }
+                        { title: qsTr("Profiles and data"), note: qsTr("Profiles, import, export, logs") },
+                        { title: qsTr("Logs"), note: qsTr("What happened, for support") }
                     ]
 
                     AbstractButton {
@@ -497,9 +506,9 @@ DialogView {
                         HoverHandler { cursorShape: Qt.PointingHandCursor }
                         background: Rectangle {
                             radius: 10
-                            color: navEntry.current ? "#262624" : (navEntry.hovered ? "#21201F" : "transparent")
+                            color: navEntry.current ? "#1D1816" : (navEntry.hovered ? "#1B1615" : "transparent")
                             border.width: navEntry.current ? 1 : 0
-                            border.color: "#3A3936"
+                            border.color: "#3B302B"
                             Rectangle {
                                 visible: navEntry.current
                                 anchors {
@@ -510,7 +519,7 @@ DialogView {
                                 width: 3
                                 height: 26
                                 radius: 2
-                                color: "#D97757"
+                                color: "#E4845E"
                             }
                         }
                         contentItem: Column {
@@ -519,13 +528,13 @@ DialogView {
                             spacing: 1
                             Label {
                                 text: navEntry.modelData.title
-                                color: navEntry.current ? "#FAF9F5" : "#C2C0B6"
+                                color: navEntry.current ? "#FBF4EC" : "#CDBFB4"
                                 font.pixelSize: 17
                                 font.weight: navEntry.current ? Font.DemiBold : Font.Normal
                             }
                             Label {
                                 text: navEntry.modelData.note
-                                color: "#8F8D85"
+                                color: "#A08F84"
                                 font.pixelSize: 12
                             }
                         }
@@ -559,7 +568,7 @@ DialogView {
                 Label {
                     anchors.verticalCenter: parent.verticalCenter
                     text: qsTr("Switch section")
-                    color: "#8F8D85"
+                    color: "#A08F84"
                     font.pixelSize: 13
                 }
             }
@@ -601,23 +610,25 @@ DialogView {
                         width: generalLayout.width + 64
                         height: generalLayout.height + 56
                         radius: 16
-                        color: "#262624"
-                        border.color: "#3A3936"
+                        color: "#1D1816"
+                        border.color: "#3B302B"
                     }
                     Label {
                         x: generalLayout.x - 32
                         y: 14
                         text: qsTr("General")
-                        font.family: "Georgia"
+                        font.family: "Segoe UI"
+                        font.weight: Font.Black
+                        font.italic: true
                         font.pixelSize: 36
-                        color: "#FAF9F5"
+                        color: "#FBF4EC"
                     }
                     Label {
                         x: generalLayout.x - 32
                         y: 66
                         text: qsTr("Frame generation, what happens on disconnect, and other basics.")
                         font.pixelSize: 15
-                        color: "#C2C0B6"
+                        color: "#CDBFB4"
                     }
                     ColumnLayout {
                         id: generalLayout
@@ -650,7 +661,7 @@ DialogView {
 
                         Label {
                             Layout.alignment: Qt.AlignLeft
-                            color: "#8F8D85"
+                            color: "#A08F84"
                             font.pixelSize: 14
                             text: qsTr("(Ask)")
                         }
@@ -667,7 +678,7 @@ DialogView {
 
                         Label {
                             Layout.alignment: Qt.AlignLeft
-                            color: "#8F8D85"
+                            color: "#A08F84"
                             font.pixelSize: 14
                             text: qsTr("(On)")
                         }
@@ -684,9 +695,9 @@ DialogView {
 
                         Label {
                             Layout.alignment: Qt.AlignLeft
-                            color: "#8F8D85"
+                            color: "#A08F84"
                             font.pixelSize: 14
-                            text: qsTr("(Off)")
+                            text: qsTr("(On)")
                         }
 
                         Label {
@@ -701,7 +712,7 @@ DialogView {
 
                         Label {
                             Layout.alignment: Qt.AlignLeft
-                            color: "#8F8D85"
+                            color: "#A08F84"
                             font.pixelSize: 14
                             text: qsTr("(On)")
                         }
@@ -720,9 +731,9 @@ DialogView {
 
                         Label {
                             Layout.alignment: Qt.AlignLeft
-                            color: "#8F8D85"
+                            color: "#A08F84"
                             font.pixelSize: 14
-                            text: qsTr("(Balanced)")
+                            text: qsTr("(High)")
                         }
 
                         Label {
@@ -739,7 +750,7 @@ DialogView {
 
                         Label {
                             Layout.alignment: Qt.AlignLeft
-                            color: "#8F8D85"
+                            color: "#A08F84"
                             font.pixelSize: 14
                             text: qsTr("(60 FPS)")
                         }
@@ -756,9 +767,28 @@ DialogView {
 
                         Label {
                             Layout.alignment: Qt.AlignLeft
-                            color: "#8F8D85"
+                            color: "#A08F84"
                             font.pixelSize: 14
                             text: qsTr("(On)")
+                        }
+
+                        Label {
+                            Layout.alignment: Qt.AlignLeft
+                            text: qsTr("30 / 60 Comparison View:")
+                        }
+
+                        C.CheckBox {
+                            checked: Chiaki.settings.frameGenCompare
+                            onToggled: Chiaki.settings.frameGenCompare = !Chiaki.settings.frameGenCompare
+                        }
+
+                        Label {
+                            Layout.alignment: Qt.AlignLeft
+                            Layout.maximumWidth: 420
+                            color: "#A08F84"
+                            font.pixelSize: 14
+                            wrapMode: Text.Wrap
+                            text: qsTr("(Off) Left half: the console's real frames only. Right half: with frame generation.")
                         }
 
                         Label {
@@ -775,9 +805,9 @@ DialogView {
 
                         Label {
                             Layout.alignment: Qt.AlignLeft
-                            color: "#8F8D85"
+                            color: "#A08F84"
                             font.pixelSize: 14
-                            text: qsTr("(Off)")
+                            text: qsTr("(High)")
                         }
 
                         Label {
@@ -794,7 +824,7 @@ DialogView {
 
                         Label {
                             Layout.alignment: Qt.AlignLeft
-                            color: "#8F8D85"
+                            color: "#A08F84"
                             font.pixelSize: 14
                             text: qsTr("(Do Nothing)")
                         }
@@ -819,7 +849,7 @@ DialogView {
 
                         Label {
                             Layout.alignment: Qt.AlignLeft
-                            color: "#8F8D85"
+                            color: "#A08F84"
                             font.pixelSize: 14
                             text: qsTr("(Off)")
                             visible: (typeof Chiaki.settings.steamDeckHaptics !== "undefined")
@@ -845,7 +875,7 @@ DialogView {
 
                         Label {
                             Layout.alignment: Qt.AlignLeft
-                            color: "#8F8D85"
+                            color: "#A08F84"
                             font.pixelSize: 14
                             text: qsTr("(Off)")
                             visible: typeof Chiaki.settings.verticalDeck !== "undefined"
@@ -865,7 +895,7 @@ DialogView {
 
                         Label {
                             Layout.alignment: Qt.AlignLeft
-                            color: "#8F8D85"
+                            color: "#A08F84"
                             font.pixelSize: 14
                             text: qsTr("(Audio and Video Enabled)")
                         }
@@ -909,7 +939,7 @@ DialogView {
 
                         Label {
                             Layout.alignment: Qt.AlignLeft
-                            color: "#8F8D85"
+                            color: "#A08F84"
                             font.pixelSize: 14
                             text: qsTr("(Off)")
                         }
@@ -936,7 +966,7 @@ DialogView {
 
                             Label {
                                 Layout.alignment: Qt.AlignLeft
-                                color: "#8F8D85"
+                                color: "#A08F84"
                                 font.pixelSize: 14
                                 text: qsTr("(On)")
                             }
@@ -1028,7 +1058,7 @@ DialogView {
 
                             Label {
                                 Layout.alignment: Qt.AlignLeft
-                                color: "#8F8D85"
+                                color: "#A08F84"
                                 font.pixelSize: 14
                                 text: qsTr("(L1+R1+L3+R3)")
                             }
@@ -1060,23 +1090,25 @@ DialogView {
                         width: videoGrid.width + 64
                         height: videoGrid.height + 56
                         radius: 16
-                        color: "#262624"
-                        border.color: "#3A3936"
+                        color: "#1D1816"
+                        border.color: "#3B302B"
                     }
                     Label {
                         x: videoGrid.x - 32
                         y: 14
                         text: qsTr("Video")
-                        font.family: "Georgia"
+                        font.family: "Segoe UI"
+                        font.weight: Font.Black
+                        font.italic: true
                         font.pixelSize: 36
-                        color: "#FAF9F5"
+                        color: "#FBF4EC"
                     }
                     Label {
                         x: videoGrid.x - 32
                         y: 66
                         text: qsTr("Decoder, window and renderer options.")
                         font.pixelSize: 15
-                        color: "#C2C0B6"
+                        color: "#CDBFB4"
                     }
                     GridLayout {
                         id: videoGrid
@@ -1128,7 +1160,7 @@ DialogView {
 
                     Label {
                         Layout.alignment: Qt.AlignLeft
-                        color: "#8F8D85"
+                        color: "#A08F84"
                         font.pixelSize: 14
                         text: qsTr("(Auto)")
                     }
@@ -1149,7 +1181,7 @@ DialogView {
 
                     Label {
                         Layout.alignment: Qt.AlignLeft
-                        color: "#8F8D85"
+                        color: "#A08F84"
                         font.pixelSize: 14
                         text: qsTr("(Fullscreen)")
                     }
@@ -1182,7 +1214,7 @@ DialogView {
 
                     Label {
                         Layout.alignment: Qt.AlignLeft
-                        color: "#8F8D85"
+                        color: "#A08F84"
                         font.pixelSize: 14
                         text: qsTr("(1920)")
                         visible: Chiaki.settings.windowType == 1
@@ -1216,7 +1248,7 @@ DialogView {
 
                     Label {
                         Layout.alignment: Qt.AlignLeft
-                        color: "#8F8D85"
+                        color: "#A08F84"
                         font.pixelSize: 14
                         text: qsTr("(1080)")
                         visible: Chiaki.settings.windowType == 1
@@ -1234,7 +1266,7 @@ DialogView {
 
                     Label {
                         Layout.alignment: Qt.AlignLeft
-                        color: "#8F8D85"
+                        color: "#A08F84"
                         font.pixelSize: 14
                         text: qsTr("(Off)")
                     }
@@ -1250,7 +1282,7 @@ DialogView {
 
                     Label {
                         Layout.alignment: Qt.AlignLeft
-                        color: "#8F8D85"
+                        color: "#A08F84"
                         font.pixelSize: 14
                         text: qsTr("(On)")
                     }
@@ -1270,7 +1302,7 @@ DialogView {
 
                     Label {
                         Layout.alignment: Qt.AlignLeft
-                        color: "#8F8D85"
+                        color: "#A08F84"
                         font.pixelSize: 14
                         text: qsTr("(Off)")
                     }
@@ -1299,7 +1331,7 @@ DialogView {
 
                     Label {
                         Layout.alignment: Qt.AlignLeft
-                        color: "#8F8D85"
+                        color: "#A08F84"
                         font.pixelSize: 14
                         text: qsTr("(High Quality)")
                     }
@@ -1324,7 +1356,7 @@ DialogView {
 
                     Label {
                         Layout.alignment: Qt.AlignLeft
-                        color: "#8F8D85"
+                        color: "#A08F84"
                         font.pixelSize: 14
                         text: qsTr("(Direct Mapping)")
                     }
@@ -1344,7 +1376,7 @@ DialogView {
 
                     Label {
                         Layout.alignment: Qt.AlignLeft
-                        color: "#8F8D85"
+                        color: "#A08F84"
                         font.pixelSize: 14
                         text: qsTr("(None)")
                     }
@@ -1368,7 +1400,7 @@ DialogView {
 
                     Label {
                         Layout.alignment: Qt.AlignLeft
-                        color: "#8F8D85"
+                        color: "#A08F84"
                         font.pixelSize: 14
                         text: qsTr("(Vulkan)")
                     }
@@ -1397,7 +1429,7 @@ DialogView {
 
                     Label {
                         Layout.alignment: Qt.AlignLeft
-                        color: "#8F8D85"
+                        color: "#A08F84"
                         font.pixelSize: 14
                         text: qsTr("(Off)")
                         visible: Chiaki.settings.rendererBackend == 0
@@ -1460,23 +1492,25 @@ DialogView {
                         width: streamGrid.width + 64
                         height: streamGrid.height + 56
                         radius: 16
-                        color: "#262624"
-                        border.color: "#3A3936"
+                        color: "#1D1816"
+                        border.color: "#3B302B"
                     }
                     Label {
                         x: streamGrid.x - 32
                         y: 14
                         text: qsTr("Stream")
-                        font.family: "Georgia"
+                        font.family: "Segoe UI"
+                        font.weight: Font.Black
+                        font.italic: true
                         font.pixelSize: 36
-                        color: "#FAF9F5"
+                        color: "#FBF4EC"
                     }
                     Label {
                         x: streamGrid.x - 32
                         y: 66
                         text: qsTr("Resolution, frame rate, bitrate and codec for each console.")
                         font.pixelSize: 15
-                        color: "#C2C0B6"
+                        color: "#CDBFB4"
                     }
                     GridLayout {
                         id: streamGrid
@@ -1940,23 +1974,25 @@ DialogView {
                         width: audiowifigrid.width + 64
                         height: audiowifigrid.height + 56
                         radius: 16
-                        color: "#262624"
-                        border.color: "#3A3936"
+                        color: "#1D1816"
+                        border.color: "#3B302B"
                     }
                     Label {
                         x: audiowifigrid.x - 32
                         y: 14
                         text: qsTr("Audio and network")
-                        font.family: "Georgia"
+                        font.family: "Segoe UI"
+                        font.weight: Font.Black
+                        font.italic: true
                         font.pixelSize: 36
-                        color: "#FAF9F5"
+                        color: "#FBF4EC"
                     }
                     Label {
                         x: audiowifigrid.x - 32
                         y: 66
                         text: qsTr("Sound devices, volume and connection warnings.")
                         font.pixelSize: 15
-                        color: "#C2C0B6"
+                        color: "#CDBFB4"
                     }
                     GridLayout {
                         id: audiowifigrid
@@ -1992,7 +2028,7 @@ DialogView {
 
                         Label {
                             Layout.alignment: Qt.AlignLeft
-                            color: "#8F8D85"
+                            color: "#A08F84"
                             font.pixelSize: 14
                             text: qsTr("(Auto)")
                         }
@@ -2018,7 +2054,7 @@ DialogView {
 
                         Label {
                             Layout.alignment: Qt.AlignLeft
-                            color: "#8F8D85"
+                            color: "#A08F84"
                             font.pixelSize: 14
                             text: qsTr("(Auto)")
                         }
@@ -2052,7 +2088,7 @@ DialogView {
 
                         Label {
                             Layout.alignment: Qt.AlignLeft
-                            color: "#8F8D85"
+                            color: "#A08F84"
                             font.pixelSize: 14
                             text: qsTr("(50 ms)")
                         }
@@ -2084,7 +2120,7 @@ DialogView {
 
                         Label {
                             Layout.alignment: Qt.AlignLeft
-                            color: "#8F8D85"
+                            color: "#A08F84"
                             font.pixelSize: 14
                             text: qsTr("(100%)")
                         }
@@ -2101,7 +2137,7 @@ DialogView {
 
                         Label {
                             Layout.alignment: Qt.AlignLeft
-                            color: "#8F8D85"
+                            color: "#A08F84"
                             font.pixelSize: 14
                             text: qsTr("(Off)")
                         }
@@ -2121,7 +2157,7 @@ DialogView {
 
                         Label {
                             Layout.alignment: Qt.AlignLeft
-                            color: "#8F8D85"
+                            color: "#A08F84"
                             font.pixelSize: 14
                             text: qsTr("(Off)")
                             visible: typeof Chiaki.settings.speechProcessing !== "undefined"
@@ -2154,7 +2190,7 @@ DialogView {
 
                         Label {
                             Layout.alignment: Qt.AlignLeft
-                            color: "#8F8D85"
+                            color: "#A08F84"
                             font.pixelSize: 14
                             text: qsTr("(6 dB)")
                             visible: if (typeof Chiaki.settings.speechProcessing !== "undefined") {Chiaki.settings.speechProcessing} else {false}
@@ -2187,7 +2223,7 @@ DialogView {
 
                         Label {
                             Layout.alignment: Qt.AlignLeft
-                            color: "#8F8D85"
+                            color: "#A08F84"
                             font.pixelSize: 14
                             text: qsTr("(30 dB)")
                             visible: if (typeof Chiaki.settings.speechProcessing !== "undefined") {Chiaki.settings.speechProcessing} else {false}
@@ -2218,7 +2254,7 @@ DialogView {
 
                         Label {
                             Layout.alignment: Qt.AlignLeft
-                            color: "#8F8D85"
+                            color: "#A08F84"
                             font.pixelSize: 14
                             text: qsTr("(3%)")
                         }
@@ -2248,7 +2284,7 @@ DialogView {
 
                         Label {
                             Layout.alignment: Qt.AlignLeft
-                            color: "#8F8D85"
+                            color: "#A08F84"
                             font.pixelSize: 14
                             text: qsTr("(5%)")
                         }
@@ -2265,7 +2301,7 @@ DialogView {
 
                         Label {
                             Layout.alignment: Qt.AlignLeft
-                            color: "#8F8D85"
+                            color: "#A08F84"
                             font.pixelSize: 14
                             text: qsTr("(Off)")
                         }
@@ -2283,7 +2319,7 @@ DialogView {
 
                         Label {
                             Layout.alignment: Qt.AlignLeft
-                            color: "#8F8D85"
+                            color: "#A08F84"
                             font.pixelSize: 14
                             text: qsTr("(Off)")
                         }
@@ -2314,23 +2350,25 @@ DialogView {
                         width: consolesLayout.width + 64
                         height: consolesLayout.height + 56
                         radius: 16
-                        color: "#262624"
-                        border.color: "#3A3936"
+                        color: "#1D1816"
+                        border.color: "#3B302B"
                     }
                     Label {
                         x: consolesLayout.x - 32
                         y: 14
                         text: qsTr("Consoles")
-                        font.family: "Georgia"
+                        font.family: "Segoe UI"
+                        font.weight: Font.Black
+                        font.italic: true
                         font.pixelSize: 36
-                        color: "#FAF9F5"
+                        color: "#FBF4EC"
                     }
                     Label {
                         x: consolesLayout.x - 32
                         y: 66
                         text: qsTr("Registered, hidden and manually added consoles.")
                         font.pixelSize: 15
-                        color: "#C2C0B6"
+                        color: "#CDBFB4"
                     }
                     ColumnLayout {
                         id: consolesLayout
@@ -2677,23 +2715,25 @@ DialogView {
                         width: keysGrid.width + 64
                         height: keysGrid.height + 56
                         radius: 16
-                        color: "#262624"
-                        border.color: "#3A3936"
+                        color: "#1D1816"
+                        border.color: "#3B302B"
                     }
                     Label {
                         x: keysGrid.x - 32
                         y: 14
                         text: qsTr("Keyboard")
-                        font.family: "Georgia"
+                        font.family: "Segoe UI"
+                        font.weight: Font.Black
+                        font.italic: true
                         font.pixelSize: 36
-                        color: "#FAF9F5"
+                        color: "#FBF4EC"
                     }
                     Label {
                         x: keysGrid.x - 32
                         y: 66
                         text: qsTr("Keys used in place of controller buttons.")
                         font.pixelSize: 15
-                        color: "#C2C0B6"
+                        color: "#CDBFB4"
                     }
                     GridLayout {
                         id: keysGrid
@@ -3038,23 +3078,25 @@ DialogView {
                         width: controllersLayout.width + 64
                         height: controllersLayout.height + 56
                         radius: 16
-                        color: "#262624"
-                        border.color: "#3A3936"
+                        color: "#1D1816"
+                        border.color: "#3B302B"
                     }
                     Label {
                         x: controllersLayout.x - 32
                         y: 14
                         text: qsTr("Controllers")
-                        font.family: "Georgia"
+                        font.family: "Segoe UI"
+                        font.weight: Font.Black
+                        font.italic: true
                         font.pixelSize: 36
-                        color: "#FAF9F5"
+                        color: "#FBF4EC"
                     }
                     Label {
                         x: controllersLayout.x - 32
                         y: 66
                         text: qsTr("Button mapping and controller behaviour.")
                         font.pixelSize: 15
-                        color: "#C2C0B6"
+                        color: "#CDBFB4"
                     }
                     ColumnLayout {
                         id: controllersLayout
@@ -3101,7 +3143,7 @@ DialogView {
 
                             Label {
                                 Layout.alignment: Qt.AlignLeft
-                                color: "#8F8D85"
+                                color: "#A08F84"
                                 font.pixelSize: 14
                                 text: qsTr("(On)")
                             }
@@ -3131,7 +3173,7 @@ DialogView {
 
                             Label {
                                 Layout.alignment: Qt.AlignLeft
-                                color: "#8F8D85"
+                                color: "#A08F84"
                                 font.pixelSize: 14
                                 text: qsTr("(On)")
                             }
@@ -3267,7 +3309,7 @@ DialogView {
 
                             Label {
                                 Layout.alignment: Qt.AlignLeft
-                                color: "#8F8D85"
+                                color: "#A08F84"
                                 font.pixelSize: 14
                                 text: qsTr("(L1+R1+dpad Up)")
                             }
@@ -3299,7 +3341,7 @@ DialogView {
 
                             Label {
                                 Layout.alignment: Qt.AlignLeft
-                                color: "#8F8D85"
+                                color: "#A08F84"
                                 font.pixelSize: 14
                                 text: qsTr("(Off)")
                             }
@@ -3322,7 +3364,7 @@ DialogView {
 
                             Label {
                                 Layout.alignment: Qt.AlignLeft
-                                color: "#8F8D85"
+                                color: "#A08F84"
                                 font.pixelSize: 14
                                 text: qsTr("(Normal)")
                             }
@@ -3392,23 +3434,25 @@ DialogView {
                         width: remoteGrid.width + 64
                         height: remoteGrid.height + 56
                         radius: 16
-                        color: "#262624"
-                        border.color: "#3A3936"
+                        color: "#1D1816"
+                        border.color: "#3B302B"
                     }
                     Label {
                         x: remoteGrid.x - 32
                         y: 14
                         text: qsTr("Remote play")
-                        font.family: "Georgia"
+                        font.family: "Segoe UI"
+                        font.weight: Font.Black
+                        font.italic: true
                         font.pixelSize: 36
-                        color: "#FAF9F5"
+                        color: "#FBF4EC"
                     }
                     Label {
                         x: remoteGrid.x - 32
                         y: 66
                         text: qsTr("PSN sign-in, for playing away from home.")
                         font.pixelSize: 15
-                        color: "#C2C0B6"
+                        color: "#CDBFB4"
                     }
                     GridLayout {
                         id: remoteGrid
@@ -3472,7 +3516,7 @@ DialogView {
 
                         Label {
                             Layout.alignment: Qt.AlignLeft
-                            color: "#8F8D85"
+                            color: "#A08F84"
                             font.pixelSize: 14
                             text: qsTr("(Off)")
                         }
@@ -3534,7 +3578,7 @@ DialogView {
 
                         Label {
                             Layout.alignment: Qt.AlignLeft
-                            color: "#8F8D85"
+                            color: "#A08F84"
                             font.pixelSize: 14
                             text: qsTr("(250)")
                             Layout.leftMargin: 100
@@ -3554,7 +3598,7 @@ DialogView {
                     }
                     clip: true
                     contentWidth: Math.max(width, configGrid.width + 140)
-                    contentHeight: configGrid.y + configGrid.height + 60
+                    contentHeight: resetCard.y + resetCard.height + 40
                     flickableDirection: Flickable.AutoFlickIfNeeded
                     ScrollBar.vertical: ScrollBar {
                         policy: ScrollBar.AlwaysOn
@@ -3566,23 +3610,25 @@ DialogView {
                         width: configGrid.width + 64
                         height: configGrid.height + 56
                         radius: 16
-                        color: "#262624"
-                        border.color: "#3A3936"
+                        color: "#1D1816"
+                        border.color: "#3B302B"
                     }
                     Label {
                         x: configGrid.x - 32
                         y: 14
                         text: qsTr("Profiles and data")
-                        font.family: "Georgia"
+                        font.family: "Segoe UI"
+                        font.weight: Font.Black
+                        font.italic: true
                         font.pixelSize: 36
-                        color: "#FAF9F5"
+                        color: "#FBF4EC"
                     }
                     Label {
                         x: configGrid.x - 32
                         y: 66
                         text: qsTr("Profiles, import and export, logs and about.")
                         font.pixelSize: 15
-                        color: "#C2C0B6"
+                        color: "#CDBFB4"
                     }
                     GridLayout {
                         id: configGrid
@@ -3649,8 +3695,514 @@ DialogView {
                         C.CheckBox {
                             text: qsTr("Verbose Logging (unchecked)")
                             checked: Chiaki.settings.logVerbose
-                            lastInFocusChain: true
                             onToggled: Chiaki.settings.logVerbose = checked
+                        }
+                    }
+
+                    // Robz Play: back to how it was on the first start, after a warning
+                    Rectangle {
+                        id: resetCard
+                        x: configGrid.x - 32
+                        y: configGrid.y + configGrid.height + 52
+                        width: Math.max(configGrid.width + 64, 640)
+                        height: resetColumn.implicitHeight + 48
+                        radius: 16
+                        color: "#211715"
+                        border.color: "#6B3A2C"
+
+                        ColumnLayout {
+                            id: resetColumn
+                            anchors {
+                                left: parent.left
+                                right: parent.right
+                                top: parent.top
+                                margins: 24
+                            }
+                            spacing: 10
+                            Label {
+                                text: qsTr("Reset to factory settings")
+                                color: "#FBF4EC"
+                                font.family: "Segoe UI"
+                                font.weight: Font.Black
+                                font.italic: true
+                                font.pixelSize: 22
+                            }
+                            Label {
+                                Layout.fillWidth: true
+                                text: qsTr("Robz Play goes back to how it was on its first start: the registered consoles, the PSN sign-in, every setting and profile, the key mappings and the logs are removed.")
+                                color: "#CDBFB4"
+                                font.pixelSize: 15
+                                wrapMode: Text.Wrap
+                            }
+                            C.Button {
+                                id: factoryResetButton
+                                Layout.topMargin: 6
+                                lastInFocusChain: true
+                                text: qsTr("Reset to factory settings…")
+                                Material.background: visualFocus ? "#C8553D" : "#8E3B2A"
+                                Material.foreground: "#FBF4EC"
+                                Material.roundedScale: Material.SmallScale
+                                onClicked: factoryResetDialog.open()
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Robz Play: the log files, listed and shown here, for when something goes wrong
+            Item {
+                id: logsPage
+                property var files: []
+                property string selected: ""
+                property string text: ""
+                property bool truncated: false
+                property bool onlyProblems: false
+                // streamer mode: a log can hold the console's address, so it is shown only on request
+                property bool revealed: false
+                property bool copied: false
+                readonly property bool hiddenByStreamerMode: Chiaki.settings.streamerMode && !revealed
+                readonly property var problemLine: /\] \[(W|E)\] |\[(uyarı|HATA|ÖLÜMCÜL HATA)\]|ÇÖKTÜ/
+                readonly property string shownText: onlyProblems
+                    ? text.split("\n").filter(line => problemLine.test(line)).join("\n")
+                    : text
+                // search (Ctrl+F): where the query occurs in the text shown, and which one is selected
+                property string query: ""
+                property var matches: []
+                property int matchIndex: -1
+                onShownTextChanged: { findMatches(); Qt.callLater(scrollToEnd); }
+                onQueryChanged: findMatches()
+
+                function findMatches() {
+                    const found = [];
+                    const q = query.toLowerCase();
+                    if (q.length > 0) {
+                        const hay = shownText.toLowerCase();
+                        let at = hay.indexOf(q);
+                        while (at >= 0 && found.length < 10000) {
+                            found.push(at);
+                            at = hay.indexOf(q, at + q.length);
+                        }
+                    }
+                    matches = found;
+                    matchIndex = -1;
+                    if (found.length)
+                        showMatch(0);
+                    else
+                        logArea.deselect();
+                }
+                function showMatch(i) {
+                    if (!matches.length)
+                        return;
+                    matchIndex = (i + matches.length) % matches.length;
+                    const start = matches[matchIndex];
+                    logArea.select(start, start + query.length);
+                    const r = logArea.positionToRectangle(start);
+                    logFlick.contentY = Math.max(0, Math.min(logFlick.contentHeight - logFlick.height, r.y - logFlick.height / 2));
+                    logFlick.contentX = Math.max(0, Math.min(logFlick.contentWidth - logFlick.width, r.x - logFlick.width / 3));
+                }
+                function scrollToEnd() {
+                    if (matches.length)
+                        return;
+                    logFlick.contentX = 0;
+                    logFlick.contentY = Math.max(0, logFlick.contentHeight - logFlick.height);
+                }
+                function scrollBy(dy) {
+                    logFlick.contentY = Math.max(0, Math.min(Math.max(0, logFlick.contentHeight - logFlick.height), logFlick.contentY + dy));
+                }
+                function openSearch() {
+                    searchField.forceActiveFocus(Qt.ShortcutFocusReason);
+                    searchField.selectAll();
+                }
+
+                Shortcut {
+                    sequences: [StandardKey.Find]
+                    enabled: logsPage.visible
+                    onActivated: logsPage.openSearch()
+                }
+
+                function refresh() {
+                    files = Chiaki.settings.logFiles();
+                    let keep = files.some(f => f.name === selected);
+                    // the latest stream is what a problem is usually about
+                    const latestStream = files.find(f => f.kind === "session");
+                    showFile(keep ? selected : (latestStream ? latestStream.name : (files.length ? files[0].name : "")));
+                }
+                function showFile(name) {
+                    selected = name;
+                    copied = false;
+                    if (!name) {
+                        text = "";
+                        truncated = false;
+                        return;
+                    }
+                    const result = Chiaki.settings.readLogFile(name);
+                    text = result.text;
+                    truncated = result.truncated;
+                }
+                function kindName(kind) {
+                    switch (kind) {
+                    case "startup": return qsTr("This start");
+                    case "previous": return qsTr("Previous start");
+                    case "session": return qsTr("Stream");
+                    default: return qsTr("Other");
+                    }
+                }
+                function sizeText(bytes) {
+                    return bytes >= 1048576 ? qsTr("%1 MB").arg((bytes / 1048576).toFixed(1))
+                                            : qsTr("%1 KB").arg(Math.max(1, Math.round(bytes / 1024)));
+                }
+                onVisibleChanged: if (visible) refresh()
+
+                // copies the text shown, without showing a selection
+                TextEdit {
+                    id: clipboardHelper
+                    visible: false
+                }
+
+                ColumnLayout {
+                    anchors.fill: parent
+                    anchors.margins: 30
+                    spacing: 14
+
+                    Label {
+                        text: qsTr("Logs")
+                        color: "#FBF4EC"
+                        font.family: "Segoe UI"
+                        font.weight: Font.Black
+                        font.italic: true
+                        font.pixelSize: 30
+                    }
+                    Label {
+                        Layout.fillWidth: true
+                        text: qsTr("Robz Play writes every start and every stream into a log file. When something goes wrong - for example the picture stays black after Play and you are taken back to the home screen - the log of that stream says why. Ask for help on Discord with that log or with the diagnostics file.")
+                        color: "#CDBFB4"
+                        font.pixelSize: 15
+                        wrapMode: Text.Wrap
+                    }
+
+                    Flow {
+                        Layout.fillWidth: true
+                        spacing: 10
+                        C.Button {
+                            id: logOpenFolderButton
+                            text: qsTr("Open log folder")
+                            onClicked: Chiaki.settings.openLogFolder()
+                            KeyNavigation.right: logOpenFileButton
+                        }
+                        C.Button {
+                            id: logOpenFileButton
+                            text: qsTr("Open in text editor")
+                            enabled: logsPage.selected.length > 0
+                            onClicked: Chiaki.settings.openLogFile(logsPage.selected)
+                            KeyNavigation.left: logOpenFolderButton
+                            KeyNavigation.right: logCopyButton
+                        }
+                        C.Button {
+                            id: logCopyButton
+                            text: logsPage.copied ? qsTr("Copied") : qsTr("Copy")
+                            enabled: logsPage.shownText.length > 0 && !logsPage.hiddenByStreamerMode
+                            onClicked: {
+                                clipboardHelper.text = logsPage.shownText;
+                                clipboardHelper.selectAll();
+                                clipboardHelper.copy();
+                                clipboardHelper.text = "";
+                                logsPage.copied = true;
+                            }
+                            KeyNavigation.left: logOpenFileButton
+                            KeyNavigation.right: logDiagnosticsButton.visible ? logDiagnosticsButton : logRefreshButton
+                        }
+                        C.Button {
+                            id: logDiagnosticsButton
+                            text: qsTr("Create diagnostics file")
+                            visible: Chiaki.settings.diagnosticsAvailable()
+                            onClicked: Chiaki.settings.runDiagnostics()
+                            KeyNavigation.left: logCopyButton
+                            KeyNavigation.right: logRefreshButton
+                        }
+                        C.Button {
+                            id: logRefreshButton
+                            text: qsTr("Refresh")
+                            onClicked: logsPage.refresh()
+                            KeyNavigation.left: logDiagnosticsButton.visible ? logDiagnosticsButton : logCopyButton
+                        }
+                    }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        spacing: 14
+
+                        // the files, newest first
+                        Rectangle {
+                            Layout.preferredWidth: 300
+                            Layout.fillHeight: true
+                            radius: 12
+                            color: "#171312"
+                            border.color: "#3B302B"
+                            ListView {
+                                id: logList
+                                anchors.fill: parent
+                                anchors.margins: 6
+                                clip: true
+                                spacing: 4
+                                model: logsPage.files
+                                ScrollBar.vertical: ScrollBar {}
+                                delegate: AbstractButton {
+                                    id: logEntry
+                                    required property var modelData
+                                    readonly property bool current: logsPage.selected === modelData.name
+                                    width: logList.width - 10
+                                    height: 58
+                                    hoverEnabled: true
+                                    focusPolicy: Qt.NoFocus
+                                    onClicked: logsPage.showFile(modelData.name)
+                                    HoverHandler { cursorShape: Qt.PointingHandCursor }
+                                    background: Rectangle {
+                                        radius: 9
+                                        color: logEntry.current ? "#271F1C" : (logEntry.hovered ? "#1C1715" : "transparent")
+                                        border.width: logEntry.current ? 1 : 0
+                                        border.color: "#E4845E"
+                                    }
+                                    contentItem: ColumnLayout {
+                                        spacing: 2
+                                        RowLayout {
+                                            Layout.leftMargin: 12
+                                            Layout.rightMargin: 10
+                                            spacing: 8
+                                            Label {
+                                                text: logsPage.kindName(logEntry.modelData.kind)
+                                                color: "#FBF4EC"
+                                                font.pixelSize: 15
+                                                font.bold: logEntry.current
+                                            }
+                                            Rectangle {
+                                                visible: logEntry.modelData.problems
+                                                radius: 5
+                                                color: "#3A2A1C"
+                                                implicitWidth: problemLabel.implicitWidth + 12
+                                                implicitHeight: problemLabel.implicitHeight + 4
+                                                Label {
+                                                    id: problemLabel
+                                                    anchors.centerIn: parent
+                                                    text: qsTr("has errors")
+                                                    color: "#D9A65A"
+                                                    font.pixelSize: 11
+                                                }
+                                            }
+                                            Item { Layout.fillWidth: true }
+                                        }
+                                        Label {
+                                            Layout.leftMargin: 12
+                                            text: "%1 · %2".arg(logEntry.modelData.modified).arg(logsPage.sizeText(logEntry.modelData.size))
+                                            color: "#A08F84"
+                                            font.pixelSize: 12
+                                        }
+                                    }
+                                }
+                                Label {
+                                    anchors.centerIn: parent
+                                    visible: logList.count === 0
+                                    text: qsTr("No log files yet")
+                                    color: "#A08F84"
+                                }
+                            }
+                        }
+
+                        // the chosen file
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            spacing: 8
+                            RowLayout {
+                                Layout.fillWidth: true
+                                Label {
+                                    Layout.fillWidth: true
+                                    text: logsPage.selected
+                                    color: "#CDBFB4"
+                                    font.pixelSize: 13
+                                    elide: Text.ElideMiddle
+                                }
+                                C.CheckBox {
+                                    id: logProblemsOnly
+                                    checked: logsPage.onlyProblems
+                                    onToggled: logsPage.onlyProblems = checked
+                                }
+                                Label {
+                                    text: qsTr("Only warnings and errors")
+                                    color: "#CDBFB4"
+                                    font.pixelSize: 13
+                                }
+                            }
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: 8
+                                visible: !logsPage.hiddenByStreamerMode
+                                // a plain box: the text field's floating hint would sit on its border
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    implicitHeight: 40
+                                    radius: 10
+                                    color: "#171312"
+                                    border.width: searchField.activeFocus ? 2 : 1
+                                    border.color: searchField.activeFocus ? "#E4845E" : "#3B302B"
+                                    TextInput {
+                                        id: searchField
+                                        anchors.fill: parent
+                                        anchors.leftMargin: 12
+                                        anchors.rightMargin: 12
+                                        verticalAlignment: TextInput.AlignVCenter
+                                        clip: true
+                                        color: "#FBF4EC"
+                                        font.pixelSize: 14
+                                        selectByMouse: true
+                                        selectionColor: "#E4845E"
+                                        selectedTextColor: "#141110"
+                                        onTextChanged: logsPage.query = text
+                                        Keys.onReturnPressed: (event) => logsPage.showMatch(logsPage.matchIndex + ((event.modifiers & Qt.ShiftModifier) ? -1 : 1))
+                                        Keys.onEnterPressed: (event) => logsPage.showMatch(logsPage.matchIndex + ((event.modifiers & Qt.ShiftModifier) ? -1 : 1))
+                                        Keys.onEscapePressed: (event) => {
+                                            if (text.length) {
+                                                text = "";
+                                                event.accepted = true;
+                                            } else {
+                                                event.accepted = false;
+                                            }
+                                        }
+                                    }
+                                    Label {
+                                        anchors.left: parent.left
+                                        anchors.leftMargin: 12
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        visible: searchField.text.length === 0
+                                        text: qsTr("Search the log (Ctrl+F)")
+                                        color: "#A08F84"
+                                        font.pixelSize: 14
+                                    }
+                                }
+                                Label {
+                                    visible: logsPage.query.length > 0
+                                    text: logsPage.matches.length ? qsTr("%1 / %2").arg(logsPage.matchIndex + 1).arg(logsPage.matches.length) : qsTr("not found")
+                                    color: logsPage.matches.length ? "#CDBFB4" : "#D9A65A"
+                                    font.pixelSize: 13
+                                }
+                                C.Button {
+                                    text: "↑"
+                                    enabled: logsPage.matches.length > 0
+                                    onClicked: logsPage.showMatch(logsPage.matchIndex - 1)
+                                    ToolTip.visible: hovered
+                                    ToolTip.text: qsTr("Previous (Shift+Enter)")
+                                }
+                                C.Button {
+                                    text: "↓"
+                                    enabled: logsPage.matches.length > 0
+                                    onClicked: logsPage.showMatch(logsPage.matchIndex + 1)
+                                    ToolTip.visible: hovered
+                                    ToolTip.text: qsTr("Next (Enter)")
+                                }
+                            }
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
+                                radius: 12
+                                color: "#0F0C0B"
+                                border.color: "#3B302B"
+                                Flickable {
+                                    id: logFlick
+                                    anchors.fill: parent
+                                    anchors.margins: 6
+                                    visible: !logsPage.hiddenByStreamerMode
+                                    clip: true
+                                    contentWidth: logArea.width
+                                    contentHeight: logArea.height
+                                    boundsBehavior: Flickable.StopAtBounds
+                                    flickableDirection: Flickable.AutoFlickIfNeeded
+                                    ScrollBar.vertical: ScrollBar {
+                                        policy: logFlick.contentHeight > logFlick.height ? ScrollBar.AlwaysOn : ScrollBar.AsNeeded
+                                        minimumSize: 0.05
+                                    }
+                                    ScrollBar.horizontal: ScrollBar {
+                                        policy: logFlick.contentWidth > logFlick.width ? ScrollBar.AlwaysOn : ScrollBar.AsNeeded
+                                    }
+                                    // a wheel always scrolls the log, whatever the text under it does with it
+                                    WheelHandler {
+                                        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+                                        onWheel: (event) => {
+                                            if (event.modifiers & Qt.ShiftModifier)
+                                                logFlick.contentX = Math.max(0, Math.min(Math.max(0, logFlick.contentWidth - logFlick.width), logFlick.contentX - event.angleDelta.y));
+                                            else
+                                                logsPage.scrollBy(-event.angleDelta.y / 120 * 3 * 17);
+                                        }
+                                    }
+
+                                    TextEdit {
+                                        id: logArea
+                                        width: Math.max(implicitWidth, logFlick.width - 14)
+                                        height: Math.max(implicitHeight, logFlick.height)
+                                        leftPadding: 8
+                                        topPadding: 6
+                                        bottomPadding: 6
+                                        rightPadding: 8
+                                        readOnly: true
+                                        selectByMouse: true
+                                        persistentSelection: true
+                                        textFormat: TextEdit.PlainText
+                                        wrapMode: TextEdit.NoWrap
+                                        text: logsPage.shownText
+                                        color: "#CDBFB4"
+                                        selectionColor: "#E4845E"
+                                        selectedTextColor: "#141110"
+                                        font.family: "Consolas"
+                                        font.pixelSize: 12
+                                        // reading with the keyboard
+                                        Keys.onPressed: (event) => {
+                                            const line = 17;
+                                            switch (event.key) {
+                                            case Qt.Key_Up: logsPage.scrollBy(-line * 2); break;
+                                            case Qt.Key_Down: logsPage.scrollBy(line * 2); break;
+                                            case Qt.Key_PageUp: logsPage.scrollBy(-logFlick.height * 0.9); break;
+                                            case Qt.Key_PageDown: logsPage.scrollBy(logFlick.height * 0.9); break;
+                                            case Qt.Key_Home: logFlick.contentY = 0; break;
+                                            case Qt.Key_End: logsPage.scrollBy(logFlick.contentHeight); break;
+                                            default: return;
+                                            }
+                                            event.accepted = true;
+                                        }
+                                    }
+                                    Label {
+                                        visible: logsPage.onlyProblems && logsPage.shownText.length === 0 && logsPage.text.length > 0
+                                        anchors.centerIn: parent
+                                        text: qsTr("No warnings or errors in this log")
+                                        color: "#A08F84"
+                                    }
+                                }
+                                ColumnLayout {
+                                    anchors.centerIn: parent
+                                    width: Math.min(parent.width - 40, 460)
+                                    visible: logsPage.hiddenByStreamerMode
+                                    spacing: 12
+                                    Label {
+                                        Layout.fillWidth: true
+                                        horizontalAlignment: Text.AlignHCenter
+                                        text: qsTr("Streamer mode is on. A log can contain your console's address, so it is not shown on screen.")
+                                        color: "#CDBFB4"
+                                        font.pixelSize: 14
+                                        wrapMode: Text.Wrap
+                                    }
+                                    C.Button {
+                                        Layout.alignment: Qt.AlignHCenter
+                                        text: qsTr("Show anyway")
+                                        onClicked: logsPage.revealed = true
+                                    }
+                                }
+                            }
+                            Label {
+                                Layout.fillWidth: true
+                                visible: logsPage.truncated
+                                text: qsTr("The file is long: its last part is shown. Open it in a text editor for all of it.")
+                                color: "#A08F84"
+                                font.pixelSize: 12
+                                wrapMode: Text.Wrap
+                            }
                         }
                     }
                 }
@@ -3691,6 +4243,189 @@ DialogView {
             }
         }
 
+        // Robz Play: the warning before a factory reset. Nothing is removed until the red button;
+        // the focus starts on Cancel.
+        Dialog {
+            id: factoryResetDialog
+            parent: Overlay.overlay
+            x: Math.round((root.width - width) / 2)
+            y: Math.round((root.height - height) / 2)
+            width: Math.min(680, root.width - 64)
+            modal: true
+            focus: true
+            closePolicy: working ? Popup.NoAutoClose : Popup.CloseOnEscape
+            header: null
+            footer: null
+            padding: 32
+            property bool working: false
+            property bool failed: false
+            onOpened: {
+                working = false;
+                failed = false;
+                resetCancelButton.forceActiveFocus(Qt.TabFocusReason);
+            }
+            onClosed: factoryResetButton.forceActiveFocus(Qt.TabFocusReason)
+            Overlay.modal: Rectangle { color: "#B30C0A09" }
+            background: Rectangle {
+                radius: 18
+                color: "#1D1816"
+                border.width: 2
+                border.color: "#8E3B2A"
+            }
+
+            contentItem: ColumnLayout {
+                spacing: 16
+
+                RowLayout {
+                    spacing: 14
+                    Rectangle {
+                        implicitWidth: 40
+                        implicitHeight: 40
+                        radius: 20
+                        color: "#3A1F18"
+                        border.color: "#D9A65A"
+                        border.width: 2
+                        Label {
+                            anchors.centerIn: parent
+                            text: "!"
+                            color: "#D9A65A"
+                            font.pixelSize: 22
+                            font.weight: Font.Black
+                        }
+                    }
+                    Label {
+                        Layout.fillWidth: true
+                        text: qsTr("Reset Robz Play to factory settings?")
+                        color: "#FBF4EC"
+                        font.family: "Segoe UI"
+                        font.weight: Font.Black
+                        font.italic: true
+                        font.pixelSize: 26
+                        wrapMode: Text.Wrap
+                    }
+                }
+
+                Label {
+                    Layout.fillWidth: true
+                    text: qsTr("Robz Play goes back to how it was on its first start. All of this is removed from this PC for good:")
+                    color: "#CDBFB4"
+                    font.pixelSize: 15
+                    wrapMode: Text.Wrap
+                }
+
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    Layout.leftMargin: 6
+                    spacing: 8
+                    Repeater {
+                        model: [
+                            qsTr("<b>Registered and hidden consoles</b> with their pairing keys: the consoles must be registered again"),
+                            qsTr("<b>The PSN sign-in</b> and the account ID"),
+                            qsTr("<b>Every setting and profile</b>: picture, stream, sound, frame generation, language"),
+                            qsTr("<b>Keyboard and controller mappings</b>"),
+                            qsTr("<b>The logs</b>, the caches and downloaded updates")
+                        ]
+                        RowLayout {
+                            required property string modelData
+                            Layout.fillWidth: true
+                            spacing: 10
+                            Rectangle {
+                                Layout.alignment: Qt.AlignTop
+                                Layout.topMargin: 8
+                                implicitWidth: 6
+                                implicitHeight: 6
+                                radius: 1
+                                color: "#E4845E"
+                            }
+                            Label {
+                                Layout.fillWidth: true
+                                text: modelData
+                                color: "#CDBFB4"
+                                font.pixelSize: 15
+                                wrapMode: Text.Wrap
+                                textFormat: Text.StyledText
+                            }
+                        }
+                    }
+                }
+
+                Rectangle {
+                    Layout.fillWidth: true
+                    implicitHeight: resetNote.implicitHeight + 24
+                    radius: 10
+                    color: "#2A1E16"
+                    border.color: "#5C4426"
+                    Label {
+                        id: resetNote
+                        anchors {
+                            left: parent.left
+                            right: parent.right
+                            verticalCenter: parent.verticalCenter
+                            margins: 14
+                        }
+                        text: qsTr("<b>This cannot be undone.</b> To keep a copy of your settings, export them to a file first. Robz Play then restarts like a new installation. chiaki-ng's own settings and a shortcut added to Steam are not touched.")
+                        color: "#E8C58E"
+                        font.pixelSize: 14
+                        wrapMode: Text.Wrap
+                        textFormat: Text.StyledText
+                    }
+                }
+
+                Label {
+                    Layout.fillWidth: true
+                    visible: factoryResetDialog.failed
+                    text: qsTr("Robz Play could not be started again, so nothing was removed.")
+                    color: "#D9A65A"
+                    font.pixelSize: 14
+                    wrapMode: Text.Wrap
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    Layout.topMargin: 6
+                    spacing: 12
+                    C.Button {
+                        flat: true
+                        font.pixelSize: 15
+                        enabled: !factoryResetDialog.working
+                        text: qsTr("Export settings first")
+                        onClicked: Chiaki.settings.exportSettings()
+                    }
+                    Item { Layout.fillWidth: true }
+                    C.Button {
+                        id: resetCancelButton
+                        firstInFocusChain: true
+                        font.pixelSize: 15
+                        enabled: !factoryResetDialog.working
+                        text: qsTr("Cancel")
+                        onClicked: factoryResetDialog.close()
+                        Material.roundedScale: Material.SmallScale
+                    }
+                    C.Button {
+                        id: resetConfirmButton
+                        lastInFocusChain: true
+                        font.pixelSize: 15
+                        font.bold: true
+                        enabled: !factoryResetDialog.working
+                        text: factoryResetDialog.working ? qsTr("Restarting…") : qsTr("Remove everything and restart")
+                        Material.background: visualFocus ? "#D8644A" : "#B84A32"
+                        Material.foreground: "#FBF4EC"
+                        Material.roundedScale: Material.SmallScale
+                        onClicked: {
+                            factoryResetDialog.working = true;
+                            factoryResetDialog.failed = false;
+                            if (Chiaki.settings.factoryReset()) {
+                                Qt.quit();
+                            } else {
+                                factoryResetDialog.working = false;
+                                factoryResetDialog.failed = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         Dialog {
             id: aboutDialog
             parent: Overlay.overlay
@@ -3712,7 +4447,8 @@ DialogView {
                     Layout.preferredWidth: 200
                     fillMode: Image.PreserveAspectFit
                     verticalAlignment: Image.AlignTop
-                    source: "qrc:icons/robzplay.svg"
+                    source: "qrc:/icons/robzplay.png"
+                    sourceSize: Qt.size(200, 200)
                 }
 
                 Label {
