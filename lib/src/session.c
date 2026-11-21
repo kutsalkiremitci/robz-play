@@ -401,6 +401,32 @@ static bool session_check_state_pred_ctrl_start(void *user)
 		   || session->ctrl_login_pin_requested;
 }
 
+// Robz Play: a console that has just come out of rest mode takes the connection before it has
+// finished signing its user in, and sends the session id late (16 s after ctrl connected was
+// seen). Giving up after SESSION_EXPECT_CTRL_START_MS and going on with a made-up id made the
+// stream connection fail and sent the user back to the home screen, although pressing Play
+// again a moment later worked. So while ctrl is alive, the id is waited for a while longer.
+// Called with the state mutex held; the waits release it, so ctrl goes on answering heartbeats.
+#define SESSION_EXPECT_SESSION_ID_LATE_MS	30000
+#define SESSION_EXPECT_SESSION_ID_STEP_MS	5000
+
+static void session_wait_for_late_session_id(ChiakiSession *session)
+{
+	if(session->rudp)
+		return;
+	uint64_t waited_ms = SESSION_EXPECT_CTRL_START_MS;
+	while(!session->should_stop && !session->ctrl_failed && !session->ctrl_session_id_received
+		&& !session->ctrl_login_pin_requested && waited_ms < SESSION_EXPECT_CTRL_START_MS + SESSION_EXPECT_SESSION_ID_LATE_MS)
+	{
+		CHIAKI_LOGW(session->log, "Robz Play: no session id from the console %u s after connecting; it may still be waking up, waiting on",
+			(unsigned int)(waited_ms / 1000));
+		chiaki_cond_timedwait_pred(&session->state_cond, &session->state_mutex, SESSION_EXPECT_SESSION_ID_STEP_MS, session_check_state_pred_ctrl_start, session);
+		waited_ms += SESSION_EXPECT_SESSION_ID_STEP_MS;
+	}
+	if(session->ctrl_session_id_received && waited_ms > SESSION_EXPECT_CTRL_START_MS)
+		CHIAKI_LOGI(session->log, "Robz Play: the session id came late, about %u s after connecting", (unsigned int)(waited_ms / 1000));
+}
+
 static bool session_check_state_pred_pin(void *user)
 {
 	ChiakiSession *session = user;
@@ -524,6 +550,7 @@ static void *session_thread_func(void *arg)
 		QUIT(quit);
 
 	err = chiaki_cond_timedwait_pred(&session->state_cond, &session->state_mutex, SESSION_EXPECT_CTRL_START_MS, session_check_state_pred_ctrl_start, session);
+	session_wait_for_late_session_id(session);
 	CHECK_STOP(quit_ctrl);
 
 	if(session->ctrl_failed)
@@ -562,6 +589,7 @@ static void *session_thread_func(void *arg)
 		session->login_pin_size = 0;
 		// wait for session id or new login pin request
 		err = chiaki_cond_timedwait_pred(&session->state_cond, &session->state_mutex, SESSION_EXPECT_CTRL_START_MS, session_check_state_pred_ctrl_start, session);
+		session_wait_for_late_session_id(session);
 		CHECK_STOP(quit_ctrl);
 	}
 
