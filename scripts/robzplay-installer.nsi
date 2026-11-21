@@ -155,6 +155,14 @@ Section "Robz Play" SecMain
 	WriteRegDWORD HKCU "${UNINST_KEY}" "NoModify" 1
 	WriteRegDWORD HKCU "${UNINST_KEY}" "NoRepair" 1
 
+	; Windows remembers the icon it has shown for a path. Installed over a version with another
+	; icon (0.4.0 brought a new one), the shortcuts kept the old picture until the next sign-in.
+	; The shell is told that these three changed, and to read its icons again.
+	System::Call 'shell32::SHChangeNotify(i 0x00002000, i 0x0005, w "$INSTDIR\${APP_EXE}", p 0)'
+	System::Call 'shell32::SHChangeNotify(i 0x00002000, i 0x0005, w "$DESKTOP\${APP_NAME}.lnk", p 0)'
+	System::Call 'shell32::SHChangeNotify(i 0x00002000, i 0x0005, w "$SMPROGRAMS\${APP_NAME}.lnk", p 0)'
+	${RefreshShellIcons}
+
 	${If} $UpdateMode == 1
 		SetAutoClose true
 		Exec '"$INSTDIR\${APP_EXE}"'
