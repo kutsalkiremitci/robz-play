@@ -14,6 +14,10 @@
   <a href="https://discord.gg/UyyEn7SHm4"><img src="https://img.shields.io/badge/Discord-destek-5865F2?style=flat-square" alt="Discord: ücretsiz destek"></a>
 </p>
 
+<p align="center">
+  <b><a href="https://kutsalkiremitci.github.io/robz-play/">Adım adım kurulum rehberi ve web sitesi → kutsalkiremitci.github.io/robz-play</a></b>
+</p>
+
 # Robz Play
 
 **Robz Play, GTA VI için tasarlandı: PS5'te 30 FPS çalışan oyunu, bilgisayarının ekranında 1080p ve 60 FPS akıcılığında oynatır.** PS5'ine ev ağı üzerinden bağlanır, aradaki kareleri bilgisayarının ekran kartı üretir. Capture card gerekmez: PS5, bilgisayar ve ikisinin bağlı olduğu ağ yeterli.
