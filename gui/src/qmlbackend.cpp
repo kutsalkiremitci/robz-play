@@ -1034,6 +1034,7 @@ void QmlBackend::createSession(const StreamSessionConnectInfo &connect_info)
     }
 
     session_info = connect_info;
+    session_ever_connected = false;
     window->setStreamMaxFPS(connect_info.video_profile.max_fps);
     disable_zero_copy = !settings->GetUseZeroCopy();
     {
@@ -1260,7 +1261,16 @@ void QmlBackend::createSession(const StreamSessionConnectInfo &connect_info)
         if (session != session_for_connections)
             return;
 
-        if (chiaki_quit_reason_is_error(reason)) {
+        // Robz Play: the console took the session request, but the stream did not open. A console
+        // that has just woken up does this, and pressing Play again a moment later works. That
+        // second press is made here, once, instead of an error and the way back to the home screen.
+        const bool retry_connect = connect_retry_left > 0 && !session_ever_connected && session_info.duid.isEmpty()
+            && (reason == CHIAKI_QUIT_REASON_CTRL_UNKNOWN || reason == CHIAKI_QUIT_REASON_CTRL_CONNECT_FAILED
+                || reason == CHIAKI_QUIT_REASON_CTRL_CONNECTION_REFUSED || reason == CHIAKI_QUIT_REASON_STREAM_CONNECTION_UNKNOWN);
+        if (retry_connect) {
+            connect_retry_left--;
+            qCWarning(chiakiGui) << "Robz Play: the stream did not open (" << chiaki_quit_reason_string(reason) << "); connecting once more";
+        } else if (chiaki_quit_reason_is_error(reason)) {
             QString m = tr("Chiaki Session has quit") + ":\n" + chiaki_quit_reason_string(reason);
             if (!reason_str.isEmpty())
                 m += "\n" + tr("Reason") + ": \"" + reason_str + "\"";
@@ -1292,6 +1302,29 @@ void QmlBackend::createSession(const StreamSessionConnectInfo &connect_info)
         else
             windows_wake_sleep->setWakeState(WindowsWakeState::Sleeping);
 #endif
+        if (retry_connect) {
+            emit error(tr("Connecting again"), tr("The console was not ready yet. Trying once more."));
+            // a new session from the settings, as the user's own second press would make it
+            const StreamSessionConnectInfo previous = session_info;
+            QTimer::singleShot(2000, this, [this, previous]() {
+                if (session)
+                    return;
+                createSession({
+                    previous.settings,
+                    previous.target,
+                    previous.host,
+                    previous.nickname,
+                    previous.regist_key,
+                    previous.morning,
+                    previous.initial_login_pin,
+                    previous.duid,
+                    previous.auto_regist,
+                    previous.fullscreen,
+                    previous.zoom,
+                    previous.stretch,
+                });
+            });
+        }
     });
 
     connect(session, &StreamSession::LoginPINRequested, this, [this, connect_info](bool incorrect) {
@@ -1318,8 +1351,10 @@ void QmlBackend::createSession(const StreamSessionConnectInfo &connect_info)
         if (session != session_for_connections)
             return;
 
-        if (session_for_connections->IsConnected())
+        if (session_for_connections->IsConnected()) {
+            session_ever_connected = true;
             setDiscoveryEnabled(false);
+        }
     });
     chiaki_log_mutex.lock();
     chiaki_log_ctx = session->GetChiakiLog();
@@ -1689,6 +1724,7 @@ void QmlBackend::connectToHost(int index, QString nickname)
     emit windowTypeUpdated(settings->GetWindowType());
 
     resume_session = false;
+    connect_retry_left = 1;
     if(server.duid.isEmpty())
     {
         QString host = server.GetHostAddr();

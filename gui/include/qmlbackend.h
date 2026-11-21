@@ -346,6 +346,10 @@ private:
     bool controller_mapping_reset_requested = false;
     bool controller_mapping_in_progress = false;
     bool enable_analog_stick_mapping = false;
+    // Robz Play: one automatic second try per Play, when the console took the session request but
+    // the stream did not open (see the SessionQuit handler)
+    int connect_retry_left = 0;
+    bool session_ever_connected = false;
     bool resume_session = false;
     bool settings_allocd = false;
     HostMAC auto_connect_mac = {};
