@@ -928,7 +928,7 @@ Pane {
                                     if (modelData.state == "ready")
                                         return modelData.registered ? qsTr("On and ready to play") : qsTr("On, not set up yet");
                                     if (standby)
-                                        return modelData.registered ? qsTr("In rest mode. Play wakes it up.") : qsTr("In rest mode, not set up yet");
+                                        return modelData.registered ? qsTr("In rest mode. Play wakes it up; if it does not, press the PS button.") : qsTr("In rest mode, not set up yet");
                                     return modelData.registered ? qsTr("Not seen on your network right now") : qsTr("Not set up yet");
                                 }
 

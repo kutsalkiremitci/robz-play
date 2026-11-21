@@ -1086,6 +1086,12 @@ DialogView {
                                     Layout.leftMargin: 16
                                     items: [qsTr("Settings"), qsTr("System"), qsTr("Power Saving"), qsTr("Features Available in Rest Mode")]
                                 }
+                                Bullet { text: qsTr("Waking does not always work. If Play ends in a timeout, wake the PS5 with the PS button on its controller and press Play again. To keep it from going into rest mode at all, choose <b>Don't Put in Rest Mode</b> in:") }
+                                MenuPath {
+                                    Layout.fillWidth: true
+                                    Layout.leftMargin: 16
+                                    items: [qsTr("Settings"), qsTr("System"), qsTr("Power Saving"), qsTr("Set Time Until PS5 Enters Rest Mode")]
+                                }
                             }
                             ColumnLayout {
                                 visible: dialog.regState === "failed"

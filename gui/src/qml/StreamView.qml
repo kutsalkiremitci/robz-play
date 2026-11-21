@@ -322,6 +322,8 @@ Item {
                 horizontalAlignment: Text.AlignHCenter
                 font.pixelSize: 20
                 visible: text
+                width: Math.min(implicitWidth, view.width - 160)
+                wrapMode: Text.Wrap
             }
         }
     }
@@ -1383,7 +1385,8 @@ Item {
 
     Timer {
         id: closeTimer
-        interval: 2000
+        // an error that says what to do stays long enough to be read
+        interval: errorTextLabel.text.length > 90 ? 9000 : 2000
         onTriggered: root.showMainView()
     }
 
