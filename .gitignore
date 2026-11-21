@@ -43,3 +43,7 @@ site/
 # Robz Play: yerel bagimlilik derlemeleri
 /_deps/
 /dist/
+
+# CMake kaynak klasorunde calistirilirsa birakan artiklar
+CMakeFiles/
+cmake_install.cmake
