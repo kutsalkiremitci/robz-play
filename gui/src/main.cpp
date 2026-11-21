@@ -57,6 +57,7 @@ int main(int argc, char *argv[])
 #include <signal.h>
 #include <QMap>
 #include <QSettings>
+#include <QStandardPaths>
 #include <QStringList>
 #include <QSurfaceFormat>
 
@@ -382,6 +383,96 @@ static void ApplyRobzPlayDefaultsOnce()
 	fprintf(stderr, "Robz Play: applied the Robz Play defaults (version %d, %d profile(s))\n", ROBZPLAY_DEFAULTS_VERSION, (int)profiles.size());
 }
 
+// Removes a folder of Robz Play's own, and only that: its path must hold ".../<org>/<app>".
+static void RemoveOwnFolder(const QString &path, const QString &org, const QString &app)
+{
+	const QString clean = QDir::cleanPath(path);
+	if(clean.isEmpty() || !clean.contains(QStringLiteral("/%1/%2").arg(org, app), Qt::CaseInsensitive))
+		return;
+	QDir dir(clean);
+	if(dir.exists() && !dir.removeRecursively())
+		fprintf(stderr, "Robz Play: could not remove all of %s\n", qPrintable(clean));
+}
+
+// "Reset to factory settings" (Settings > Profiles and data). The Robz Play that was running starts
+// this one with ROBZPLAY_FACTORY_RESET=<its process id> and quits. This one waits until it is gone,
+// so that nothing is written or held open any more, and then, before it opens a file or reads a
+// setting, removes everything Robz Play keeps: every setting of every profile (registered and
+// hidden consoles with their keys, the PSN sign-in, key and controller mappings, the renderer's
+// settings), the logs, the caches and the downloaded updates. It then starts like a first
+// installation, with the Robz Play defaults - except that chiaki-ng's settings are not taken over
+// again, so that the consoles really are gone. chiaki-ng's own settings are never touched.
+static void FactoryResetIfAsked()
+{
+	const QByteArray asked = qgetenv("ROBZPLAY_FACTORY_RESET");
+	if(asked.isEmpty())
+		return;
+	qunsetenv("ROBZPLAY_FACTORY_RESET");
+
+	const QString org = QCoreApplication::organizationName();
+	const QString app = QCoreApplication::applicationName();
+	// never anything but Robz Play's own settings (the real ones or a test store)
+	if(!org.startsWith(QStringLiteral("RobzPlay")) || app.isEmpty())
+		return;
+
+#if defined(Q_OS_WIN)
+	const DWORD pid = asked.toULong();
+	if(pid && pid != GetCurrentProcessId())
+	{
+		HANDLE previous = OpenProcess(SYNCHRONIZE, FALSE, pid);
+		if(previous)
+		{
+			WaitForSingleObject(previous, 15000);
+			CloseHandle(previous);
+		}
+	}
+	// HKEY_CURRENT_USER\Software\<org>: Robz Play's settings, one key per profile, and the
+	// renderer's (pl_render_params)
+	QSettings root(QStringLiteral("HKEY_CURRENT_USER\\Software\\") + org, QSettings::NativeFormat);
+	const QStringList groups = root.childGroups();
+	for(const QString &group : groups)
+		root.remove(group);
+	root.clear();
+	root.sync();
+#else
+	QStringList stores = { app, QStringLiteral("pl_render_params") };
+	{
+		QSettings own(org, app);
+		const int count = own.beginReadArray("profiles");
+		for(int i = 0; i < count; i++)
+		{
+			own.setArrayIndex(i);
+			const QString name = own.value("settings/profile_name").toString();
+			if(!name.isEmpty())
+				stores.append(QStringLiteral("%1-%2").arg(app, name));
+		}
+		own.endArray();
+	}
+	for(const QString &store : std::as_const(stores))
+	{
+		QSettings s(org, store);
+		s.clear();
+		s.sync();
+	}
+#endif
+
+	// the logs, the shader cache and the rest of the data folder; the renderer's file and Qt's
+	// caches; the updates that were downloaded
+	RemoveOwnFolder(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation), org, app);
+	RemoveOwnFolder(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation), org, app);
+	RemoveOwnFolder(QStandardPaths::writableLocation(QStandardPaths::CacheLocation), org, app);
+	const QString updates = QDir(QStandardPaths::writableLocation(QStandardPaths::TempLocation)).filePath(QStringLiteral("RobzPlay-Update"));
+	if(QDir(updates).exists())
+		QDir(updates).removeRecursively();
+
+	// a first start, but without taking chiaki-ng's consoles over again (ImportChiakiNgSettingsOnce
+	// only runs while the settings are empty)
+	QSettings own(org, app);
+	own.setValue("robzplay/factory_reset", QDateTime::currentDateTime().toString(Qt::ISODate));
+	own.sync();
+	fprintf(stderr, "Robz Play: reset to factory settings\n");
+}
+
 int RunStream(QGuiApplication &app, const StreamSessionConnectInfo &connect_info);
 int RunMain(QGuiApplication &app, Settings *settings, bool exit_app_on_stream_exit);
 
@@ -402,6 +493,8 @@ int real_main(int argc, char *argv[])
 		QGuiApplication::setOrganizationName(qEnvironmentVariable("ROBZPLAY_SETTINGS_ORG"));
 	QGuiApplication::setApplicationName("RobzPlay");
 	QGuiApplication::setApplicationVersion(ROBZPLAY_VERSION);
+	// before anything is opened or read: the factory reset asked for by the previous Robz Play
+	FactoryResetIfAsked();
 	StartupLogOpen();
 	QGuiApplication::setApplicationDisplayName("Robz Play");
 #if defined(Q_OS_MACOS)

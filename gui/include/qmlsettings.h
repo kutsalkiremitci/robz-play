@@ -345,6 +345,9 @@ public:
     int rendererBackend() const;
     void setRendererBackend(int backend);
     Q_INVOKABLE bool restartApplication();
+    // starts a new Robz Play that removes everything Robz Play keeps and opens like a first
+    // installation (main.cpp, FactoryResetIfAsked); the caller then quits this one
+    Q_INVOKABLE bool factoryReset();
 
     QString autoConnectMac() const;
     void setAutoConnectMac(const QString &mac);

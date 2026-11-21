@@ -798,6 +798,22 @@ bool QmlSettings::restartApplication()
     return true;
 }
 
+bool QmlSettings::factoryReset()
+{
+    // the new one waits for this one to quit before it removes anything, so nothing this one
+    // still writes on its way out survives; it starts plain, without this one's arguments
+    QProcess process;
+    process.setProgram(QCoreApplication::applicationFilePath());
+    QProcessEnvironment environment = QProcessEnvironment::systemEnvironment();
+    environment.insert(QStringLiteral("ROBZPLAY_FACTORY_RESET"), QString::number(QCoreApplication::applicationPid()));
+    process.setProcessEnvironment(environment);
+    if (!process.startDetached()) {
+        qWarning() << "Factory reset: could not start Robz Play again";
+        return false;
+    }
+    return true;
+}
+
 QString QmlSettings::autoConnectMac() const
 {
     return settings->GetAutoConnectHost().GetServerMAC().ToString();
