@@ -66,6 +66,9 @@ class UpdateChecker : public QObject
 
 		/** asks the feed now; quietly does nothing while a check or download is running */
 		Q_INVOKABLE void check();
+		/** a check the user asked for: its outcome is reported with manualResult(), and a
+		 * newer version is offered even if it was skipped before */
+		Q_INVOKABLE void checkNow();
 		/** downloads the installer, checks it, starts it and closes Robz Play */
 		Q_INVOKABLE void install();
 		/** stops a download */
@@ -87,6 +90,8 @@ class UpdateChecker : public QObject
 		void autoCheckChanged();
 		/** a newer version is there that has not been skipped; the interface may show it */
 		void offered();
+		/** the outcome of checkNow(): "available", "uptodate" or "failed" */
+		void manualResult(const QString &result);
 
 	private:
 		void setState(const QString &state, const QString &error = QString());
@@ -100,6 +105,7 @@ class UpdateChecker : public QObject
 		QString feed_url;
 
 		QPointer<QNetworkReply> check_reply;
+		bool manual_check = false;
 		QString latest_version;
 		QString release_url;
 		QString body;

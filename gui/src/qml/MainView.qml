@@ -678,12 +678,13 @@ Pane {
                                 Layout.fillWidth: true
                                 text: "discord.gg/UyyEn7SHm4"
                                 color: consolePane.cText
-                                font.pixelSize: 15
+                                // the whole address stays readable in the narrower sidebar too
+                                font.pixelSize: consolePane.roomy ? 15 : 13
                                 font.weight: Font.DemiBold
                                 elide: Text.ElideRight
                             }
                             Label {
-                                text: qsTr("Get help on Discord")
+                                text: qsTr("Technical support on Discord")
                                 color: consolePane.cFaint
                                 font.pixelSize: 12
                             }
@@ -697,6 +698,7 @@ Pane {
                     spacing: 8
                     ColumnLayout {
                         Layout.fillWidth: true
+                        Layout.preferredWidth: 0
                         spacing: 4
                         Label {
                             Layout.fillWidth: true
@@ -704,6 +706,41 @@ Pane {
                             color: consolePane.cFaint
                             font.pixelSize: 12
                         }
+                        // asks for a newer release now, and says how that went
+                        AbstractButton {
+                            id: checkUpdatesLink
+                            visible: !Chiaki.updater.available
+                            enabled: Chiaki.updater.state !== "checking"
+                            Layout.fillWidth: true
+                            implicitHeight: checkUpdatesLabel.implicitHeight
+                            focusPolicy: Qt.NoFocus
+                            hoverEnabled: true
+                            HoverHandler { cursorShape: Qt.PointingHandCursor }
+                            onClicked: {
+                                consolePane.updateCheckNote = "";
+                                Chiaki.updater.checkNow();
+                            }
+                            background: Item {}
+                            contentItem: Label {
+                                id: checkUpdatesLabel
+                                text: {
+                                    if (Chiaki.updater.state === "checking")
+                                        return qsTr("Checking…");
+                                    if (consolePane.updateCheckNote === "uptodate")
+                                        return qsTr("Robz Play is up to date");
+                                    if (consolePane.updateCheckNote === "failed")
+                                        return qsTr("Could not check. Is the internet connected?");
+                                    return qsTr("Check for updates");
+                                }
+                                color: consolePane.updateCheckNote === "failed" ? consolePane.cWarn
+                                    : (consolePane.updateCheckNote === "uptodate" ? consolePane.cGood
+                                    : (checkUpdatesLink.hovered ? consolePane.cText : consolePane.cMuted))
+                                font.pixelSize: 12
+                                font.underline: consolePane.updateCheckNote === "" && Chiaki.updater.state !== "checking"
+                                wrapMode: Text.Wrap
+                            }
+                        }
+
                         // a newer release that is waiting: opens its notes again
                         AbstractButton {
                             id: updateBadge
@@ -1362,6 +1399,24 @@ Pane {
     Connections {
         target: Chiaki.updater
         function onOffered() { updateOfferTimer.restart(); }
+        function onManualResult(result) {
+            if (result === "available") {
+                consolePane.updateCheckNote = "";
+                root.updateOfferedVersion = Chiaki.updater.latestVersion;
+                updatePopup.open();
+                return;
+            }
+            consolePane.updateCheckNote = result;
+            updateCheckNoteTimer.restart();
+        }
+    }
+
+    // what the last check asked for by the user found, shown under the version for a while
+    property string updateCheckNote: ""
+    Timer {
+        id: updateCheckNoteTimer
+        interval: 6000
+        onTriggered: consolePane.updateCheckNote = ""
     }
 
     Popup {

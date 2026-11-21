@@ -143,6 +143,17 @@ void UpdateChecker::check()
 		setState(QStringLiteral("checking"));
 }
 
+void UpdateChecker::checkNow()
+{
+	if(download_reply)
+		return;
+	manual_check = true;
+	if(!check_reply)
+		check();
+	else
+		setState(QStringLiteral("checking"));
+}
+
 void UpdateChecker::checkFinished()
 {
 	QNetworkReply *reply = check_reply;
@@ -157,6 +168,11 @@ void UpdateChecker::checkFinished()
 		// offline, or GitHub's limit for anonymous requests: try again at the next check
 		qWarning("Robz Play update check failed: %s", qPrintable(reply->errorString()));
 		setState(QStringLiteral("idle"));
+		if(manual_check)
+		{
+			manual_check = false;
+			emit manualResult(QStringLiteral("failed"));
+		}
 		return;
 	}
 	const QJsonObject release = QJsonDocument::fromJson(reply->readAll()).object();
@@ -164,6 +180,11 @@ void UpdateChecker::checkFinished()
 	if(tag.isEmpty())
 	{
 		setState(QStringLiteral("idle"));
+		if(manual_check)
+		{
+			manual_check = false;
+			emit manualResult(QStringLiteral("failed"));
+		}
 		return;
 	}
 	latest_version = tag.startsWith(QLatin1Char('v')) ? tag.mid(1) : tag;
@@ -183,6 +204,17 @@ void UpdateChecker::checkFinished()
 	}
 	qInfo("Robz Play update check: this build %s, latest release %s%s", qPrintable(current_version), qPrintable(latest_version),
 		available() ? " - offered" : "");
+	if(manual_check)
+	{
+		// asked for by the user: a newer version is shown even if it was skipped before
+		manual_check = false;
+		const bool newer = compareVersions(latest_version, current_version) > 0;
+		if(newer && compareVersions(latest_version, settings->GetUpdateSkipVersion()) == 0)
+			settings->SetUpdateSkipVersion(QString());
+		setState(QStringLiteral("idle"));
+		emit manualResult(newer ? QStringLiteral("available") : QStringLiteral("uptodate"));
+		return;
+	}
 	setState(QStringLiteral("idle"));
 	if(available() && (!was_available || latest_version != previous_version))
 		emit offered();
