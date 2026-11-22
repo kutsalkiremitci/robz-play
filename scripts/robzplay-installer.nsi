@@ -54,6 +54,7 @@ VIAddVersionKey "LegalCopyright" "AGPL-3.0-only"
 !define MUI_HEADERIMAGE_RIGHT
 !define MUI_HEADERIMAGE_BITMAP "..\assets\robzplay\logo\kurulum-ust.bmp"
 !define MUI_ABORTWARNING
+!define MUI_CUSTOMFUNCTION_GUIINIT WarnSmartAppControl
 !define MUI_WELCOMEPAGE_TEXT "$(WelcomeText)"
 !define MUI_FINISHPAGE_RUN "$INSTDIR\${APP_EXE}"
 !define MUI_FINISHPAGE_RUN_TEXT "$(RunNow)"
@@ -81,6 +82,8 @@ LangString RunNow ${LANG_TURKISH} "Robz Play'i şimdi aç"
 LangString RunNow ${LANG_ENGLISH} "Open Robz Play now"
 LangString AppRunning ${LANG_TURKISH} "Robz Play şu anda açık. Kapat, sonra Yeniden Dene'ye bas."
 LangString AppRunning ${LANG_ENGLISH} "Robz Play is running. Close it, then choose Retry."
+LangString SmartAppControl ${LANG_TURKISH} "Bu bilgisayarda Windows'un Akıllı Uygulama Denetimi açık.$\r$\n$\r$\nRobz Play henüz dijital olarak imzalı değil. Bu özellik açıkken Windows uygulamanın dosyalarını engeller ve Robz Play $\"Bozuk Görüntü$\" (0xc0e90002) hatasıyla açılmaz.$\r$\n$\r$\nRobz Play'i kullanmak için: Windows Güvenliği › Uygulama ve tarayıcı denetimi › Akıllı Uygulama Denetimi › Kapalı.$\r$\nDikkat: bu özellik kapatıldıktan sonra Windows yeniden kurulmadan tekrar açılamıyor.$\r$\n$\r$\nKuruluma yine de devam edilsin mi?"
+LangString SmartAppControl ${LANG_ENGLISH} "Smart App Control is on in Windows on this PC.$\r$\n$\r$\nRobz Play is not digitally signed yet. While this feature is on, Windows blocks the application's files and Robz Play does not open ($\"Bad Image$\", 0xc0e90002).$\r$\n$\r$\nTo use Robz Play: Windows Security › App & browser control › Smart App Control › Off.$\r$\nNote: once switched off, it cannot be switched on again without reinstalling Windows.$\r$\n$\r$\nContinue with the installation anyway?"
 
 Function .onInit
 	StrCpy $UpdateMode 0
@@ -89,6 +92,23 @@ Function .onInit
 	${GetOptions} $R0 "/UPDATE" $R1
 	${IfNot} ${Errors}
 		StrCpy $UpdateMode 1
+	${EndIf}
+FunctionEnd
+
+; Windows 11's Smart App Control (when enforcing: 1; 2 is evaluation, 0 is off) blocks unsigned
+; files without a reputation: Robz Play then stops at a "Bad Image" error, status 0xc0e90002,
+; that tells the user nothing. Said here, before anything is installed. Not during an update:
+; whoever updates from inside Robz Play is running it already.
+Function WarnSmartAppControl
+	${If} $UpdateMode == 1
+		Return
+	${EndIf}
+	ClearErrors
+	ReadRegDWORD $0 HKLM "SYSTEM\CurrentControlSet\Control\CI\Policy" "VerifiedAndReputablePolicyState"
+	${IfNot} ${Errors}
+	${AndIf} $0 == 1
+		MessageBox MB_YESNO|MB_ICONEXCLAMATION "$(SmartAppControl)" /SD IDYES IDYES +2
+		Quit
 	${EndIf}
 FunctionEnd
 
