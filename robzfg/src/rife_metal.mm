@@ -7,6 +7,7 @@
 #import <Metal/Metal.h>
 #import <MetalPerformanceShaders/MetalPerformanceShaders.h>
 #import <MetalPerformanceShadersGraph/MetalPerformanceShadersGraph.h>
+#include <TargetConditionals.h>
 
 #include "rife_metal.h"
 
@@ -23,15 +24,53 @@
 #include <unordered_set>
 #include <vector>
 
-#include <datareader.h>
-#include <mat.h>
-#include <modelbin.h>
-
 namespace robzfg
 {
 
 namespace
 {
+
+bool loadModelBinFloats(FILE *f, int count, int type, std::vector<float> &out)
+{
+	if(count <= 0)
+		return false;
+	out.resize(static_cast<size_t>(count));
+	if(type == 1)
+		return fread(out.data(), sizeof(float), static_cast<size_t>(count), f) == static_cast<size_t>(count);
+
+	uint32_t tag = 0;
+	if(fread(&tag, sizeof(uint32_t), 1, f) != 1)
+		return false;
+	if(tag == 0x01306B47u)
+	{
+		const size_t align_bytes = (static_cast<size_t>(count) * sizeof(uint16_t) + 3u) & ~static_cast<size_t>(3u);
+		std::vector<uint16_t> fp16(align_bytes / sizeof(uint16_t));
+		if(fread(fp16.data(), 1, align_bytes, f) != align_bytes)
+			return false;
+		const __fp16 *src = reinterpret_cast<const __fp16 *>(fp16.data());
+		for(int i = 0; i < count; i++)
+			out[static_cast<size_t>(i)] = static_cast<float>(src[i]);
+		return true;
+	}
+	if(tag == 0x01348B83u)
+	{
+		const size_t align_bytes = (static_cast<size_t>(count) * sizeof(uint16_t) + 3u) & ~static_cast<size_t>(3u);
+		std::vector<uint16_t> bf16(align_bytes / sizeof(uint16_t));
+		if(fread(bf16.data(), 1, align_bytes, f) != align_bytes)
+			return false;
+		for(int i = 0; i < count; i++)
+		{
+			uint32_t bits = static_cast<uint32_t>(bf16[static_cast<size_t>(i)]) << 16;
+			float v = 0.0f;
+			std::memcpy(&v, &bits, sizeof(float));
+			out[static_cast<size_t>(i)] = v;
+		}
+		return true;
+	}
+	if(tag == 0u || tag == 0x0002C056u)
+		return fread(out.data(), sizeof(float), static_cast<size_t>(count), f) == static_cast<size_t>(count);
+	return false;
+}
 
 void setError(std::string *error, const std::string &message)
 {
@@ -41,9 +80,10 @@ void setError(std::string *error, const std::string &message)
 
 int paddingForModel(const std::string &model_dir)
 {
-	if(model_dir.find("rife-v4.25-lite") != std::string::npos)
+	if(model_dir.find("rife-v4.25-lite") != std::string::npos || model_dir.find("rife_v4_25_lite") != std::string::npos)
 		return 128;
-	if(model_dir.find("rife-v4.25") != std::string::npos || model_dir.find("rife-v4.26") != std::string::npos)
+	if(model_dir.find("rife-v4.25") != std::string::npos || model_dir.find("rife-v4.26") != std::string::npos
+		|| model_dir.find("rife_v4_25") != std::string::npos || model_dir.find("rife_v4_26") != std::string::npos)
 		return 64;
 	return 32;
 }
@@ -302,8 +342,6 @@ bool loadRifeModel(const std::string &param_path, const std::string &bin_path, P
 		setError(error, "could not open " + bin_path);
 		return false;
 	}
-	ncnn::DataReaderFromStdio dr(bfile);
-	ncnn::ModelBinFromDataReader mb(dr);
 
 	std::unordered_map<std::string, int> blob_channels;
 	blob_channels["in0"] = 3;
@@ -329,14 +367,14 @@ bool loadRifeModel(const std::string &param_path, const std::string &bin_path, P
 			layer.kernel_h = (mh > 0) ? mh : 1;
 			layer.kernel_w = (mw > 0) ? mw : 1;
 			const int count = layer.out_channels * layer.kernel_h * layer.kernel_w;
-			ncnn::Mat m = mb.load(count, load_type);
-			if(m.empty() || m.elemsize != 4u)
+			std::vector<float> m;
+			if(!loadModelBinFloats(bfile, count, load_type, m))
 			{
 				setError(error, "failed to load MemoryData for " + layer.name);
 				ok = false;
 				break;
 			}
-			floatToHalfBuffer(static_cast<const float *>(m.data), static_cast<size_t>(count), layer.weights_fp16);
+			floatToHalfBuffer(m.data(), static_cast<size_t>(count), layer.weights_fp16);
 			if(layer.tops.size() == 1)
 				blob_channels[layer.tops[0]] = layer.out_channels;
 			continue;
@@ -419,8 +457,8 @@ bool loadRifeModel(const std::string &param_path, const std::string &bin_path, P
 				break;
 			}
 
-			ncnn::Mat w = mb.load(weight_size, 0);
-			if(w.empty() || w.elemsize != 4u)
+			std::vector<float> w;
+			if(!loadModelBinFloats(bfile, weight_size, 0, w))
 			{
 				setError(error, "failed to load weights for " + layer.name);
 				ok = false;
@@ -431,7 +469,7 @@ bool loadRifeModel(const std::string &param_path, const std::string &bin_path, P
 			layer.kernel_w = kw;
 			layer.kernel_h = kh;
 
-			const float *wptr = static_cast<const float *>(w.data);
+			const float *wptr = w.data();
 			if(layer.type == "Deconvolution")
 			{
 				if(groups != 1)
@@ -449,14 +487,14 @@ bool loadRifeModel(const std::string &param_path, const std::string &bin_path, P
 
 			if(bias_term != 0)
 			{
-				ncnn::Mat b = mb.load(out_c, 1);
-				if(b.empty() || b.elemsize != 4u)
+				std::vector<float> b;
+				if(!loadModelBinFloats(bfile, out_c, 1, b))
 				{
 					setError(error, "failed to load bias for " + layer.name);
 					ok = false;
 					break;
 				}
-				floatToHalfBuffer(static_cast<const float *>(b.data), static_cast<size_t>(out_c), layer.bias_fp16);
+				floatToHalfBuffer(b.data(), static_cast<size_t>(out_c), layer.bias_fp16);
 			}
 
 			blob_channels[layer.tops[0]] = out_c;
@@ -2086,8 +2124,9 @@ std::vector<GpuDevice> MetalRifeBackend::enumerateGpus()
 	@autoreleasepool
 	{
 		std::vector<GpuDevice> devices;
-		NSArray<id<MTLDevice>> *all = MTLCopyAllDevices();
 		id<MTLDevice> def = MTLCreateSystemDefaultDevice();
+#if TARGET_OS_OSX
+		NSArray<id<MTLDevice>> *all = MTLCopyAllDevices();
 		if(all.count == 0 && def)
 		{
 			GpuDevice gd;
@@ -2106,6 +2145,16 @@ std::vector<GpuDevice> MetalRifeBackend::enumerateGpus()
 			gd.discrete = !dev.hasUnifiedMemory;
 			devices.push_back(gd);
 		}
+#else
+		if(def)
+		{
+			GpuDevice gd;
+			gd.index = 0;
+			gd.name = std::string(def.name.UTF8String) + " (Metal)";
+			gd.discrete = false;
+			devices.push_back(gd);
+		}
+#endif
 		return devices;
 	}
 }
@@ -2125,8 +2174,9 @@ bool MetalRifeBackend::init(const RifeInterpolator::Config &config, std::string 
 
 	@autoreleasepool
 	{
-		NSArray<id<MTLDevice>> *all = MTLCopyAllDevices();
 		id<MTLDevice> selected = nil;
+#if TARGET_OS_OSX
+		NSArray<id<MTLDevice>> *all = MTLCopyAllDevices();
 		if(config.gpu_index >= 0 && static_cast<NSUInteger>(config.gpu_index) < all.count)
 		{
 			selected = all[static_cast<NSUInteger>(config.gpu_index)];
@@ -2146,6 +2196,9 @@ bool MetalRifeBackend::init(const RifeInterpolator::Config &config, std::string 
 			if(!selected && all.count > 0)
 				selected = all[0];
 		}
+#else
+		selected = MTLCreateSystemDefaultDevice();
+#endif
 
 		if(!selected)
 		{
@@ -2169,7 +2222,7 @@ bool MetalRifeBackend::init(const RifeInterpolator::Config &config, std::string 
 
 		NSError *ns_err = nil;
 		MTLCompileOptions *opts = [[MTLCompileOptions alloc] init];
-		if(@available(macOS 15.0, *))
+		if(@available(macOS 15.0, iOS 18.0, *))
 		{
 			opts.mathMode = MTLMathModeFast;
 		}
