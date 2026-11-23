@@ -559,6 +559,20 @@ Kare üretimi HDR yayınla henüz denenmedi.
 - Bilgisayarda kare üretimini PS5 olmadan sınamak için: `ROBZPLAY_FRAMEGEN_SELFTEST=1`.
 - Güncelleme denetimini sınamak için: `ROBZPLAY_UPDATE_URL` başka bir sürüm kaynağını, `ROBZPLAY_VERSION_OVERRIDE` uygulamanın kendini başka bir sürüm sanmasını sağlar. Sürüm notları `<!-- robzplay:tr -->`, `<!-- robzplay:en -->` ve `<!-- robzplay:end -->` satırlarıyla dillere ayrılır.
 
+## Sorumluluk reddi
+
+**Açık kaynak bir chiaki-ng çatalı.** Robz Play, açık kaynak Remote Play istemcisi [chiaki-ng](https://github.com/chiaki-ng/chiaki-ng)'nin bir çatalıdır (fork). PS5'e bağlanma, görüntü ve sesin alınması, kontrolcü desteği ve PSN girişi gibi Remote Play'in tamamı chiaki-ng'den gelir. Robz Play bunun üzerine kare üretimini, Türkçe arayüzü, adım adım kurulum ekranlarını, kurulum dosyasını ve güncelleme bildirimini ekler. Uygulamayı geliştiren kişi de Robz Play'i kendi PS5'iyle düzenli olarak kullanır.
+
+**Virüs ya da zararlı yazılım değildir.** Robz Play'in kaynak kodunun tamamı bu depoda herkese açıktır; yayınlanan her kurulum dosyası bu koddan derlenir ve SHA-256 değeri [sürüm notlarında](https://github.com/kutsalkiremitci/robz-play/releases) yazar. Uygulama geliştiriciye veri göndermez, reklam ya da kullanım istatistiği içermez, kurulurken yönetici izni istemez ve yalnızca senin Windows kullanıcı hesabına kurulur. Windows'un "kişisel bilgisayarınızı korudu" uyarısı ve Akıllı Uygulama Denetimi engeli dosyanın zararlı olduğunu değil, henüz dijital olarak imzalanmadığını gösterir; bazı antivirüs programları da yeni ve imzasız dosyalara yanlış alarm verebilir. Emin olmak istersen kodu inceleyebilir ya da [kaynaktan kendin derleyebilirsin](#güncelleme-ve-kaldırma).
+
+**PSN girişi chiaki-ng'ye aittir.** PlayStation hesabıyla giriş yöntemi Robz Play tarafından geliştirilmemiştir; chiaki-ng'den olduğu gibi devralınmıştır. Giriş Sony'nin kendi sayfasında, senin tarayıcında yapılır; e-posta adresin ve şifren Robz Play'e gelmez. Girişten sonra Sony'nin verdiği hesap kimliği ve oturum anahtarları yalnızca bu bilgisayarda, senin Windows kullanıcı hesabında saklanır ve **Fabrika ayarlarına döndür** ile silinir. "Çevrimiçi kimlikle bul" yolu da chiaki-ng'den gelir: PSN kullanıcı adını üçüncü bir tarafa ait psn.flipscreen.games hizmetine sorar; bu hizmet Sony'nin ya da Robz Play'in değildir.
+
+**Uygulamanın bağlandığı yerler:** PS5'in; PSN girişi ve ev dışından bağlantı için Sony'nin sunucuları; ev dışından bağlanırken ağ adresini bulmak için herkese açık STUN sunucuları; güncelleme denetimi için GitHub; ve yalnızca seçersen çevrimiçi kimlik araması için psn.flipscreen.games.
+
+**Kullanım kendi sorumluluğundadır.** Robz Play, AGPL-3.0 lisansının 15. ve 16. maddelerinde belirtildiği gibi "olduğu gibi" (as is), açık ya da örtülü hiçbir garanti verilmeden sunulur. Yürürlükteki hukukun izin verdiği ölçüde geliştirici ve katkıda bulunanlar; uygulamanın kullanılmasından ya da kullanılamamasından doğan veri kaybı, donanım ya da yazılım sorunları, PlayStation Network hesabına uygulanabilecek kısıtlamalar ve diğer her türlü doğrudan ya da dolaylı zarardan sorumlu tutulamaz. Robz Play resmî olmayan bir Remote Play istemcisidir; PlayStation Network kullanım koşullarına uymak kullanıcının sorumluluğundadır. Robz Play'i indirip kullanan kişi, kullanımın kendi sorumluluğunda olduğunu kabul etmiş sayılır.
+
+**Bağımsız bir proje.** Robz Play; Sony Interactive Entertainment, Rockstar Games, Take-Two Interactive ya da chiaki-ng ve Chiaki geliştiricileri tarafından hazırlanmamış, onaylanmamış ve desteklenmemiştir.
+
 ## Lisans
 
 **Robz Play, [chiaki-ng](https://github.com/chiaki-ng/chiaki-ng) 1.10.1'in değiştirilmiş bir sürümüdür.** Değişiklikler 20 Kasım 2026'da başladı ve tamamı bu deponun commit geçmişinde görülebilir (chiaki-ng'den devralınan son commit: `43728af2`). Robz Play, chiaki-ng ya da Chiaki geliştiricileri tarafından hazırlanmamıştır ve onlar tarafından onaylanmamıştır; Robz Play ile ilgili sorunları onlara değil, [bu depoya](https://github.com/kutsalkiremitci/robz-play/issues) bildir.

@@ -559,6 +559,20 @@ It is free and open source (AGPL-3.0). It is not an official product: it has no 
 - To test frame generation on the PC without a PS5: `ROBZPLAY_FRAMEGEN_SELFTEST=1`.
 - To test the update check: `ROBZPLAY_UPDATE_URL` points to another release source, `ROBZPLAY_VERSION_OVERRIDE` makes the app think it is another version. Release notes are split into languages with the lines `<!-- robzplay:tr -->`, `<!-- robzplay:en -->` and `<!-- robzplay:end -->`.
 
+## Disclaimer
+
+**An open source fork of chiaki-ng.** Robz Play is a fork of [chiaki-ng](https://github.com/chiaki-ng/chiaki-ng), the open source Remote Play client. All of Remote Play, connecting to the PS5, receiving the picture and sound, controller support and the PSN sign-in, comes from chiaki-ng. On top of it, Robz Play adds frame generation, the Turkish interface, the step-by-step setup screens, the installer and the update notices. The person who develops the app also uses Robz Play regularly with their own PS5.
+
+**Not a virus or malware.** All of Robz Play's source code is public in this repository; every published installer is built from this code, and its SHA-256 value is in the [release notes](https://github.com/kutsalkiremitci/robz-play/releases). The app sends no data to the developer, contains no ads or usage statistics, does not ask for administrator rights when installing and is installed for your Windows user account only. Windows' "Windows protected your PC" warning and the Smart App Control block do not mean the file is harmful; they mean it is not digitally signed yet. Some antivirus programs may also raise false alarms on new, unsigned files. If you want to be sure, you can read the code or [build it from source yourself](#updating-and-uninstalling).
+
+**The PSN sign-in belongs to chiaki-ng.** The method of signing in with a PlayStation account was not developed by Robz Play; it is taken over from chiaki-ng as it is. You sign in on Sony's own page, in your own browser; your e-mail address and password never reach Robz Play. After signing in, the account ID and session keys Sony gives are stored only on this PC, in your Windows user account, and are removed with **Reset to factory settings**. The "Find by online ID" way comes from chiaki-ng too: it asks a third-party service, psn.flipscreen.games, about your PSN user name; that service belongs to neither Sony nor Robz Play.
+
+**Where the app connects:** your PS5; Sony's servers, for the PSN sign-in and for connecting from away from home; public STUN servers, to find the network address when connecting from away from home; GitHub, to check for updates; and psn.flipscreen.games, only if you choose the online ID lookup.
+
+**Use at your own risk.** As stated in sections 15 and 16 of the AGPL-3.0 license, Robz Play is provided "as is", without warranty of any kind, express or implied. To the extent permitted by applicable law, the developer and contributors cannot be held liable for any data loss, hardware or software problems, restrictions that may be applied to a PlayStation Network account, or any other direct or indirect damage arising from the use of the app or the inability to use it. Robz Play is an unofficial Remote Play client; complying with the PlayStation Network terms of service is the user's responsibility. By downloading and using Robz Play, you accept that you use it at your own risk.
+
+**An independent project.** Robz Play is not made, endorsed or supported by Sony Interactive Entertainment, Rockstar Games, Take-Two Interactive, or the developers of chiaki-ng and Chiaki.
+
 ## License
 
 **Robz Play is a modified version of [chiaki-ng](https://github.com/chiaki-ng/chiaki-ng) 1.10.1.** The changes began on 20 November 2026 and can all be seen in this repository's commit history (the last commit taken over from chiaki-ng: `43728af2`). Robz Play is not made or endorsed by the chiaki-ng or Chiaki developers; report problems with Robz Play to [this repository](https://github.com/kutsalkiremitci/robz-play/issues), not to them.
