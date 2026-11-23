@@ -327,7 +327,7 @@ static void ImportChiakiNgSettingsOnce()
 // from chiaki-ng and for an update from a version without them alike - and whatever the user
 // changes afterwards stays. Each version adds a set; a newer one is applied once, on its own,
 // so the user's later changes to the earlier sets are kept.
-static const int ROBZPLAY_DEFAULTS_VERSION = 2;
+static const int ROBZPLAY_DEFAULTS_VERSION = 3;
 
 static void ApplyRobzPlayDefaults(QSettings &s)
 {
@@ -360,6 +360,15 @@ static void ApplyRobzPlayDefaults2(QSettings &s)
 	s.setValue("settings/show_fps_counter", true);
 }
 
+// Version 3 (2026-11-23): Robz Play opens in English, with Turkish one click away on the flags of
+// the menu. An installation from before goes on in the Turkish it has always opened in, unless its
+// user had chosen a language.
+static void ApplyRobzPlayDefaults3(QSettings &s, bool earlier_installation)
+{
+	if(earlier_installation && !s.contains("settings/language"))
+		s.setValue("settings/language", "tr");
+}
+
 static void ApplyRobzPlayDefaultsOnce()
 {
 	const QString org = QCoreApplication::organizationName();
@@ -369,12 +378,20 @@ static void ApplyRobzPlayDefaultsOnce()
 	const int done = own.value("robzplay/defaults_version", 0).toInt();
 	if(done >= ROBZPLAY_DEFAULTS_VERSION)
 		return;
+	// A Robz Play that was used before: one that already had a set of the defaults, or one from
+	// before the sets (0.3.0) whose settings were written by Robz Play itself - not settings that
+	// are empty, that were reset to factory settings or that were only just taken over from
+	// chiaki-ng.
+	const bool earlier_installation = done >= 1
+		|| (own.contains("version") && !own.contains("robzplay/imported_from_chiaki_ng"));
 	// only the sets this installation has not had yet
-	auto apply = [done](QSettings &s) {
+	auto apply = [done, earlier_installation](QSettings &s) {
 		if(done < 1)
 			ApplyRobzPlayDefaults(s);
 		if(done < 2)
 			ApplyRobzPlayDefaults2(s);
+		if(done < 3)
+			ApplyRobzPlayDefaults3(s, earlier_installation);
 	};
 
 	apply(own);

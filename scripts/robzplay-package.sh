@@ -69,6 +69,42 @@ This package also contains these works, each under its own licence:
   libraries, under their respective licences, as distributed by MSYS2 (https://www.msys2.org/).
 EOF
 
+cat > "$STAGE/README.txt" <<EOF
+Robz Play $VERSION
+==================
+
+Designed for GTA VI: plays a game that runs at 30 FPS on the PS5 on your PC as smoothly as
+60 FPS. It connects to your PS5 over your home network with Remote Play; your PC's graphics
+card generates the frames in between. No capture card needed.
+
+To run it
+  1. Unpack this folder anywhere you like.
+  2. Double-click RobzPlay.exe.
+  3. On the PS5: Settings > System > Remote Play > turn on "Enable Remote Play".
+  4. The console appears on the home screen; choose "Set up" and type the code the PS5
+     shows under "Link Device".
+
+The app opens in English; for Turkish, click the flag next to "Language" in the menu on the
+left. A Turkish read-me is in OKUBENI.txt.
+
+If chiaki-ng is installed on this PC, Robz Play takes over its settings and registered
+consoles on its first start; there is nothing to set up again. chiaki-ng's own settings are
+not touched.
+
+Requirements
+  - Windows 10 or 11 (64-bit)
+  - A dedicated graphics card with Vulkan (integrated graphics is not enough)
+  - The same network as the PS5 (or PS4); a wired connection is recommended
+
+Windows may warn about an "unknown publisher"; the app is not signed.
+
+Details, source code and bug reports:
+  https://github.com/kutsalkiremitci/robz-play
+
+Licence: AGPL-3.0 (see the licenses folder). Not affiliated with Sony Interactive
+Entertainment, Rockstar Games or Take-Two Interactive.
+EOF
+
 cat > "$STAGE/OKUBENI.txt" <<EOF
 Robz Play $VERSION
 ==================
@@ -82,6 +118,9 @@ Calistirmak icin
   2. RobzPlay.exe dosyasina cift tikla.
   3. PS5'te Ayarlar > Sistem > Uzaktan Oynama > "Uzaktan Oynamayi Etkinlestir"i ac.
   4. Konsol ana ekranda gorunur; "Kur"a basip PS5'in "Cihazi Bagla" ekranindaki kodu yaz.
+
+Uygulama Ingilizce acilir; Turkce icin sol menude "Language" yazisinin yanindaki Turk
+bayragina bas ("Kur" dugmesi Ingilizcede "Set up"tir).
 
 Bilgisayarinda chiaki-ng kuruluysa Robz Play ilk acilista onun ayarlarini ve kayitli
 konsollarini alir; yeniden kurulum gerekmez. chiaki-ng'nin kendi ayarlarina dokunulmaz.

@@ -68,7 +68,7 @@ QString UpdateChecker::notesFor(const QString &body, const QString &language)
 	static const QRegularExpression marker(QStringLiteral("<!--\\s*robzplay:(\\w+)\\s*-->"));
 	QString text = body;
 	bool marked = false;
-	for(const QString &wanted : { language, QStringLiteral("tr"), QStringLiteral("en") })
+	for(const QString &wanted : { language, QStringLiteral("en"), QStringLiteral("tr") })
 	{
 		auto it = marker.globalMatch(body);
 		while(it.hasNext())

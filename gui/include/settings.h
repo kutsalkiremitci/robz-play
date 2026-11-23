@@ -292,9 +292,9 @@ class Settings : public QObject
 		void SetUpdateCheck(bool enabled)           { settings.setValue("settings/update_check", enabled); }
 		QString GetUpdateSkipVersion() const        { return settings.value("settings/update_skip_version").toString(); }
 		void SetUpdateSkipVersion(const QString &v) { settings.setValue("settings/update_skip_version", v); }
-		// Interface language: "tr" (Turkish, the default) or "en"
-		QString GetLanguage() const                { return settings.value("settings/language", "tr").toString() == "en" ? QStringLiteral("en") : QStringLiteral("tr"); }
-		void SetLanguage(const QString &language)  { settings.setValue("settings/language", language == "en" ? QStringLiteral("en") : QStringLiteral("tr")); }
+		// Interface language: "en" (English, the default) or "tr"
+		QString GetLanguage() const                { return settings.value("settings/language", "en").toString() == "tr" ? QStringLiteral("tr") : QStringLiteral("en"); }
+		void SetLanguage(const QString &language)  { settings.setValue("settings/language", language == "tr" ? QStringLiteral("tr") : QStringLiteral("en")); }
 		// Picture sharpening: 0 off, 1 low, 2 medium, 3 high
 		// Robz Play: sharpening on High and the FPS counter on by default
 		int GetSharpening() const                  { return qBound(0, settings.value("settings/sharpening", 3).toInt(), 3); }

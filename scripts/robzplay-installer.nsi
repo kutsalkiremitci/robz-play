@@ -73,12 +73,14 @@ VIAddVersionKey "LegalCopyright" "AGPL-3.0-only"
 !insertmacro MUI_UNPAGE_INSTFILES
 
 ; The first language is the one used when Windows itself is in neither of them.
-!insertmacro MUI_LANGUAGE "Turkish"
 !insertmacro MUI_LANGUAGE "English"
+!insertmacro MUI_LANGUAGE "Turkish"
 
 LangString WelcomeText ${LANG_TURKISH} "Robz Play, PS5'ini ev ağın üzerinden bilgisayarına bağlar ve GTA VI gibi 30 FPS çalışan oyunları 60 FPS akıcılığında gösterir.$\r$\n$\r$\nKurulum yönetici izni istemez; yalnızca senin kullanıcı hesabına kurulur. Daha önce kurduysan ayarların ve kayıtlı konsolların korunur."
 LangString WelcomeText ${LANG_ENGLISH} "Robz Play connects your PS5 to this PC over your home network and shows 30 FPS games such as GTA VI as smoothly as 60 FPS.$\r$\n$\r$\nSetup needs no administrator rights; it installs for your user account only. If you installed it before, your settings and registered consoles are kept."
 LangString RunNow ${LANG_TURKISH} "Robz Play'i şimdi aç"
+LangString LogsShortcut ${LANG_TURKISH} "Robz Play günlükleri"
+LangString LogsShortcut ${LANG_ENGLISH} "Robz Play logs"
 LangString RunNow ${LANG_ENGLISH} "Open Robz Play now"
 LangString AppRunning ${LANG_TURKISH} "Robz Play şu anda açık. Kapat, sonra Yeniden Dene'ye bas."
 LangString AppRunning ${LANG_ENGLISH} "Robz Play is running. Close it, then choose Retry."
@@ -161,7 +163,10 @@ Section "Robz Play" SecMain
 	CreateShortcut "$DESKTOP\${APP_NAME}.lnk" "$INSTDIR\${APP_EXE}"
 	; for support: the folder with the start-up log (robzplay-acilis.log) and the stream logs
 	CreateDirectory "$APPDATA\RobzPlay\RobzPlay\log"
-	CreateShortcut "$SMPROGRAMS\${APP_NAME} günlükleri.lnk" "$APPDATA\RobzPlay\RobzPlay\log"
+	; named in the language of the setup; the other name, from an earlier setup, goes
+	Delete "$SMPROGRAMS\${APP_NAME} günlükleri.lnk"
+	Delete "$SMPROGRAMS\${APP_NAME} logs.lnk"
+	CreateShortcut "$SMPROGRAMS\$(LogsShortcut).lnk" "$APPDATA\RobzPlay\RobzPlay\log"
 
 	WriteRegStr HKCU "${UNINST_KEY}" "DisplayName" "${APP_NAME}"
 	WriteRegStr HKCU "${UNINST_KEY}" "DisplayVersion" "${VERSION}"
@@ -194,6 +199,7 @@ Section "Uninstall"
 
 	Delete "$SMPROGRAMS\${APP_NAME}.lnk"
 	Delete "$SMPROGRAMS\${APP_NAME} günlükleri.lnk"
+	Delete "$SMPROGRAMS\${APP_NAME} logs.lnk"
 	Delete "$DESKTOP\${APP_NAME}.lnk"
 
 	; Only what was installed is removed - never the folder as a whole, which may be one
