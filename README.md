@@ -11,6 +11,7 @@
   <img src="https://img.shields.io/badge/GTA%20VI-60%20FPS-E4845E?style=flat-square" alt="GTA VI: 60 FPS">
   <img src="https://img.shields.io/badge/PS5%20Remote%20Play-1080p-E4845E?style=flat-square" alt="PS5 Remote Play: 1080p">
   <img src="https://img.shields.io/badge/Windows-10%20%7C%2011-5A5853?style=flat-square" alt="Windows 10 and 11">
+  <img src="https://img.shields.io/badge/macOS-Apple%20Silicon%20(Metal)-8DB580?style=flat-square" alt="macOS Apple Silicon (Metal)">
   <img src="https://img.shields.io/badge/interface-English%20%7C%20T%C3%BCrk%C3%A7e-8DB580?style=flat-square" alt="Interface: English and Turkish">
   <img src="https://img.shields.io/badge/status-early%20release-D9A65A?style=flat-square" alt="Status: early release">
 </p>
@@ -82,8 +83,8 @@ No extra hardware. Your console, your PC and the home network they share are eno
 | | |
 |---|---|
 | **PlayStation 5** | A PS4 works too. Remote Play must be on on the console (shown in [step 4](#4-prepare-the-ps5)). |
-| **Windows 10 or 11** | A 64-bit PC. A 60 Hz screen for 60 FPS, 120 Hz or higher for 120 FPS. |
-| **A separate graphics card with Vulkan** | NVIDIA GTX/RTX, AMD Radeon RX or Intel Arc. The graphics card generates the frames; this is not DLSS and not specific to NVIDIA. |
+| **Windows 10 / 11 or macOS (Apple Silicon)** | A 64-bit Windows PC or Apple Silicon Mac (native **Metal + `MPSGraph`**). A 60 Hz screen for 60 FPS, 120 Hz or higher for 120 FPS. |
+| **Dedicated Vulkan GPU or Apple Silicon Metal** | NVIDIA GTX/RTX, AMD Radeon RX, Intel Arc, or Apple Silicon M-series (native **Metal + `MPSGraph`**). The GPU generates the frames; this is not DLSS and not specific to NVIDIA. |
 | **The same home network** | The PS5 and the PC must be on the same network. Connecting both to the router with a cable gives the steadiest picture. |
 | **A PlayStation account** | You sign in to PSN once while connecting the console to the app. If your console is already connected in chiaki-ng, not even that. |
 
@@ -233,7 +234,9 @@ Once the console is registered, a **Play** button appears on its card. When you 
 - **To uninstall**, remove Robz Play from the "Installed apps" list in Windows. Your settings stay in the Windows registry.
 
 <details>
-<summary><b>Building from source</b> (for developers)</summary>
+<summary><b>Building from source</b> (for developers — Windows &amp; macOS)</summary>
+
+#### Windows (MSYS2 / MinGW)
 
 1. Install [MSYS2](https://www.msys2.org/) in its default location (`C:\msys64`) and open the **MSYS2 MINGW64** shell.
 2. Download the repository with its submodules:
@@ -253,6 +256,22 @@ Once the console is registered, a **Play** button appears on its card. When you 
 4. Double-click **`start.bat`** in the repository folder. The app opens from the `dist\RobzPlay` folder.
 
 To make the published installer (`RobzPlay-Setup.exe`) and the portable zip package: `./scripts/robzplay-package.sh`.
+
+#### macOS (Apple Silicon)
+
+1. Download the repository with its submodules:
+
+   ```bash
+   git clone --recursive https://github.com/kutsalkiremitci/robz-play.git
+   cd robz-play
+   ```
+
+2. Configure and build with CMake + Ninja (uses native Apple **Metal + `MPSGraph`** RIFE backend and VideoToolbox `CVPixelBuffer` zero-copy decoding):
+
+   ```bash
+   cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+   cmake --build build --target chiaki
+   ```
 
 </details>
 
@@ -375,9 +394,9 @@ Robz Play stands on the shoulders of open source. Thanks to the developers of th
 |---|---|
 | [chiaki-ng](https://github.com/chiaki-ng/chiaki-ng), and before it Florian Märkl's [Chiaki](https://git.sr.ht/~thestr4ng3r/chiaki) | The whole Remote Play connection |
 | [Qt 6 / QML](https://www.qt.io/) | Interface |
-| [libplacebo](https://code.videolan.org/videolan/libplacebo) + Vulkan | Image processing and drawing to the screen |
-| [FFmpeg](https://ffmpeg.org/) | Decoding the stream |
-| [RIFE](https://github.com/hzwer/Practical-RIFE) v4.6 (hzwer), [rife-ncnn-vulkan](https://github.com/nihui/rife-ncnn-vulkan) (nihui) and [ncnn](https://github.com/Tencent/ncnn) | Frame generation, on the graphics card |
+| [libplacebo](https://code.videolan.org/videolan/libplacebo) + Vulkan / Metal | Image processing, CAS/Vibrance/deband shaders, and drawing to the screen |
+| [FFmpeg](https://ffmpeg.org/) & VideoToolbox | Decoding the stream (`CVPixelBufferRef` zero-copy on macOS) |
+| [RIFE](https://github.com/hzwer/Practical-RIFE) v4.6 &amp; v4.25-lite (hzwer), Apple **Metal + `MPSGraph`**, [rife-ncnn-vulkan](https://github.com/nihui/rife-ncnn-vulkan) (nihui) and [ncnn](https://github.com/Tencent/ncnn) | Frame generation, on the graphics card |
 | [NSIS](https://nsis.sourceforge.io/) | Installer |
 | [MSYS2](https://www.msys2.org/) / MinGW | Building for Windows |
 
@@ -553,7 +572,7 @@ It is free and open source (AGPL-3.0). It is not an official product: it has no 
 
 ## For developers
 
-- The frame generation core is in the `robzfg/` folder: the RIFE v4.6 model, running with [ncnn](https://github.com/Tencent/ncnn) and Vulkan. Speed and quality are measured with the `robzfg-lab` tool.
+- The frame generation core is in the `robzfg/` folder: the RIFE v4.6 and v4.25-lite models, running with native Apple **Metal + `MPSGraph`** on macOS (`ROBZFG_USE_VULKAN=1` selects the Vulkan/MoltenVK fallback) and [ncnn](https://github.com/Tencent/ncnn) + Vulkan on Windows/Linux. Speed and quality are measured with `robzfg-lab`, and unit tests run with `chiaki-unit`.
 - The interface is Qt 6 / QML (`gui/src/qml`). The translations are in one file: `gui/res/i18n/tr.json`. `python gui/tools/i18n_extract.py` lists missing translations.
 - To see the interface without a console, use the `ROBZPLAY_UI_PREVIEW` environment variable (`stream-loading`, `stream-menu`, `home-empty`); to try things without touching your settings, `ROBZPLAY_SETTINGS_ORG`.
 - To test frame generation on the PC without a PS5: `ROBZPLAY_FRAMEGEN_SELFTEST=1`.
