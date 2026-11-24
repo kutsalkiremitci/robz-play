@@ -36,7 +36,7 @@ Frame generation is optional: switch it on or off with one click in the **Pictur
 
 <p align="center">
   <a href="https://github.com/kutsalkiremitci/robz-play/releases/latest/download/RobzPlay-Setup.exe"><img src="https://img.shields.io/badge/FREE%20DOWNLOAD-WINDOWS%2010%20%C2%B7%2011-E4845E?style=for-the-badge&amp;logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMTIgM3YxMiIvPjxwYXRoIGQ9Im02LjUgOS41IDUuNSA1LjUgNS41LTUuNSIvPjxwYXRoIGQ9Ik00IDIwLjVoMTYiLz48L3N2Zz4%3D&amp;labelColor=C85A35" alt="Free download: RobzPlay-Setup.exe, Windows 10 and 11"></a>
-  <a href="https://discord.gg/UyyEn7SHm4"><img src="https://img.shields.io/badge/DISCORD-FREE%20SETUP%20SUPPORT-5865F2?style=for-the-badge&amp;logo=discord&amp;logoColor=white&amp;labelColor=4752C4" alt="Discord: free setup support"></a>
+  <a href="https://discord.gg/PgGBNkkpNN"><img src="https://img.shields.io/badge/DISCORD-FREE%20SETUP%20SUPPORT-5865F2?style=for-the-badge&amp;logo=discord&amp;logoColor=white&amp;labelColor=4752C4" alt="Discord: free setup support"></a>
   <a href="https://kick.com/robzsogood"><img src="https://img.shields.io/badge/KICK-LIVE%20STREAMS-53FC18?style=for-the-badge&amp;logo=kick&amp;logoColor=53FC18&amp;labelColor=0B0E0F" alt="Kick: live streams"></a>
 </p>
 <p align="center">
@@ -104,7 +104,7 @@ So far it has **only really been tested on an RTX 4070**; the other rows are est
 
 ## Step-by-step setup
 
-From the download to your first game. The first four steps are preparation; the rest happen in the app. The screenshots were taken from Robz Play 0.4.1, with the console's address and ID hidden by streamer mode.
+From the download to your first game. The first four steps are preparation; the rest happen in the app. The screenshots were taken from Robz Play 0.4.3, with the console's address and ID hidden by streamer mode.
 
 ### Preparation
 
@@ -385,7 +385,7 @@ Robz Play stands on the shoulders of open source. Thanks to the developers of th
 
 If you cannot find the answer here, write on our Discord server; setup help is free. The **Technical support on Discord** button in the menu on the left of the app takes you there too.
 
-<a href="https://discord.gg/UyyEn7SHm4"><img src="https://img.shields.io/badge/DISCORD-TECHNICAL%20SUPPORT-5865F2?style=for-the-badge&amp;logo=discord&amp;logoColor=white&amp;labelColor=4752C4" alt="Discord: technical support"></a>
+<a href="https://discord.gg/PgGBNkkpNN"><img src="https://img.shields.io/badge/DISCORD-TECHNICAL%20SUPPORT-5865F2?style=for-the-badge&amp;logo=discord&amp;logoColor=white&amp;labelColor=4752C4" alt="Discord: technical support"></a>
 
 ### Installing and starting
 
@@ -586,6 +586,6 @@ PlayStation, PS5, PS4 and DualSense are trademarks of Sony Interactive Entertain
 <p align="center">
   <a href="https://kutsalkiremitci.github.io/robz-play/"><img src="https://img.shields.io/badge/WEBSITE-5A5853?style=for-the-badge&amp;logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI%2BPGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iOS41Ii8%2BPHBhdGggZD0iTTIuNSAxMmgxOSIvPjxwYXRoIGQ9Ik0xMiAyLjVjMi42IDIuNiA0IDYgNCA5LjVzLTEuNCA2LjktNCA5LjVjLTIuNi0yLjYtNC02LTQtOS41czEuNC02LjkgNC05LjV6Ii8%2BPC9zdmc%2B" alt="Website"></a>
   <a href="README.tr.md"><img src="https://img.shields.io/badge/T%C3%9CRK%C3%87E-5A5853?style=for-the-badge&amp;logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAwIDgwMCI%2BCiAgPHJlY3Qgd2lkdGg9IjEyMDAiIGhlaWdodD0iODAwIiBmaWxsPSIjRTMwQTE3Ii8%2BCiAgPGNpcmNsZSBjeD0iNDI1IiBjeT0iNDAwIiByPSIyMDAiIGZpbGw9IiNGRkZGRkYiLz4KICA8Y2lyY2xlIGN4PSI0NzUiIGN5PSI0MDAiIHI9IjE2MCIgZmlsbD0iI0UzMEExNyIvPgogIDxwb2x5Z29uIGZpbGw9IiNGRkZGRkYiIHBvaW50cz0iNTgzLjMzNCw0MDAgNzY0LjIzNSw0NTguNzc5IDY1Mi40MzEsMzA0Ljg5NCA2NTIuNDMxLDQ5NS4xMDYgNzY0LjIzNSwzNDEuMjIxIi8%2BCjwvc3ZnPgo%3D" alt="Türkçe"></a>
-  <a href="https://discord.gg/UyyEn7SHm4"><img src="https://img.shields.io/badge/DISCORD-TECHNICAL%20SUPPORT-5865F2?style=for-the-badge&amp;logo=discord&amp;logoColor=white&amp;labelColor=4752C4" alt="Discord: technical support"></a>
+  <a href="https://discord.gg/PgGBNkkpNN"><img src="https://img.shields.io/badge/DISCORD-TECHNICAL%20SUPPORT-5865F2?style=for-the-badge&amp;logo=discord&amp;logoColor=white&amp;labelColor=4752C4" alt="Discord: technical support"></a>
   <a href="https://kick.com/robzsogood"><img src="https://img.shields.io/badge/KICK-LIVE%20STREAMS-53FC18?style=for-the-badge&amp;logo=kick&amp;logoColor=53FC18&amp;labelColor=0B0E0F" alt="Kick: live streams"></a>
 </p>
