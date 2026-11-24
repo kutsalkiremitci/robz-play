@@ -11,6 +11,8 @@ Item {
     property bool initialAsk: false
     // the newer release last offered in this run, so it is offered only once
     property string updateOfferedVersion: ""
+    // the Robz Community notice was offered in this run (the home screen is made anew after a game)
+    property bool communityOffered: false
     readonly property bool preferSeparateStreamSettingsWindows: Chiaki.window.runtimeRendererBackend === 1 && Chiaki.session
     property bool useSeparateStreamSettingsWindows: false
 

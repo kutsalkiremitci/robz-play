@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Effects
 import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Controls.Material
@@ -83,6 +84,8 @@ Pane {
     readonly property color cWarn: "#D9A65A"
     // titles in the heavy italic of the icon's letters (Segoe UI Black)
     readonly property string display: "Segoe UI"
+    // Robz Community, the Discord server: support and the new apps
+    readonly property string communityUrl: "https://discord.gg/PgGBNkkpNN"
 
     // room for the wide layout; below it the sidebar and the panel slim down
     readonly property bool roomy: width >= 1320
@@ -654,12 +657,51 @@ Pane {
                     focusPolicy: Qt.NoFocus
                     hoverEnabled: true
                     HoverHandler { cursorShape: Qt.PointingHandCursor }
-                    onClicked: Qt.openUrlExternally("https://discord.gg/UyyEn7SHm4")
-                    background: Rectangle {
-                        radius: 12
-                        color: discordBadge.hovered ? consolePane.cSurfaceHover : consolePane.cSurface
-                        border.width: 1
-                        border.color: discordBadge.hovered ? "#5865F2" : consolePane.cBorder
+                    onClicked: Qt.openUrlExternally(consolePane.communityUrl)
+                    // the Discord colours, Blurple to Fuchsia, around the badge and as a soft light
+                    // behind it that breathes slowly - the way to Robz Community should catch the eye
+                    property real glow: 0.5
+                    SequentialAnimation on glow {
+                        loops: Animation.Infinite
+                        running: discordBadge.visible
+                        NumberAnimation { to: 1.0; duration: 1600; easing.type: Easing.InOutSine }
+                        NumberAnimation { to: 0.5; duration: 1600; easing.type: Easing.InOutSine }
+                    }
+                    background: Item {
+                        Rectangle {
+                            id: discordGlowSource
+                            anchors.fill: parent
+                            radius: 12
+                            visible: false
+                            gradient: Gradient {
+                                orientation: Gradient.Horizontal
+                                GradientStop { position: 0.0; color: "#5865F2" }
+                                GradientStop { position: 1.0; color: "#EB459E" }
+                            }
+                        }
+                        MultiEffect {
+                            anchors.fill: discordGlowSource
+                            source: discordGlowSource
+                            blurEnabled: true
+                            blur: 1.0
+                            blurMax: 32
+                            opacity: discordBadge.hovered ? 1.0 : discordBadge.glow
+                        }
+                        Rectangle {
+                            anchors.fill: parent
+                            radius: 12
+                            gradient: Gradient {
+                                orientation: Gradient.Horizontal
+                                GradientStop { position: 0.0; color: "#5865F2" }
+                                GradientStop { position: 1.0; color: "#EB459E" }
+                            }
+                        }
+                        Rectangle {
+                            anchors.fill: parent
+                            anchors.margins: 2
+                            radius: 10
+                            color: discordBadge.hovered ? consolePane.cSurfaceHover : consolePane.cSurface
+                        }
                     }
                     contentItem: RowLayout {
                         spacing: 12
@@ -673,7 +715,7 @@ Pane {
                             spacing: 0
                             Label {
                                 Layout.fillWidth: true
-                                text: "discord.gg/UyyEn7SHm4"
+                                text: consolePane.communityUrl.replace("https://", "")
                                 color: consolePane.cText
                                 // the whole address stays readable in the narrower sidebar too
                                 font.pixelSize: consolePane.roomy ? 15 : 13
@@ -1412,7 +1454,7 @@ Pane {
     // A newer release is offered once per version and run of the application, and only here
     // on the home screen - never in the middle of a game.
     function offerUpdate() {
-        if (!Chiaki.updater.available || updatePopup.opened)
+        if (!Chiaki.updater.available || updatePopup.opened || communityPopup.opened)
             return;
         if (root.updateOfferedVersion === Chiaki.updater.latestVersion)
             return;
@@ -1652,6 +1694,245 @@ Pane {
                         id: updateNowLabel
                         text: qsTr("Update now")
                         color: updateNowBg.textColor
+                        font.pixelSize: 17
+                        font.family: consolePane.display
+                        font.weight: Font.Black
+                        font.italic: true
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                }
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------ Robz Community
+    // Robz Play's Discord moved to a new server, Robz Community. It is offered once every time
+    // Robz Play starts, until the user chooses "Join the Discord": here on the home screen and in
+    // the interface language, never over a game, a start-up question or the update notice.
+    function offerCommunity() {
+        if (Chiaki.settings.communityJoined || root.communityOffered)
+            return false;
+        if (communityPopup.opened || updatePopup.opened)
+            return false;
+        if (consolePane.StackView.status !== StackView.Active)
+            return false;
+        root.communityOffered = true;
+        communityPopup.open();
+        return true;
+    }
+
+    // a few seconds after the home screen shows, and again while something else is in the way
+    Timer {
+        id: communityOfferTimer
+        interval: 4000
+        repeat: true
+        running: !Chiaki.settings.communityJoined && !root.communityOffered
+        onTriggered: consolePane.offerCommunity()
+    }
+
+    Popup {
+        id: communityPopup
+        parent: Overlay.overlay
+        x: Math.round((root.width - width) / 2)
+        y: Math.round((root.height - height) / 2)
+        width: Math.max(420, Math.min(620, root.width - 64))
+        height: Math.min(communityColumn.implicitHeight + 2 * padding, root.height - 64)
+        padding: 30
+        modal: true
+        focus: true
+        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+        onOpened: communityColumn.forceActiveFocus(Qt.TabFocusReason)
+        onClosed: {
+            consolePane.forceActiveFocus(Qt.TabFocusReason);
+            // an update found while this was open is offered now
+            updateOfferTimer.restart();
+        }
+
+        Overlay.modal: Rectangle { color: "#A6000000" }
+        background: Rectangle {
+            radius: 18
+            color: "#1D1816"
+            border.color: "#3B302B"
+        }
+
+        contentItem: ColumnLayout {
+            id: communityColumn
+            spacing: 16
+            Keys.onReturnPressed: communityJoin.clicked()
+            Keys.onEscapePressed: communityPopup.close()
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 16
+                Rectangle {
+                    implicitWidth: 56
+                    implicitHeight: 56
+                    radius: 14
+                    color: consolePane.cInset
+                    border.width: 2
+                    border.color: "#5865F2"
+                    Image {
+                        anchors.centerIn: parent
+                        source: "qrc:/icons/discord.svg"
+                        sourceSize: Qt.size(32, 32)
+                    }
+                }
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: 2
+                    Label {
+                        Layout.fillWidth: true
+                        text: "Robz Community"
+                        font.family: consolePane.display
+                        font.weight: Font.Black
+                        font.italic: true
+                        font.pixelSize: 28
+                        color: consolePane.cText
+                        elide: Text.ElideRight
+                    }
+                    Label {
+                        Layout.fillWidth: true
+                        text: qsTr("Our new Discord server")
+                        font.pixelSize: 15
+                        color: consolePane.cMuted
+                    }
+                }
+            }
+
+            Label {
+                Layout.fillWidth: true
+                text: qsTr("Robz Play has a new home on Discord: Robz Community. Join us there for:")
+                color: consolePane.cText
+                font.pixelSize: 16
+                lineHeight: 1.2
+                wrapMode: Text.Wrap
+            }
+
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 8
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 10
+                    Rectangle { implicitWidth: 8; implicitHeight: 8; radius: 4; color: consolePane.cAccent }
+                    Label {
+                        Layout.fillWidth: true
+                        text: qsTr("Free technical support")
+                        color: consolePane.cText
+                        font.pixelSize: 16
+                        font.weight: Font.DemiBold
+                        wrapMode: Text.Wrap
+                    }
+                }
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 10
+                    Rectangle { implicitWidth: 8; implicitHeight: 8; radius: 4; color: consolePane.cAccent }
+                    Label {
+                        Layout.fillWidth: true
+                        text: qsTr("Testing our new free apps")
+                        color: consolePane.cText
+                        font.pixelSize: 16
+                        font.weight: Font.DemiBold
+                        wrapMode: Text.Wrap
+                    }
+                }
+            }
+
+            // a click on the address copies it, for whoever wants to paste it into Discord itself
+            AbstractButton {
+                id: communityLink
+                property bool copied: false
+                Layout.fillWidth: true
+                implicitHeight: 52
+                focusPolicy: Qt.NoFocus
+                hoverEnabled: true
+                HoverHandler { cursorShape: Qt.PointingHandCursor }
+                onClicked: {
+                    communityClipboard.text = consolePane.communityUrl;
+                    communityClipboard.selectAll();
+                    communityClipboard.copy();
+                    communityLink.copied = true;
+                    communityCopiedTimer.restart();
+                }
+                background: Rectangle {
+                    radius: 12
+                    color: communityLink.hovered ? consolePane.cSurfaceHover : consolePane.cInset
+                    border.width: 1
+                    border.color: communityLink.copied ? consolePane.cAccent
+                                  : (communityLink.hovered ? "#5865F2" : consolePane.cBorder)
+                }
+                contentItem: RowLayout {
+                    spacing: 12
+                    Label {
+                        Layout.fillWidth: true
+                        Layout.leftMargin: 18
+                        text: consolePane.communityUrl.replace("https://", "")
+                        color: consolePane.cText
+                        font.pixelSize: 17
+                        font.weight: Font.DemiBold
+                        elide: Text.ElideRight
+                    }
+                    Label {
+                        Layout.rightMargin: 18
+                        text: communityLink.copied ? qsTr("Copied") : qsTr("Click to copy")
+                        color: communityLink.copied ? consolePane.cAccent : consolePane.cFaint
+                        font.pixelSize: 13
+                        font.weight: communityLink.copied ? Font.DemiBold : Font.Normal
+                    }
+                }
+                Timer {
+                    id: communityCopiedTimer
+                    interval: 2500
+                    onTriggered: communityLink.copied = false
+                }
+                // the clipboard is reached through a text field that is never shown
+                TextEdit {
+                    id: communityClipboard
+                    visible: false
+                }
+            }
+
+            Label {
+                Layout.fillWidth: true
+                text: qsTr("This shows each time Robz Play starts, until you choose Join the Discord. The link is always at the bottom left of the home screen.")
+                color: consolePane.cFaint
+                font.pixelSize: 13
+                wrapMode: Text.Wrap
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.topMargin: 4
+                spacing: 10
+                Item { Layout.fillWidth: true }
+                CardAction {
+                    text: qsTr("Not now")
+                    onClicked: communityPopup.close()
+                }
+                AbstractButton {
+                    id: communityJoin
+                    implicitHeight: 44
+                    implicitWidth: Math.max(180, communityJoinLabel.implicitWidth + 44)
+                    focusPolicy: Qt.NoFocus
+                    hoverEnabled: true
+                    HoverHandler { cursorShape: Qt.PointingHandCursor }
+                    onClicked: {
+                        Chiaki.settings.communityJoined = true;
+                        Qt.openUrlExternally(consolePane.communityUrl);
+                        communityPopup.close();
+                    }
+                    background: RobzButtonBg {
+                        id: communityJoinBg
+                        radius: 10
+                        hovered: communityJoin.hovered
+                        pressed: communityJoin.pressed
+                    }
+                    contentItem: Label {
+                        id: communityJoinLabel
+                        text: qsTr("Join the Discord")
+                        color: communityJoinBg.textColor
                         font.pixelSize: 17
                         font.family: consolePane.display
                         font.weight: Font.Black

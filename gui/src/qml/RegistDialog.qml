@@ -1101,7 +1101,7 @@ DialogView {
                                 Bullet { text: qsTr("The code may have run out: get a new one on the console and enter it again (Back).") }
                                 Bullet { text: qsTr("The console must be on, not in rest mode, and on the same network as this PC.") }
                                 Bullet { text: qsTr("The code must be opened on the PS5 profile of the account you signed in with, not on the empty second one.") }
-                                Bullet { text: qsTr("Still stuck? Technical support on Discord is free: discord.gg/UyyEn7SHm4") }
+                                Bullet { text: qsTr("Still stuck? Technical support on Discord is free: discord.gg/PgGBNkkpNN") }
                             }
                         }
                     }

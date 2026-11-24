@@ -35,6 +35,7 @@ class QmlSettings : public QObject
     Q_PROPERTY(bool showFpsCounter READ showFpsCounter WRITE setShowFpsCounter NOTIFY showFpsCounterChanged)
     Q_PROPERTY(int sharpening READ sharpening WRITE setSharpening NOTIFY sharpeningChanged)
     Q_PROPERTY(QString language READ language WRITE setLanguage NOTIFY languageChanged)
+    Q_PROPERTY(bool communityJoined READ communityJoined WRITE setCommunityJoined NOTIFY communityJoinedChanged)
     Q_PROPERTY(int frameGenTargetFps READ frameGenTargetFps WRITE setFrameGenTargetFps NOTIFY frameGenTargetFpsChanged)
     Q_PROPERTY(bool frameGenProtectStatic READ frameGenProtectStatic WRITE setFrameGenProtectStatic NOTIFY frameGenProtectStaticChanged)
     Q_PROPERTY(bool frameGenCompare READ frameGenCompare WRITE setFrameGenCompare NOTIFY frameGenCompareChanged)
@@ -197,6 +198,8 @@ public:
 
     QString language() const;
     void setLanguage(const QString &language);
+    bool communityJoined() const;
+    void setCommunityJoined(bool joined);
     int frameGenTargetFps() const;
     void setFrameGenTargetFps(int fps);
     bool frameGenProtectStatic() const;
@@ -685,6 +688,7 @@ signals:
     void showFpsCounterChanged();
     void sharpeningChanged();
     void languageChanged();
+    void communityJoinedChanged();
     void frameGenTargetFpsChanged();
     void frameGenProtectStaticChanged();
     void frameGenCompareChanged();

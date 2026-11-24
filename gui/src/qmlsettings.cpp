@@ -163,6 +163,17 @@ void QmlSettings::setLanguage(const QString &language)
     emit languageChanged();
 }
 
+bool QmlSettings::communityJoined() const
+{
+    return settings->GetCommunityJoined();
+}
+
+void QmlSettings::setCommunityJoined(bool joined)
+{
+    settings->SetCommunityJoined(joined);
+    emit communityJoinedChanged();
+}
+
 int QmlSettings::frameGenTargetFps() const
 {
     return settings->GetFrameGenTargetFps();
@@ -2121,6 +2132,7 @@ void QmlSettings::refreshAllKeys()
     emit showFpsCounterChanged();
     emit sharpeningChanged();
     emit languageChanged();
+    emit communityJoinedChanged();
     emit frameGenTargetFpsChanged();
     emit frameGenProtectStaticChanged();
     emit frameGenCompareChanged();

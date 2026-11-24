@@ -295,6 +295,10 @@ class Settings : public QObject
 		// Interface language: "en" (English, the default) or "tr"
 		QString GetLanguage() const                { return settings.value("settings/language", "en").toString() == "tr" ? QStringLiteral("tr") : QStringLiteral("en"); }
 		void SetLanguage(const QString &language)  { settings.setValue("settings/language", language == "tr" ? QStringLiteral("tr") : QStringLiteral("en")); }
+		// Robz Play: whether the user chose to join Robz Community, the Discord server; until then it
+		// is offered once every time Robz Play starts
+		bool GetCommunityJoined() const             { return settings.value("settings/community_joined", false).toBool(); }
+		void SetCommunityJoined(bool joined)        { settings.setValue("settings/community_joined", joined); }
 		// Picture sharpening: 0 off, 1 low, 2 medium, 3 high
 		// Robz Play: sharpening on High and the FPS counter on by default
 		int GetSharpening() const                  { return qBound(0, settings.value("settings/sharpening", 3).toInt(), 3); }
