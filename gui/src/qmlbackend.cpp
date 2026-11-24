@@ -324,6 +324,7 @@ QmlBackend::QmlBackend(Settings *settings, QmlMainWindow *window)
         selftest_config.enabled = true;
         selftest_config.model_dir = QCoreApplication::applicationDirPath() + "/models/" + settings->GetFrameGenModel();
         selftest_config.flow_divisor = settings->GetFrameGenFlowDivisor();
+        selftest_config.engine = settings->GetFrameGenEngine();
         selftest_config.target_fps = static_cast<unsigned int>(settings->GetFrameGenTargetFps());
         selftest_config.protect_static = settings->GetFrameGenProtectStatic();
         selftest_config.stream_fps = 60;
@@ -1013,6 +1014,7 @@ FrameGenStage::Config QmlBackend::frameGenConfig(unsigned int stream_fps) const
     framegen_config.enabled = settings->GetFrameGenEnabled();
     framegen_config.model_dir = QCoreApplication::applicationDirPath() + "/models/" + settings->GetFrameGenModel();
     framegen_config.flow_divisor = settings->GetFrameGenFlowDivisor();
+    framegen_config.engine = settings->GetFrameGenEngine();
     framegen_config.target_fps = static_cast<unsigned int>(settings->GetFrameGenTargetFps());
     framegen_config.protect_static = settings->GetFrameGenProtectStatic();
     framegen_config.stream_fps = stream_fps;

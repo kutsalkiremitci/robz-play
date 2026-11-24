@@ -156,6 +156,12 @@ endif()
 if(APPLE)
 	target_link_libraries(chiaki "-framework AVFoundation" "-framework IOKit")
 endif()
+if(APPLE)
+	# the frame generation model sits beside the executable (Contents/MacOS/models)
+	add_custom_command(TARGET chiaki POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/robzfg/models/rife-v4.6"
+			"$<TARGET_FILE_DIR:chiaki>/models/rife-v4.6")
+endif()
 
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fanalyzer")
 set_target_properties(chiaki PROPERTIES

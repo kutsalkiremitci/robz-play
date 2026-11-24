@@ -2,6 +2,9 @@
 // Robz Play - frame generation stage of the stream pipeline.
 
 #include "framegen.h"
+#ifdef ROBZFG_HAVE_APPLE
+#include <robzfg/apple_interpolator.h>
+#endif
 
 #include <robzfg/dedup.h>
 #include <robzfg/rife_interpolator.h>
@@ -104,6 +107,55 @@ AVFrame *allocLike(const AVFrame *src)
 struct FrameGenStage::Engine
 {
 	robzfg::RifeInterpolator rife;
+#ifdef ROBZFG_HAVE_APPLE
+	robzfg::AppleInterpolator apple;
+#endif
+	bool use_apple = false;
+
+	// the chosen engine, behind one set of calls
+	bool push(const robzfg::Nv12View &v, const robzfg::ColorInfo &c, std::string *e)
+	{
+#ifdef ROBZFG_HAVE_APPLE
+		if(use_apple)
+			return apple.push(v, c, e);
+#endif
+		return rife.push(v, c, e);
+	}
+	bool ready() const
+	{
+#ifdef ROBZFG_HAVE_APPLE
+		if(use_apple)
+			return apple.ready();
+#endif
+		return rife.ready();
+	}
+	bool interpolate(float t, const robzfg::Nv12Mut &out, robzfg::InterpolateTiming *timing, std::string *e, float field_time)
+	{
+#ifdef ROBZFG_HAVE_APPLE
+		if(use_apple)
+			return apple.interpolate(t, out, timing, e, field_time);
+#endif
+		return rife.interpolate(t, out, timing, e, field_time);
+	}
+	void resetFrames()
+	{
+#ifdef ROBZFG_HAVE_APPLE
+		if(use_apple)
+		{
+			apple.reset();
+			return;
+		}
+#endif
+		rife.reset();
+	}
+	std::string gpuName() const
+	{
+#ifdef ROBZFG_HAVE_APPLE
+		if(use_apple)
+			return apple.gpuName();
+#endif
+		return rife.gpuName();
+	}
 	robzfg::DuplicateDetector dedup;
 	bool ok = false;
 	// recent averages: any generated frame, the first frame of a pair (the one that includes
@@ -470,12 +522,22 @@ void FrameGenStage::workerMain()
 		rife_config.protect_static = config.protect_static;
 		std::string error;
 		const auto begin = std::chrono::steady_clock::now();
+#ifdef ROBZFG_HAVE_APPLE
+		if(config.engine == QStringLiteral("apple") && robzfg::AppleInterpolator::supported())
+		{
+			robzfg::AppleInterpolator::Config apple_config;
+			apple_config.frames_between = config.target_fps >= 100 ? 3 : 1;
+			engine->use_apple = true;
+			engine->ok = engine->apple.init(apple_config, &error);
+		}
+		else
+#endif
 		engine->ok = engine->rife.init(rife_config, &error);
 		const double ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - begin).count();
 		if(engine->ok)
 		{
-			qCInfo(robzFrameGen).nospace() << "Frame generation ready on " << QString::fromStdString(engine->rife.gpuName())
-				<< " in " << qRound(ms) << " ms (model " << config.model_dir << ", flow divisor " << config.flow_divisor
+			qCInfo(robzFrameGen).nospace() << "Frame generation ready on " << QString::fromStdString(engine->gpuName())
+				<< " in " << qRound(ms) << " ms (engine " << config.engine << ", model " << config.model_dir << ", flow divisor " << config.flow_divisor
 				<< ", target " << config.target_fps << " fps)";
 			setStatus("waiting for video");
 			engine_ready.store(true);
@@ -508,7 +570,7 @@ void FrameGenStage::workerMain()
 			flushSchedule();
 			if(engine->ok)
 			{
-				engine->rife.reset();
+				engine->resetFrames();
 				engine->dedup.reset();
 			}
 			last_unique_us = 0;
@@ -639,7 +701,7 @@ void FrameGenStage::process(Item &item)
 	const bool scene_cut = diff.comparable && diff.mean_abs_diff > SCENE_CUT_MEAN_DIFF && diff.changed_ratio > SCENE_CUT_CHANGED_RATIO;
 
 	std::string error;
-	if(!engine->rife.push(view, colorInfoOf(frame), &error))
+	if(!engine->push(view, colorInfoOf(frame), &error))
 	{
 		qCWarning(robzFrameGen) << "Frame generation push failed:" << QString::fromStdString(error);
 		flushSchedule();
@@ -653,8 +715,8 @@ void FrameGenStage::process(Item &item)
 	if(trace)
 		fprintf(stderr, "[framegen] gap %.1f ms cadence %.1f ms (%u samples) wanted %d using %d first %.1f rest %.1f ms diff %.2f cut %d ready %d\n",
 			gap_us / 1000.0, cadence_us / 1000.0, cadence_samples, intermediates, count, engine->first_ms_avg, engine->rest_ms_avg,
-			diff.mean_abs_diff, scene_cut ? 1 : 0, engine->rife.ready() ? 1 : 0);
-	if(count <= 0 || !gap_fits || scene_cut || !engine->rife.ready())
+			diff.mean_abs_diff, scene_cut ? 1 : 0, engine->ready() ? 1 : 0);
+	if(count <= 0 || !gap_fits || scene_cut || !engine->ready())
 	{
 		if(cadence_samples >= CADENCE_MIN_SAMPLES && intermediates == 0)
 			setStatus(config.target_fps >= 100 ? "passing through (source already near 120 fps)" : "passing through (source already near 60 fps)");
@@ -720,7 +782,7 @@ void FrameGenStage::process(Item &item)
 
 		robzfg::InterpolateTiming timing;
 		// one motion estimate per pair, made for the middle of the interval
-		if(!engine->rife.interpolate(t, out, &timing, &error, 0.5f))
+		if(!engine->interpolate(t, out, &timing, &error, 0.5f))
 		{
 			qCWarning(robzFrameGen) << "Frame generation failed:" << QString::fromStdString(error);
 			av_frame_free(&mid);

@@ -40,6 +40,15 @@ target_include_directories(robzfg
 	PRIVATE src "${ROBZFG_SHADER_DIR}")
 target_link_libraries(robzfg PUBLIC ncnn)
 
+# macOS: Apple's own frame interpolation (VideoToolbox, macOS 26+) as a second engine
+if(APPLE)
+	enable_language(OBJCXX)
+	target_sources(robzfg PRIVATE src/apple_interpolator.mm)
+	set_source_files_properties(src/apple_interpolator.mm PROPERTIES COMPILE_FLAGS "-fobjc-arc")
+	target_compile_definitions(robzfg PUBLIC ROBZFG_HAVE_APPLE=1)
+	target_link_libraries(robzfg PUBLIC "-framework VideoToolbox" "-framework CoreVideo" "-framework CoreMedia" "-framework Foundation")
+endif()
+
 if(ROBZFG_BUILD_LAB)
 	find_package(PkgConfig REQUIRED)
 	pkg_check_modules(ROBZFG_FFMPEG REQUIRED IMPORTED_TARGET libavformat libavcodec libavutil)
