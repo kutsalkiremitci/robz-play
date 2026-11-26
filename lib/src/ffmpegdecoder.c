@@ -38,6 +38,7 @@ CHIAKI_EXPORT ChiakiErrorCode chiaki_ffmpeg_decoder_init(ChiakiFfmpegDecoder *de
 	decoder->frame_available_cb_user = frame_available_cb_user;
 	decoder->hdr_enabled = codec == CHIAKI_CODEC_H265_HDR;
 	decoder->frames_lost = 0;
+	decoder->frames_superseded = 0;
 	decoder->frame_recovered = false;
 	decoder->synthetic_packet_pts = 0;
 	decoder->synthetic_framerate = (AVRational){max_fps > 0 ? (int)max_fps : 60, 1};
@@ -239,6 +240,15 @@ hell:
 	return false;
 }
 
+CHIAKI_EXPORT int32_t chiaki_ffmpeg_decoder_take_superseded(ChiakiFfmpegDecoder *decoder)
+{
+	chiaki_mutex_lock(&decoder->mutex);
+	int32_t superseded = decoder->frames_superseded;
+	decoder->frames_superseded = 0;
+	chiaki_mutex_unlock(&decoder->mutex);
+	return superseded;
+}
+
 CHIAKI_EXPORT ChiakiFfmpegFrame chiaki_ffmpeg_decoder_pull_frame(ChiakiFfmpegDecoder *decoder, int32_t *frames_lost)
 {
 	chiaki_mutex_lock(&decoder->mutex);
@@ -246,6 +256,7 @@ CHIAKI_EXPORT ChiakiFfmpegFrame chiaki_ffmpeg_decoder_pull_frame(ChiakiFfmpegDec
 	// always try to pull as much as possible and return only the very last frame
 	AVFrame *frame_last = NULL;
 	AVFrame *frame = NULL;
+	int32_t received = 0;
 	while(true)
 	{
 		AVFrame *next_frame;
@@ -271,7 +282,10 @@ CHIAKI_EXPORT ChiakiFfmpegFrame chiaki_ffmpeg_decoder_pull_frame(ChiakiFfmpegDec
 			frame = frame_last;
 			break;
 		}
+		received++;
 	}
+	if(received > 1)
+		decoder->frames_superseded += received - 1;
 	*frames_lost = decoder->frames_lost;
 	bool recovered = false;
 	if(frame && decoder->frame_recovered)

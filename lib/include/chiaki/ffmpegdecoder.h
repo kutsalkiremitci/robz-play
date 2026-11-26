@@ -41,6 +41,9 @@ struct chiaki_ffmpeg_decoder_t
 	ChiakiFfmpegFrameAvailable frame_available_cb;
 	void *frame_available_cb_user;
 	int32_t frames_lost;
+	// Robz Play: decoded frames that were never handed on because a newer one was already
+	// waiting when the frame was collected (see chiaki_ffmpeg_decoder_take_superseded)
+	int32_t frames_superseded;
 	bool frame_recovered;
 	int32_t session_bitrate_kbps;
 	int64_t synthetic_packet_pts;
@@ -58,6 +61,12 @@ CHIAKI_EXPORT ChiakiErrorCode chiaki_ffmpeg_decoder_init(ChiakiFfmpegDecoder *de
 CHIAKI_EXPORT void chiaki_ffmpeg_decoder_fini(ChiakiFfmpegDecoder *decoder);
 CHIAKI_EXPORT bool chiaki_ffmpeg_decoder_video_sample_cb(uint8_t *buf, size_t buf_size, int32_t frames_lost, bool frame_recovered, void *user);
 CHIAKI_EXPORT ChiakiFfmpegFrame chiaki_ffmpeg_decoder_pull_frame(ChiakiFfmpegDecoder *decoder, int32_t *frames_lost);
+/**
+ * Robz Play: chiaki_ffmpeg_decoder_pull_frame returns only the newest decoded frame. When
+ * the caller comes late and two are waiting, the older one is dropped without a trace.
+ * Returns how many frames went that way since the last call and starts counting again.
+ */
+CHIAKI_EXPORT int32_t chiaki_ffmpeg_decoder_take_superseded(ChiakiFfmpegDecoder *decoder);
 CHIAKI_EXPORT enum AVPixelFormat chiaki_ffmpeg_decoder_get_pixel_format(ChiakiFfmpegDecoder *decoder);
 
 /**

@@ -168,6 +168,17 @@ public:
     void armVerbosePlaceboQuietWindow();
     bool startupWarmupFrameActive() const { return startup_warmup_frame_active; }
 
+    // Robz Play: what drawing took since the last call; the counters start over. Part of
+    // the [health] line the session log gets once a minute.
+    struct RenderHealth
+    {
+        unsigned int renders = 0;
+        unsigned int slow = 0; // drawing passes of 25 ms and more
+        double avg_ms = 0.0;
+        double max_ms = 0.0;
+    };
+    static RenderHealth takeRenderHealth();
+
 public slots:
     void resetPlaceboQueue();
     void schedulePlaceboReset();

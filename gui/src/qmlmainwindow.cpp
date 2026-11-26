@@ -6626,9 +6626,60 @@ void QmlMainWindow::handleVulkanRendererFallback(const QString &title, const QSt
     }, Qt::QueuedConnection);
 }
 
+// Robz Play: how long drawing takes, for the [health] line of the session log (see
+// takeRenderHealth). A drawing pass far longer than usual is also written down the moment
+// it happens: next to the same kind of line from frame generation it shows whether the whole
+// graphics card stood still or only one of its users.
+namespace {
+
+const qint64 SLOW_RENDER_US = 25000;
+const qint64 SLOW_RENDER_LOG_INTERVAL_US = 200000;
+
+std::atomic<unsigned int> render_health_count{0};
+std::atomic<unsigned int> render_health_slow{0};
+std::atomic<qint64> render_health_sum_us{0};
+std::atomic<qint64> render_health_max_us{0};
+std::atomic<qint64> render_health_last_log_us{0};
+
+struct RenderHealthScope
+{
+    const qint64 begin_us = static_cast<qint64>(chiaki_time_now_monotonic_us());
+    ~RenderHealthScope()
+    {
+        const qint64 end_us = static_cast<qint64>(chiaki_time_now_monotonic_us());
+        const qint64 took_us = end_us - begin_us;
+        render_health_count.fetch_add(1);
+        render_health_sum_us.fetch_add(took_us);
+        qint64 current = render_health_max_us.load();
+        while (took_us > current && !render_health_max_us.compare_exchange_weak(current, took_us)) {
+        }
+        if (took_us < SLOW_RENDER_US)
+            return;
+        render_health_slow.fetch_add(1);
+        if (end_us - render_health_last_log_us.load() >= SLOW_RENDER_LOG_INTERVAL_US) {
+            render_health_last_log_us.store(end_us);
+            qCInfo(chiakiGui).noquote() << QString::asprintf("[health] slow drawing: %.1f ms", static_cast<double>(took_us) / 1000.0);
+        }
+    }
+};
+
+} // namespace
+
+QmlMainWindow::RenderHealth QmlMainWindow::takeRenderHealth()
+{
+    RenderHealth health;
+    health.renders = render_health_count.exchange(0);
+    health.slow = render_health_slow.exchange(0);
+    const qint64 sum_us = render_health_sum_us.exchange(0);
+    health.avg_ms = health.renders ? static_cast<double>(sum_us) / health.renders / 1000.0 : 0.0;
+    health.max_ms = static_cast<double>(render_health_max_us.exchange(0)) / 1000.0;
+    return health;
+}
+
 void QmlMainWindow::render()
 {
     Q_ASSERT(QThread::currentThread() == render_thread);
+    const RenderHealthScope render_health_scope;
     if (vulkan_device_lost.loadAcquire() != 0) {
         QMutexLocker locker(&render_schedule_mutex);
         render_scheduled = false;

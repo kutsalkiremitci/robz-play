@@ -48,6 +48,161 @@ static bool detailedVerboseTelemetryEnabled()
 
 #define CHIAKI_NOISY_DEBUG() if (!detailedVerboseTelemetryEnabled()) {} else qCDebug(chiakiGui)
 
+// Robz Play: once a minute the session log gets one line saying how the stream went: how
+// evenly the decoder delivered, how long frames took to come back from the GPU, how long
+// they waited for the window, and what the frame generation stage did. Stutter nobody was
+// watching when it happened can be read from that line afterwards.
+namespace
+{
+
+struct StreamHealth
+{
+    // only touched from the thread that collects frames from the decoder
+    qint64 window_start_us = 0;
+    qint64 last_frame_us = 0;
+    unsigned int frames = 0;
+    int frames_lost = 0;
+    int frames_skipped = 0;
+    unsigned int recovered = 0;
+    qint64 gap_max_us = 0;
+    unsigned int long_gaps = 0;
+    unsigned int transfers = 0;
+    qint64 transfer_sum_us = 0;
+    qint64 transfer_max_us = 0;
+    unsigned int slow_transfers = 0;
+};
+
+const qint64 STREAM_HEALTH_INTERVAL_US = 60 * 1000000LL;
+// two frames of a 60 fps stream further apart than this: a hitch
+const qint64 STREAM_HEALTH_LONG_GAP_US = 50000;
+// a frame that took longer than this to come back from the GPU
+const qint64 STREAM_HEALTH_SLOW_TRANSFER_US = 12000;
+// a frame that waited longer than this for the window's thread
+const qint64 STREAM_HEALTH_SLOW_HANDOVER_US = 4000;
+
+StreamHealth stream_health;
+// the way from frame generation's presenter thread to the window's thread (the event queue)
+std::atomic<unsigned int> handover_count{0};
+std::atomic<unsigned int> handover_slow{0};
+std::atomic<qint64> handover_sum_us{0};
+std::atomic<qint64> handover_max_us{0};
+
+void resetStreamHealth()
+{
+    stream_health = StreamHealth();
+    handover_count.store(0);
+    handover_slow.store(0);
+    handover_sum_us.store(0);
+    handover_max_us.store(0);
+}
+
+void noteHandover(qint64 handover_us)
+{
+    if (handover_us < 0)
+        handover_us = 0;
+    handover_count.fetch_add(1);
+    handover_sum_us.fetch_add(handover_us);
+    if (handover_us > STREAM_HEALTH_SLOW_HANDOVER_US)
+        handover_slow.fetch_add(1);
+    qint64 current = handover_max_us.load();
+    while (handover_us > current && !handover_max_us.compare_exchange_weak(current, handover_us)) {
+    }
+}
+
+void noteFrameCollected(qint64 now_us, int32_t frames_lost, int32_t frames_skipped, bool recovered)
+{
+    StreamHealth &health = stream_health;
+    if (health.window_start_us == 0) {
+        health.window_start_us = now_us;
+        QmlMainWindow::takeRenderHealth(); // drawing done before the stream is not part of it
+    }
+    if (health.last_frame_us != 0) {
+        const qint64 gap_us = now_us - health.last_frame_us;
+        if (gap_us > health.gap_max_us)
+            health.gap_max_us = gap_us;
+        if (gap_us > STREAM_HEALTH_LONG_GAP_US) {
+            health.long_gaps++;
+            // rare enough (a few a minute) to write each one down with its time; a stream
+            // that is nothing but gaps gets five lines a second at most
+            static qint64 last_gap_log_us = 0;
+            if (now_us - last_gap_log_us >= 200000) {
+                last_gap_log_us = now_us;
+                qCInfo(chiakiGui).noquote() << QString::asprintf("[health] frame gap: %.1f ms without a frame from the decoder",
+                    static_cast<double>(gap_us) / 1000.0);
+            }
+        }
+    }
+    health.last_frame_us = now_us;
+    health.frames++;
+    if (frames_lost > 0)
+        health.frames_lost += frames_lost;
+    if (frames_skipped > 0)
+        health.frames_skipped += frames_skipped;
+    if (recovered)
+        health.recovered++;
+}
+
+void noteFrameTransfer(qint64 transfer_us)
+{
+    StreamHealth &health = stream_health;
+    if (transfer_us < 0)
+        transfer_us = 0;
+    health.transfers++;
+    health.transfer_sum_us += transfer_us;
+    if (transfer_us > health.transfer_max_us)
+        health.transfer_max_us = transfer_us;
+    if (transfer_us > STREAM_HEALTH_SLOW_TRANSFER_US)
+        health.slow_transfers++;
+}
+
+// Writes the line when a minute has passed and starts the next minute.
+void reportStreamHealthIfDue(qint64 now_us, FrameGenStage *framegen)
+{
+    StreamHealth &health = stream_health;
+    if (health.window_start_us == 0 || now_us - health.window_start_us < STREAM_HEALTH_INTERVAL_US)
+        return;
+
+    const double seconds = static_cast<double>(now_us - health.window_start_us) / 1000000.0;
+    QString line = QString::asprintf(
+        "[health] %.0f s: frames=%u lost=%d skipped=%d recovered=%u gap_max=%.1fms long_gaps=%u"
+        " transfer_avg=%.2fms transfer_max=%.1fms slow_transfers=%u",
+        seconds, health.frames, health.frames_lost, health.frames_skipped, health.recovered,
+        static_cast<double>(health.gap_max_us) / 1000.0, health.long_gaps,
+        health.transfers ? static_cast<double>(health.transfer_sum_us) / health.transfers / 1000.0 : 0.0,
+        static_cast<double>(health.transfer_max_us) / 1000.0, health.slow_transfers);
+
+    const QmlMainWindow::RenderHealth drawing = QmlMainWindow::takeRenderHealth();
+    line += QString::asprintf(" | drawing passes=%u avg=%.2fms max=%.1fms slow=%u",
+        drawing.renders, drawing.avg_ms, drawing.max_ms, drawing.slow);
+
+    if (framegen && framegen->enabled()) {
+        const FrameGenStage::Health generation = framegen->takeHealth();
+        const unsigned int handovers = handover_count.exchange(0);
+        const qint64 handover_sum = handover_sum_us.exchange(0);
+        const qint64 handover_max = handover_max_us.exchange(0);
+        const unsigned int handovers_slow = handover_slow.exchange(0);
+        line += QString::asprintf(
+            " | framegen detail=%d real=%u generated=%u repeats=%u gen_avg=%.2fms gen_max=%.1fms queue_max=%u"
+            " overloads=%u late=%u late_max=%.1fms held=%u dropped=%u probes=%u clock_jumps=%u delay=%.1fms picture_late=%.1fms source_slots=%d"
+            " | handover avg=%.2fms max=%.1fms slow=%u",
+            generation.motion_divisor, generation.real_frames, generation.generated_frames, generation.repeats,
+            generation.generate_avg_ms, generation.generate_max_ms, generation.queue_max,
+            generation.overloads, generation.late_frames, generation.late_max_ms,
+            generation.held, generation.dropped_late, generation.probe_frames, generation.clock_jumps, generation.latency_ms, generation.picture_late_ms,
+            generation.source_slots,
+            handovers ? static_cast<double>(handover_sum) / handovers / 1000.0 : 0.0,
+            static_cast<double>(handover_max) / 1000.0, handovers_slow);
+    }
+    qCInfo(chiakiGui).noquote() << line;
+
+    const qint64 last_frame_us = health.last_frame_us;
+    health = StreamHealth();
+    health.window_start_us = now_us;
+    health.last_frame_us = last_frame_us;
+}
+
+} // namespace
+
 static void logDecoderDeliveryStats(qint64 now_us, int32_t frames_lost, bool recovered)
 {
     static qint64 last_sample_us = 0;
@@ -1058,10 +1213,12 @@ void QmlBackend::createSession(const StreamSessionConnectInfo &connect_info)
                         av_frame_free(&frame.frame);
                     return;
                 }
+                noteHandover(static_cast<qint64>(chiaki_time_now_monotonic_us()) - delivery_us);
                 present_window->presentFrame(frame, frames_lost, delivery_us);
             });
         });
     }
+    resetStreamHealth();
     {
         QMutexLocker locker(&hw_transfer_state_mutex);
         logged_hw_transfer_formats.clear();
@@ -1228,13 +1385,18 @@ void QmlBackend::createSession(const StreamSessionConnectInfo &connect_info)
         if (frame.recovered)
             pending_recovered_frame.storeRelaxed(1);
 
+        // frames the decoder had ready but did not hand on: it gives out only the newest one
+        const int32_t frames_skipped = chiaki_ffmpeg_decoder_take_superseded(decoder);
         const qint64 prepare_begin_us = static_cast<qint64>(chiaki_time_now_monotonic_us());
+        noteFrameCollected(prepare_begin_us, frames_lost, frames_skipped, frame.recovered);
         if (!prepareFrameForPresentation(frame, use_opengl_renderer))
         {
             av_frame_free(&frame.frame);
             return;
         }
         const qint64 prepare_end_us = static_cast<qint64>(chiaki_time_now_monotonic_us());
+        noteFrameTransfer(prepare_end_us - prepare_begin_us);
+        reportStreamHealthIfDue(prepare_end_us, framegen);
         if (prepare_end_us >= prepare_begin_us && prepare_end_us - prepare_begin_us >= 5000) {
             CHIAKI_NOISY_DEBUG().nospace()
                 << "[decode] prepare_frame_us=" << (prepare_end_us - prepare_begin_us)
@@ -1247,7 +1409,7 @@ void QmlBackend::createSession(const StreamSessionConnectInfo &connect_info)
 
         const qint64 delivery_us = static_cast<qint64>(chiaki_time_now_monotonic_us());
         if (framegen && framegen->enabled()) {
-            framegen->submit(frame, frames_lost, delivery_us);
+            framegen->submit(frame, frames_lost, delivery_us, frames_skipped);
             return;
         }
         QmlMainWindow *target_window = window;
