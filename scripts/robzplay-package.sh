@@ -27,6 +27,8 @@ echo "== Staging $NAME"
 rm -rf "$STAGE" "dist/release/$NAME.zip"
 mkdir -p "$STAGE"
 cp -r dist/RobzPlay/. "$STAGE/"
+# a tester's switch that makes the application write frame timing traces: never in a package
+rm -f "$STAGE/framegen-trace.on"
 cp build/gui/RobzPlay.exe "$STAGE/RobzPlay.exe"
 # What the deploy step does not pick up. The Vulkan loader comes with every graphics driver,
 # but without one Robz Play would not even start; with it, it starts and falls back to OpenGL.
