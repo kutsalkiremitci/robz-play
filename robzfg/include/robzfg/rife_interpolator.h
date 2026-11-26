@@ -23,6 +23,12 @@ struct GpuDevice
 struct InterpolateTiming
 {
 	double total_ms = 0.0; // wall time of the whole call, including upload and download
+	// the three parts of it: describing the work to the GPU, waiting for the GPU to finish
+	// it (upload, motion estimate, picture and download are one submission), and copying
+	// the finished picture out
+	double prepare_ms = 0.0;
+	double gpu_ms = 0.0;
+	double copy_ms = 0.0;
 };
 
 // Synthesizes in-between frames from two consecutive source frames.
@@ -68,6 +74,12 @@ public:
 	bool init(const Config &config, std::string *error = nullptr);
 	bool initialized() const;
 	std::string gpuName() const;
+
+	// Changes Config::flow_divisor (1, 2 or 4) while running, e.g. to a cheaper motion
+	// estimate when the GPU does not keep up. Drops the history: the next two frames
+	// pushed are the first pair again.
+	bool setFlowDivisor(int flow_divisor);
+	int flowDivisor() const;
 
 	// Makes `frame` the current frame. Width must be a multiple of 4 and height a multiple of 2.
 	// A change of size or colour description drops the history.

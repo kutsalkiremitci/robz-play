@@ -6,6 +6,10 @@
 // 4:2:0, the H.264 / HEVC default). The NV12 planes arrive as raw bytes packed into
 // 32-bit words, so no 8-bit storage extension is needed. Pixels outside the picture
 // are zero padding.
+//
+// 10-bit pictures (P010) arrive as 16-bit words with the value in the upper bits. Divided
+// by 256 such a word is the sample on the 8-bit scale, with a fraction, so everything
+// after the load is the same for both.
 
 #version 450
 
@@ -28,7 +32,9 @@ layout (push_constant) uniform parameter
     int outcstep;
     int k;        // picture pixels per network pixel
     int full_range;
-    int matrix;   // 0 = BT.709, 1 = BT.601
+    int matrix;   // 0 = BT.709, 1 = BT.601, 2 = BT.2020
+    int wide;     // 0: samples are bytes, 1: 16-bit words (P010)
+    int pq;       // the signal is HDR (PQ)
 } p;
 
 float load_y(int x, int y)
@@ -36,14 +42,21 @@ float load_y(int x, int y)
     x = min(x, p.w - 1);
     y = min(y, p.h - 1);
     int i = y * p.w + x;
+    if (p.wide != 0)
+        return float((y_data[i >> 1] >> uint((i & 1) * 16)) & 0xFFFFu) * (1.f / 256.f);
     uint word = y_data[i >> 2];
     return float((word >> uint((i & 3) * 8)) & 0xFFu);
 }
 
 vec2 load_uv(int cx, int cy)
 {
-    // one chroma row holds w bytes: (w / 2) interleaved Cb, Cr pairs
+    // one chroma row holds w samples: (w / 2) interleaved Cb, Cr pairs
     int i = cy * p.w + cx * 2;
+    if (p.wide != 0)
+    {
+        uint pair = uv_data[i >> 1];
+        return vec2(float(pair & 0xFFFFu), float(pair >> 16u)) * (1.f / 256.f);
+    }
     uint word = uv_data[i >> 2];
     uint shift = uint((i & 3) * 8);
     return vec2(float((word >> shift) & 0xFFu), float((word >> (shift + 8u)) & 0xFFu));
@@ -109,9 +122,20 @@ void main()
     vec3 rgb;
     if (p.matrix == 0)
         rgb = vec3(yn + 1.5748f * cr, yn - 0.187324f * cb - 0.468124f * cr, yn + 1.8556f * cb);
+    else if (p.matrix == 2)
+        rgb = vec3(yn + 1.4746f * cr, yn - 0.164553f * cb - 0.571353f * cr, yn + 1.8814f * cb);
     else
         rgb = vec3(yn + 1.402f * cr, yn - 0.344136f * cb - 0.714136f * cr, yn + 1.772f * cb);
     rgb = clamp(rgb, 0.f, 1.f);
+
+    if (p.pq != 0)
+    {
+        // PQ puts everything an SDR picture consists of into the lower half of the range
+        // (200 nits is 0.58), and the network was trained on SDR pictures. For estimating
+        // motion - nothing else uses this tensor - the lower half is spread over three
+        // quarters of the range and the highlights share the rest.
+        rgb = mix(rgb * 1.5f, 0.75f + (rgb - 0.5f) * 0.5f, step(vec3(0.5f), rgb));
+    }
 
     top_blob_data[gi] = sfp(rgb.r);
     top_blob_data[p.outcstep + gi] = sfp(rgb.g);

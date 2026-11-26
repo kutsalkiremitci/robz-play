@@ -21,6 +21,7 @@
 #include <cstring>
 #include <map>
 #include <string>
+#include <thread>
 #include <vector>
 
 extern "C" {
@@ -696,11 +697,353 @@ int runConvert(const Clip &clip, const std::map<std::string, std::string> &args)
 	return 0;
 }
 
+// A 1080p NV12 picture with something moving in it: a bright block travelling over a
+// gradient, 48 pixels further in every frame.
+std::vector<uint8_t> syntheticFrame(int w, int h, int index)
+{
+	std::vector<uint8_t> frame((size_t)w * h * 3 / 2);
+	const int block = 240;
+	const int bx = (index * 48) % (w - block);
+	const int by = h / 3;
+	for(int y = 0; y < h; y++)
+	{
+		uint8_t *row = frame.data() + (size_t)y * w;
+		for(int x = 0; x < w; x++)
+			row[x] = (uint8_t)(40 + (x * 60) / w + (y * 60) / h);
+		if(y >= by && y < by + block)
+			memset(row + bx, 215, (size_t)block);
+	}
+	memset(frame.data() + (size_t)w * h, 128, (size_t)w * h / 2);
+	return frame;
+}
+
+// Checks RifeInterpolator::setFlowDivisor: a pair interpolated after the level was changed
+// while running has to give the picture a freshly started interpolator gives at that level.
+// Needs no video.
+int runSwitch(std::map<std::string, std::string> args)
+{
+	const int w = 1920;
+	const int h = 1080;
+	std::vector<std::vector<uint8_t>> frames;
+	for(int i = 0; i < 4; i++)
+		frames.push_back(syntheticFrame(w, h, i));
+	auto view = [&](int i) {
+		Nv12View v;
+		v.width = w;
+		v.height = h;
+		v.y = frames[(size_t)i].data();
+		v.y_stride = w;
+		v.uv = frames[(size_t)i].data() + (size_t)w * h;
+		v.uv_stride = w;
+		return v;
+	};
+	auto interpolatePair = [&](RifeInterpolator &rife, int a, int b, std::vector<uint8_t> &picture, double *ms) {
+		std::string error;
+		const ColorInfo color;
+		if(!rife.push(view(a), color, &error))
+		{
+			fprintf(stderr, "push failed: %s\n", error.c_str());
+			return false;
+		}
+		if(rife.ready())
+		{
+			fprintf(stderr, "ready with a single frame: the history was not dropped\n");
+			return false;
+		}
+		if(!rife.push(view(b), color, &error) || !rife.ready())
+		{
+			fprintf(stderr, "second push failed: %s\n", error.c_str());
+			return false;
+		}
+		picture.assign((size_t)w * h * 3 / 2, 0);
+		Nv12Mut out;
+		out.width = w;
+		out.height = h;
+		out.y = picture.data();
+		out.y_stride = w;
+		out.uv = picture.data() + (size_t)w * h;
+		out.uv_stride = w;
+		InterpolateTiming timing;
+		if(!rife.interpolate(0.5f, out, &timing, &error))
+		{
+			fprintf(stderr, "interpolate failed: %s\n", error.c_str());
+			return false;
+		}
+		if(ms)
+			*ms = timing.total_ms;
+		return true;
+	};
+
+	args["flowdiv"] = "1";
+	RifeInterpolator live;
+	if(!initInterpolator(live, args))
+		return 1;
+	std::vector<uint8_t> picture;
+	if(!interpolatePair(live, 0, 1, picture, nullptr))
+		return 1;
+
+	bool all_ok = true;
+	for(int target : {2, 4, 1})
+	{
+		if(!live.setFlowDivisor(target) || live.flowDivisor() != target)
+		{
+			fprintf(stderr, "setFlowDivisor(%d) refused\n", target);
+			return 1;
+		}
+		std::vector<uint8_t> switched;
+		double switched_ms = 0.0;
+		if(!interpolatePair(live, 2, 3, switched, &switched_ms))
+			return 1;
+
+		args["flowdiv"] = std::to_string(target);
+		RifeInterpolator fresh;
+		std::vector<uint8_t> reference;
+		if(!initInterpolator(fresh, args) || !interpolatePair(fresh, 2, 3, reference, nullptr))
+			return 1;
+
+		int max_diff = 0;
+		size_t differing = 0;
+		for(size_t i = 0; i < switched.size(); i++)
+		{
+			const int diff = std::abs((int)switched[i] - (int)reference[i]);
+			max_diff = std::max(max_diff, diff);
+			if(diff > 1)
+				differing++;
+		}
+		// the block has moved 48 pixels between the two frames: the generated picture must
+		// show it in between, i.e. differ from both source frames
+		size_t moved = 0;
+		for(size_t i = 0; i < (size_t)w * h; i++)
+			if(std::abs((int)switched[i] - (int)frames[2][i]) > 30)
+				moved++;
+		const bool ok = differing == 0 && moved > 1000;
+		all_ok = all_ok && ok;
+		printf("switch to flowdiv %d: %.1f ms, largest difference to a fresh start %d, %zu values differ, %zu pixels moved: %s\n",
+			target, switched_ms, max_diff, differing, moved, ok ? "OK" : "FAILED");
+	}
+	return all_ok ? 0 : 1;
+}
+
+// Checks the 10-bit path (P010, what an HDR stream delivers) against the 8-bit one: the same
+// two pictures, once as bytes and once as 16-bit words, have to give the same picture in
+// between. Then the HDR settings (BT.2020, PQ) are run once to see that they work at all.
+// Needs no video.
+//   robzfg-lab depth --model <dir> [--gpu I] [--flowdiv 1|2|4]
+int runDepth(std::map<std::string, std::string> args)
+{
+	const int w = 1920;
+	const int h = 1080;
+	const size_t samples = (size_t)w * h * 3 / 2;
+	std::vector<std::vector<uint8_t>> narrow;
+	std::vector<std::vector<uint8_t>> wide;
+	for(int i = 0; i < 2; i++)
+	{
+		narrow.push_back(syntheticFrame(w, h, i));
+		std::vector<uint8_t> words(samples * 2);
+		for(size_t n = 0; n < samples; n++)
+		{
+			words[2 * n] = 0;
+			words[2 * n + 1] = narrow.back()[n]; // the byte as the upper half of a little-endian word
+		}
+		wide.push_back(words);
+	}
+	auto generate = [&](RifeInterpolator &rife, const std::vector<std::vector<uint8_t>> &frames, int bytes, const ColorInfo &color,
+		std::vector<uint8_t> &picture) {
+		std::string error;
+		for(int i = 0; i < 2; i++)
+		{
+			Nv12View v;
+			v.width = w;
+			v.height = h;
+			v.sample_bytes = bytes;
+			v.y = frames[(size_t)i].data();
+			v.y_stride = w * bytes;
+			v.uv = frames[(size_t)i].data() + (size_t)w * h * bytes;
+			v.uv_stride = w * bytes;
+			if(!rife.push(v, color, &error))
+			{
+				fprintf(stderr, "push failed: %s\n", error.c_str());
+				return false;
+			}
+		}
+		picture.assign(samples * (size_t)bytes, 0);
+		Nv12Mut out;
+		out.width = w;
+		out.height = h;
+		out.sample_bytes = bytes;
+		out.y = picture.data();
+		out.y_stride = w * bytes;
+		out.uv = picture.data() + (size_t)w * h * bytes;
+		out.uv_stride = w * bytes;
+		if(!rife.interpolate(0.5f, out, nullptr, &error))
+		{
+			fprintf(stderr, "interpolate failed: %s\n", error.c_str());
+			return false;
+		}
+		return true;
+	};
+
+	RifeInterpolator rife;
+	if(!initInterpolator(rife, args))
+		return 1;
+	const ColorInfo sdr;
+	std::vector<uint8_t> picture8;
+	std::vector<uint8_t> picture16;
+	if(!generate(rife, narrow, 1, sdr, picture8) || !generate(rife, wide, 2, sdr, picture16))
+		return 1;
+
+	// a 10-bit sample has two more bits than the byte it is compared with: rounded to 8 bits
+	// it may come out one level away, never more
+	size_t off_by_one = 0;
+	size_t wrong = 0;
+	size_t low_bits = 0;
+	int largest = 0;
+	for(size_t n = 0; n < samples; n++)
+	{
+		const int word = picture16[2 * n] | (picture16[2 * n + 1] << 8);
+		if(word & 0x3f)
+			low_bits++;
+		const int diff = std::abs((word + 128) / 256 - (int)picture8[n]);
+		largest = std::max(largest, diff);
+		if(diff == 1)
+			off_by_one++;
+		else if(diff > 1)
+			wrong++;
+	}
+	size_t moved = 0;
+	for(size_t n = 0; n < (size_t)w * h; n++)
+		if(std::abs((int)picture8[n] - (int)narrow[0][n]) > 30)
+			moved++;
+	const bool same = wrong == 0 && low_bits == 0 && off_by_one < samples / 20 && moved > 1000;
+	printf("10 bit against 8 bit: largest difference %d level(s), %zu of %zu samples one level apart, %zu further, %zu with bits where P010 has none: %s\n",
+		largest, off_by_one, samples, wrong, low_bits, same ? "OK" : "FAILED");
+
+	ColorInfo hdr;
+	hdr.matrix = ColorMatrix::BT2020;
+	hdr.pq = true;
+	std::vector<uint8_t> picture_hdr;
+	if(!generate(rife, wide, 2, hdr, picture_hdr))
+		return 1;
+	size_t moved_hdr = 0;
+	for(size_t n = 0; n < (size_t)w * h; n++)
+		if(std::abs((int)picture_hdr[2 * n + 1] - (int)narrow[0][n]) > 30)
+			moved_hdr++;
+	const bool hdr_ok = moved_hdr > 1000;
+	printf("HDR settings (BT.2020, PQ): %zu pixels moved: %s\n", moved_hdr, hdr_ok ? "OK" : "FAILED");
+	return same && hdr_ok ? 0 : 1;
+}
+
+// Measures what a pause does to the time one generated frame takes: frames at a steady
+// 30 a second first, then the same after the GPU had nothing to do for a while. Needs no video.
+//   robzfg-lab idle --model <dir> [--gpu I] [--flowdiv 1|2|4]
+int runIdle(std::map<std::string, std::string> args)
+{
+	const int w = 1920;
+	const int h = 1080;
+	std::vector<std::vector<uint8_t>> frames;
+	for(int i = 0; i < 8; i++)
+		frames.push_back(syntheticFrame(w, h, i));
+	RifeInterpolator rife;
+	if(!initInterpolator(rife, args))
+		return 1;
+	std::vector<uint8_t> picture((size_t)w * h * 3 / 2);
+	int next = 0;
+	auto generate = [&]() {
+		Nv12View v;
+		v.width = w;
+		v.height = h;
+		v.y = frames[(size_t)(next % 8)].data();
+		v.y_stride = w;
+		v.uv = frames[(size_t)(next % 8)].data() + (size_t)w * h;
+		v.uv_stride = w;
+		next++;
+		std::string error;
+		const ColorInfo color;
+		rife.push(v, color, &error);
+		if(!rife.ready())
+			return 0.0;
+		Nv12Mut out;
+		out.width = w;
+		out.height = h;
+		out.y = picture.data();
+		out.y_stride = w;
+		out.uv = picture.data() + (size_t)w * h;
+		out.uv_stride = w;
+		InterpolateTiming timing;
+		if(!rife.interpolate(0.5f, out, &timing, &error, 0.5f))
+			return -1.0;
+		return timing.total_ms;
+	};
+	auto steady = [&](int count, double interval_ms) {
+		Stats stats;
+		for(int i = 0; i < count; i++)
+		{
+			const auto begin = std::chrono::steady_clock::now();
+			const double ms = generate();
+			if(ms > 0.0)
+				stats.add(ms);
+			const auto until = begin + std::chrono::microseconds((int64_t)(interval_ms * 1000.0));
+			while(std::chrono::steady_clock::now() < until)
+			{
+			}
+		}
+		return stats;
+	};
+	for(int i = 0; i < 12; i++)
+		generate(); // pipelines and buffers
+	Stats base = steady(90, 33.3);
+	printf("steady, one every 33 ms: median %.2f ms, p95 %.2f ms\n", base.percentile(0.5), base.percentile(0.95));
+	// does a steady run stay fast, and how does the GPU come back after a long pause?
+	{
+		Stats long_run[3];
+		for(int third = 0; third < 3; third++)
+			long_run[third] = steady(100, 33.3);
+		printf("ten more seconds of the same, in thirds: median %.2f / %.2f / %.2f ms\n", long_run[0].percentile(0.5),
+			long_run[1].percentile(0.5), long_run[2].percentile(0.5));
+		for(int sleeping = 0; sleeping < 2; sleeping++)
+		{
+			std::this_thread::sleep_for(std::chrono::seconds(4));
+			printf("after 4 s without work, one every 33 ms, %s in between:", sleeping ? "sleeping" : "spinning");
+			for(int i = 0; i < 24; i++)
+			{
+				const auto begin = std::chrono::steady_clock::now();
+				printf(" %.1f", generate());
+				const auto until = begin + std::chrono::microseconds(33300);
+				if(sleeping)
+					std::this_thread::sleep_until(until);
+				else
+					while(std::chrono::steady_clock::now() < until)
+					{
+					}
+			}
+			printf(" ms\n");
+		}
+	}
+	for(double pause_ms : {100.0, 250.0, 500.0, 1000.0, 2000.0, 4000.0})
+	{
+		double first[3] = {0.0, 0.0, 0.0};
+		double second[3] = {0.0, 0.0, 0.0};
+		for(int round = 0; round < 3; round++)
+		{
+			steady(30, 33.3);
+			std::this_thread::sleep_for(std::chrono::microseconds((int64_t)(pause_ms * 1000.0)));
+			first[round] = generate();
+			second[round] = generate();
+		}
+		printf("after %4.0f ms without work: first frame %.1f / %.1f / %.1f ms, the one after it %.1f / %.1f / %.1f ms\n", pause_ms,
+			first[0], first[1], first[2], second[0], second[1], second[2]);
+	}
+	return 0;
+}
+
 void usage()
 {
 	fprintf(stderr,
 		"usage:\n"
 		"  robzfg-lab gpus\n"
+		"  robzfg-lab switch  --model <dir> [--gpu I]\n"
+		"  robzfg-lab idle    --model <dir> [--gpu I] [--flowdiv 1|2|4]\n"
+		"  robzfg-lab depth   --model <dir> [--gpu I] [--flowdiv 1|2|4]\n"
 		"  robzfg-lab bench   --input <video> --model <dir> [--frames N] [--gpu I] [--flowdiv 1|2|4]\n"
 		"  robzfg-lab quality --input <60 fps video> --model <dir> [--frames N] [--out file.mp4]\n"
 		"  robzfg-lab dedup   --input <video> [--frames N] [--verbose 1]\n"
@@ -731,6 +1074,12 @@ int main(int argc, char **argv)
 
 	if(command == "gpus")
 		return runGpus();
+	if(command == "switch")
+		return runSwitch(args);
+	if(command == "idle")
+		return runIdle(args);
+	if(command == "depth")
+		return runDepth(args);
 
 	if(!args.count("input"))
 	{

@@ -35,15 +35,18 @@ void DuplicateDetector::accept(const Nv12View &frame)
 	reference.resize((size_t)samples_w * samples_h);
 	for(int sy = 0; sy < samples_h; sy++)
 	{
-		const uint8_t *src = frame.y + (size_t)(sy * step) * frame.y_stride;
+		// Of a 16-bit sample the upper byte is looked at: the value on the 8-bit scale, which
+		// is what the thresholds are in.
+		const int bytes = frame.sample_bytes;
+		const uint8_t *src = frame.y + (size_t)(sy * step) * frame.y_stride + (bytes - 1);
 		uint8_t *dst = reference.data() + (size_t)sy * samples_w;
-		if(step == 1)
+		if(step == 1 && bytes == 1)
 		{
 			memcpy(dst, src, (size_t)samples_w);
 			continue;
 		}
 		for(int sx = 0; sx < samples_w; sx++)
-			dst[sx] = src[sx * step];
+			dst[sx] = src[(size_t)sx * step * bytes];
 	}
 }
 
@@ -60,13 +63,14 @@ FrameDifference DuplicateDetector::measure(const Nv12View &frame) const
 	uint64_t changed = 0;
 	for(int sy = 0; sy < samples_h; sy++)
 	{
-		const uint8_t *src = frame.y + (size_t)(sy * step) * frame.y_stride;
+		const int bytes = frame.sample_bytes;
+		const uint8_t *src = frame.y + (size_t)(sy * step) * frame.y_stride + (bytes - 1);
 		const uint8_t *ref = reference.data() + (size_t)sy * samples_w;
 		uint32_t row_sad = 0;
 		uint32_t row_changed = 0;
 		for(int sx = 0; sx < samples_w; sx++)
 		{
-			const int delta = std::abs((int)src[sx * step] - (int)ref[sx]);
+			const int delta = std::abs((int)src[(size_t)sx * step * bytes] - (int)ref[sx]);
 			row_sad += (uint32_t)delta;
 			row_changed += delta > threshold ? 1u : 0u;
 		}

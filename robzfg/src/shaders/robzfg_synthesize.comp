@@ -21,6 +21,11 @@
 // Each invocation writes one 32-bit word of luma (four pixels) and, on even rows,
 // one word of chroma (two Cb, Cr pairs): whole words, so invocations never race on
 // a word and no 8-bit storage extension is needed.
+//
+// 10-bit pictures (P010: 16-bit words, the value in the upper bits) take the same path.
+// A sample is read as its 16-bit word divided by 256, which is its value on the 8-bit
+// scale with a fraction, so every threshold below means the same for both; four pixels
+// are then two words of luma, and two Cb, Cr pairs two words of chroma.
 
 #version 450
 
@@ -49,6 +54,7 @@ layout (push_constant) uniform parameter
     int protect_static; // 0 switches the static-element check off
     float field_t;      // the point in time the motion field was estimated for
     int bicubic;        // 0 fetches luma bilinearly (softer), otherwise with the bicubic kernel
+    int wide;           // 0: samples are bytes, 1: 16-bit words (P010)
 } p;
 
 // How much better (in 8-bit luma levels per pixel) the "nothing moved" hypothesis has to
@@ -118,18 +124,27 @@ void sample_field(vec2 pos, out vec2 f0, out vec2 f1, out float m)
 float y0_at(int x, int y)
 {
     int i = clamp(y, 0, p.h - 1) * p.w + clamp(x, 0, p.w - 1);
+    if (p.wide != 0)
+        return float((y0_data[i >> 1] >> uint((i & 1) * 16)) & 0xFFFFu) * (1.f / 256.f);
     return float((y0_data[i >> 2] >> uint((i & 3) * 8)) & 0xFFu);
 }
 
 float y1_at(int x, int y)
 {
     int i = clamp(y, 0, p.h - 1) * p.w + clamp(x, 0, p.w - 1);
+    if (p.wide != 0)
+        return float((y1_data[i >> 1] >> uint((i & 1) * 16)) & 0xFFFFu) * (1.f / 256.f);
     return float((y1_data[i >> 2] >> uint((i & 3) * 8)) & 0xFFu);
 }
 
 vec2 uv0_at(int cx, int cy)
 {
     int i = clamp(cy, 0, p.h / 2 - 1) * p.w + clamp(cx, 0, p.w / 2 - 1) * 2;
+    if (p.wide != 0)
+    {
+        uint pair = uv0_data[i >> 1];
+        return vec2(float(pair & 0xFFFFu), float(pair >> 16u)) * (1.f / 256.f);
+    }
     uint word = uv0_data[i >> 2];
     uint shift = uint((i & 3) * 8);
     return vec2(float((word >> shift) & 0xFFu), float((word >> (shift + 8u)) & 0xFFu));
@@ -138,6 +153,11 @@ vec2 uv0_at(int cx, int cy)
 vec2 uv1_at(int cx, int cy)
 {
     int i = clamp(cy, 0, p.h / 2 - 1) * p.w + clamp(cx, 0, p.w / 2 - 1) * 2;
+    if (p.wide != 0)
+    {
+        uint pair = uv1_data[i >> 1];
+        return vec2(float(pair & 0xFFFFu), float(pair >> 16u)) * (1.f / 256.f);
+    }
     uint word = uv1_data[i >> 2];
     uint shift = uint((i & 3) * 8);
     return vec2(float((word >> shift) & 0xFFu), float((word >> (shift + 8u)) & 0xFFu));
@@ -170,7 +190,7 @@ float luma0(vec2 pos)
     }
     vec4 wx = cubic_weights(a.x);
     vec4 wy = cubic_weights(a.y);
-    float lo = 255.f;
+    float lo = 256.f;
     float hi = 0.f;
     float sum = 0.f;
     for (int dy = -1; dy <= 2; dy++)
@@ -202,7 +222,7 @@ float luma1(vec2 pos)
     }
     vec4 wx = cubic_weights(a.x);
     vec4 wy = cubic_weights(a.y);
-    float lo = 255.f;
+    float lo = 256.f;
     float hi = 0.f;
     float sum = 0.f;
     for (int dy = -1; dy <= 2; dy++)
@@ -245,6 +265,12 @@ vec2 chroma1(vec2 pos)
 uint to_byte(float v)
 {
     return uint(clamp(floor(v + 0.5f), 0.f, 255.f));
+}
+
+// A value on the 8-bit scale as a P010 word: rounded to 10 bits, in the upper bits.
+uint to_p010(float v)
+{
+    return uint(clamp(floor(v * 4.f + 0.5f), 0.f, 1023.f)) << 6u;
 }
 
 // 0 = follow the motion field, 1 = this spot is static.
@@ -316,7 +342,7 @@ void main()
 
     int x0 = gx * 4;
 
-    uint yword = 0u;
+    float luma[4];
     for (int i = 0; i < 4; i++)
     {
         vec2 pos = vec2(float(x0 + i), float(gy));
@@ -326,14 +352,22 @@ void main()
         sample_field(pos, f0, f1, m);
         float v = luma0(pos + f0) * m + luma1(pos + f1) * (1.f - m);
         float still = mix(y0_at(x0 + i, gy), y1_at(x0 + i, gy), p.t);
-        v = mix(v, still, static_weight(pos, f0, f1));
-        yword |= to_byte(v) << uint(i * 8);
+        luma[i] = mix(v, still, static_weight(pos, f0, f1));
     }
-    oy_data[gy * words_per_row + gx] = yword;
+    if (p.wide != 0)
+    {
+        int first = (gy * p.w + x0) / 2;
+        oy_data[first] = to_p010(luma[0]) | (to_p010(luma[1]) << 16u);
+        oy_data[first + 1] = to_p010(luma[2]) | (to_p010(luma[3]) << 16u);
+    }
+    else
+    {
+        oy_data[gy * words_per_row + gx] = to_byte(luma[0]) | (to_byte(luma[1]) << 8u) | (to_byte(luma[2]) << 16u) | (to_byte(luma[3]) << 24u);
+    }
 
     if ((gy & 1) == 0)
     {
-        uint uvword = 0u;
+        vec2 chroma[2];
         for (int j = 0; j < 2; j++)
         {
             vec2 pos = vec2(float(x0 + j * 2), float(gy) + 0.5f);
@@ -345,10 +379,19 @@ void main()
             int cx = gx * 2 + j;
             int cy = gy / 2;
             vec2 still = mix(uv0_at(cx, cy), uv1_at(cx, cy), p.t);
-            uv = mix(uv, still, static_weight(pos, f0, f1));
-            uvword |= to_byte(uv.x) << uint(j * 16);
-            uvword |= to_byte(uv.y) << uint(j * 16 + 8);
+            chroma[j] = mix(uv, still, static_weight(pos, f0, f1));
         }
-        ouv_data[(gy / 2) * words_per_row + gx] = uvword;
+        if (p.wide != 0)
+        {
+            // one word per Cb, Cr pair; a chroma row holds w / 2 of them
+            int first = (gy / 2) * (p.w / 2) + gx * 2;
+            ouv_data[first] = to_p010(chroma[0].x) | (to_p010(chroma[0].y) << 16u);
+            ouv_data[first + 1] = to_p010(chroma[1].x) | (to_p010(chroma[1].y) << 16u);
+        }
+        else
+        {
+            ouv_data[(gy / 2) * words_per_row + gx] = to_byte(chroma[0].x) | (to_byte(chroma[0].y) << 8u)
+                | (to_byte(chroma[1].x) << 16u) | (to_byte(chroma[1].y) << 24u);
+        }
     }
 }

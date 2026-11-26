@@ -309,6 +309,7 @@ struct RifeInterpolator::Impl
 	// current stream format
 	int w = 0;
 	int h = 0;
+	int sample_bytes = 1; // 1: 8-bit (NV12), 2: 10-bit in 16-bit words (P010)
 	int nw = 0; // network size without padding
 	int nh = 0;
 	int wp = 0; // network size with padding
@@ -366,8 +367,8 @@ struct RifeInterpolator::Impl
 	// Records "upload the pending NV12 frame and prepare its network tensor" into `cur`.
 	bool recordPendingUpload(ncnn::VkCompute &cmd)
 	{
-		ncnn::Mat y_cpu(w * h / 4, (void *)pending_y.data(), (size_t)4u);
-		ncnn::Mat uv_cpu(w * h / 8, (void *)pending_uv.data(), (size_t)4u);
+		ncnn::Mat y_cpu(w * h * sample_bytes / 4, (void *)pending_y.data(), (size_t)4u);
+		ncnn::Mat uv_cpu(w * h * sample_bytes / 8, (void *)pending_uv.data(), (size_t)4u);
 		cur.release();
 		cmd.record_clone(y_cpu, cur.y, opt);
 		cmd.record_clone(uv_cpu, cur.uv, opt);
@@ -383,7 +384,7 @@ struct RifeInterpolator::Impl
 		bindings[1] = cur.uv;
 		bindings[2] = cur.net;
 
-		std::vector<ncnn::vk_constant_type> constants(10);
+		std::vector<ncnn::vk_constant_type> constants(12);
 		constants[0].i = w;
 		constants[1].i = h;
 		constants[2].i = nw;
@@ -393,7 +394,9 @@ struct RifeInterpolator::Impl
 		constants[6].i = (int)cur.net.cstep;
 		constants[7].i = divisor;
 		constants[8].i = color.full_range ? 1 : 0;
-		constants[9].i = color.matrix == ColorMatrix::BT709 ? 0 : 1;
+		constants[9].i = color.matrix == ColorMatrix::BT709 ? 0 : (color.matrix == ColorMatrix::BT2020 ? 2 : 1);
+		constants[10].i = sample_bytes == 2 ? 1 : 0;
+		constants[11].i = color.pq ? 1 : 0;
 
 		cmd.record_pipeline(nv12_to_net, bindings, constants, dispatchShape(wp, hp));
 
@@ -557,6 +560,30 @@ void RifeInterpolator::reset()
 	d->releaseFrames();
 }
 
+bool RifeInterpolator::setFlowDivisor(int flow_divisor)
+{
+	if(!d->inited || (flow_divisor != 1 && flow_divisor != 2 && flow_divisor != 4))
+		return false;
+	if(flow_divisor == d->divisor)
+		return true;
+	// the network tensors of the frames held were made for the old size
+	d->releaseFrames();
+	d->divisor = flow_divisor;
+	if(d->w > 0 && d->h > 0)
+	{
+		d->nw = (d->w + d->divisor - 1) / d->divisor;
+		d->nh = (d->h + d->divisor - 1) / d->divisor;
+		d->wp = (d->nw + d->padding - 1) / d->padding * d->padding;
+		d->hp = (d->nh + d->padding - 1) / d->padding * d->padding;
+	}
+	return true;
+}
+
+int RifeInterpolator::flowDivisor() const
+{
+	return d->divisor;
+}
+
 bool RifeInterpolator::ready() const
 {
 	return d->inited && d->prev.valid && (d->cur.valid || d->pending);
@@ -575,20 +602,22 @@ bool RifeInterpolator::push(const Nv12View &frame, const ColorInfo &color, std::
 		return false;
 	}
 
-	if(frame.width != d->w || frame.height != d->h || color != d->color)
+	if(frame.width != d->w || frame.height != d->h || color != d->color || frame.sample_bytes != d->sample_bytes)
 	{
 		d->releaseFrames();
 		d->w = frame.width;
 		d->h = frame.height;
+		d->sample_bytes = frame.sample_bytes;
 		d->nw = (d->w + d->divisor - 1) / d->divisor;
 		d->nh = (d->h + d->divisor - 1) / d->divisor;
 		d->wp = (d->nw + d->padding - 1) / d->padding * d->padding;
 		d->hp = (d->nh + d->padding - 1) / d->padding * d->padding;
 		d->color = color;
-		d->pending_y.assign((size_t)d->w * d->h / 4, 0);
-		d->pending_uv.assign((size_t)d->w * d->h / 8, 0);
-		d->out_y.assign((size_t)d->w * d->h / 4, 0);
-		d->out_uv.assign((size_t)d->w * d->h / 8, 0);
+		// the planes as 32-bit words: four samples to a word, or two of the wide ones
+		d->pending_y.assign((size_t)d->w * d->h * d->sample_bytes / 4, 0);
+		d->pending_uv.assign((size_t)d->w * d->h * d->sample_bytes / 8, 0);
+		d->out_y.assign((size_t)d->w * d->h * d->sample_bytes / 4, 0);
+		d->out_uv.assign((size_t)d->w * d->h * d->sample_bytes / 8, 0);
 	}
 
 	// A frame that was pushed but never used still has to reach the GPU: it is the next "previous".
@@ -608,12 +637,13 @@ bool RifeInterpolator::push(const Nv12View &frame, const ColorInfo &color, std::
 	d->cur = GpuFrame();
 	d->dropFields(); // a new pair needs a new motion estimate
 
+	const size_t row_bytes = (size_t)d->w * d->sample_bytes;
 	uint8_t *dst_y = (uint8_t *)d->pending_y.data();
 	for(int row = 0; row < d->h; row++)
-		memcpy(dst_y + (size_t)row * d->w, frame.y + (size_t)row * frame.y_stride, (size_t)d->w);
+		memcpy(dst_y + (size_t)row * row_bytes, frame.y + (size_t)row * frame.y_stride, row_bytes);
 	uint8_t *dst_uv = (uint8_t *)d->pending_uv.data();
 	for(int row = 0; row < d->h / 2; row++)
-		memcpy(dst_uv + (size_t)row * d->w, frame.uv + (size_t)row * frame.uv_stride, (size_t)d->w);
+		memcpy(dst_uv + (size_t)row * row_bytes, frame.uv + (size_t)row * frame.uv_stride, row_bytes);
 	d->pending = true;
 	return true;
 }
@@ -627,7 +657,7 @@ bool RifeInterpolator::interpolate(float t, const Nv12Mut &out, InterpolateTimin
 		setError(error, "two frames are needed before interpolating");
 		return false;
 	}
-	if(!out.valid() || out.width != d->w || out.height != d->h)
+	if(!out.valid() || out.width != d->w || out.height != d->h || out.sample_bytes != d->sample_bytes)
 	{
 		setError(error, "output frame does not match the stream size");
 		return false;
@@ -700,8 +730,8 @@ bool RifeInterpolator::interpolate(float t, const Nv12Mut &out, InterpolateTimin
 
 	ncnn::VkMat y_gpu;
 	ncnn::VkMat uv_gpu;
-	y_gpu.create(d->w * d->h / 4, (size_t)4u, 1, d->blob_allocator);
-	uv_gpu.create(d->w * d->h / 8, (size_t)4u, 1, d->blob_allocator);
+	y_gpu.create(d->w * d->h * d->sample_bytes / 4, (size_t)4u, 1, d->blob_allocator);
+	uv_gpu.create(d->w * d->h * d->sample_bytes / 8, (size_t)4u, 1, d->blob_allocator);
 	if(y_gpu.empty() || uv_gpu.empty())
 	{
 		setError(error, "GPU allocation failed");
@@ -717,7 +747,7 @@ bool RifeInterpolator::interpolate(float t, const Nv12Mut &out, InterpolateTimin
 		bindings[5] = y_gpu;
 		bindings[6] = uv_gpu;
 
-		std::vector<ncnn::vk_constant_type> constants(11);
+		std::vector<ncnn::vk_constant_type> constants(12);
 		constants[0].i = d->w;
 		constants[1].i = d->h;
 		constants[2].i = d->nw;
@@ -729,21 +759,24 @@ bool RifeInterpolator::interpolate(float t, const Nv12Mut &out, InterpolateTimin
 		constants[8].i = d->protect_static ? 1 : 0;
 		constants[9].f = d->fields_time;
 		constants[10].i = d->sharp_sampling ? 1 : 0;
+		constants[11].i = d->sample_bytes == 2 ? 1 : 0;
 
 		cmd.record_pipeline(d->synthesize, bindings, constants, dispatchShape(d->w / 4, d->h));
 	}
 
-	ncnn::Mat y_cpu(d->w * d->h / 4, (void *)d->out_y.data(), (size_t)4u);
-	ncnn::Mat uv_cpu(d->w * d->h / 8, (void *)d->out_uv.data(), (size_t)4u);
+	ncnn::Mat y_cpu(d->w * d->h * d->sample_bytes / 4, (void *)d->out_y.data(), (size_t)4u);
+	ncnn::Mat uv_cpu(d->w * d->h * d->sample_bytes / 8, (void *)d->out_uv.data(), (size_t)4u);
 	cmd.record_clone(y_gpu, y_cpu, d->opt);
 	cmd.record_clone(uv_gpu, uv_cpu, d->opt);
 
+	const auto submitted = std::chrono::steady_clock::now();
 	if(cmd.submit_and_wait() != 0)
 	{
 		d->releaseFrames();
 		setError(error, "GPU submission failed");
 		return false;
 	}
+	const auto finished = std::chrono::steady_clock::now();
 
 	// ncnn downloads into the Mat it was handed; if it had to reallocate, copy from there.
 	const uint8_t *src_y = (const uint8_t *)y_cpu.data;
@@ -753,13 +786,20 @@ bool RifeInterpolator::interpolate(float t, const Nv12Mut &out, InterpolateTimin
 		setError(error, "GPU download failed");
 		return false;
 	}
+	const size_t row_bytes = (size_t)d->w * d->sample_bytes;
 	for(int row = 0; row < d->h; row++)
-		memcpy(out.y + (size_t)row * out.y_stride, src_y + (size_t)row * d->w, (size_t)d->w);
+		memcpy(out.y + (size_t)row * out.y_stride, src_y + (size_t)row * row_bytes, row_bytes);
 	for(int row = 0; row < d->h / 2; row++)
-		memcpy(out.uv + (size_t)row * out.uv_stride, src_uv + (size_t)row * d->w, (size_t)d->w);
+		memcpy(out.uv + (size_t)row * out.uv_stride, src_uv + (size_t)row * row_bytes, row_bytes);
 
 	if(timing)
-		timing->total_ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - start).count();
+	{
+		const auto end = std::chrono::steady_clock::now();
+		timing->total_ms = std::chrono::duration<double, std::milli>(end - start).count();
+		timing->prepare_ms = std::chrono::duration<double, std::milli>(submitted - start).count();
+		timing->gpu_ms = std::chrono::duration<double, std::milli>(finished - submitted).count();
+		timing->copy_ms = std::chrono::duration<double, std::milli>(end - finished).count();
+	}
 	return true;
 }
 
