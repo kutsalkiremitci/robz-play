@@ -33,6 +33,7 @@ robzfg_embed_shader(robzfg_synthesize)
 add_library(robzfg STATIC
 	src/dedup.cpp
 	src/rife_interpolator.cpp
+	src/timeline.cpp
 	src/warp_layer.cpp)
 target_compile_features(robzfg PUBLIC cxx_std_17)
 target_include_directories(robzfg
@@ -45,4 +46,13 @@ if(ROBZFG_BUILD_LAB)
 	pkg_check_modules(ROBZFG_FFMPEG REQUIRED IMPORTED_TARGET libavformat libavcodec libavutil)
 	add_executable(robzfg-lab tools/lab_main.cpp)
 	target_link_libraries(robzfg-lab PRIVATE robzfg PkgConfig::ROBZFG_FFMPEG)
+endif()
+
+# Tests of the output timeline: plain arithmetic on arrival times, so they are built from the
+# sources they test and need neither ncnn nor a GPU.
+add_executable(robzfg-timeline-test tests/timeline_test.cpp src/timeline.cpp)
+target_compile_features(robzfg-timeline-test PRIVATE cxx_std_17)
+target_include_directories(robzfg-timeline-test PRIVATE include)
+if(BUILD_TESTING OR CHIAKI_ENABLE_TESTS)
+	add_test(NAME robzfg-timeline COMMAND robzfg-timeline-test)
 endif()
