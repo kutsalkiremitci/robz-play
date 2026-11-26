@@ -31,6 +31,7 @@
 #include <vector>
 
 #include <chiaki/ffmpegdecoder.h>
+#include <robzfg/frame.h>
 
 class FrameGenStage : public QObject
 {
@@ -45,6 +46,9 @@ class FrameGenStage : public QObject
 	Q_PROPERTY(double outputFps READ outputFps NOTIFY statsChanged)
 	// Time to synthesize one frame, in milliseconds (recent average).
 	Q_PROPERTY(double generateMs READ generateMs NOTIFY statsChanged)
+	// The graphics card does not keep up with the motion detail chosen in the settings:
+	// generated frames are left out. The stage keeps the level; lowering it is up to the user.
+	Q_PROPERTY(bool detailTooHeavy READ detailTooHeavy NOTIFY statsChanged)
 
 public:
 	struct Config
@@ -77,7 +81,11 @@ public:
 	void runSelfTest(const Config &config, std::function<void()> on_presented = {});
 
 	// Hands a decoded frame to the stage (takes ownership). Safe to call from any one thread.
-	void submit(ChiakiFfmpegFrame frame, int32_t frames_lost, qint64 delivery_us);
+	// `frames_lost`: frames of the stream missing in front of this one, as the decoder
+	// reports them. `frames_skipped`: frames that were decoded but never handed on (the
+	// decoder gives out only the newest one). Both keep the stage's count of the stream's
+	// frames right, which is what its timing rests on.
+	void submit(ChiakiFfmpegFrame frame, int32_t frames_lost, qint64 delivery_us, int32_t frames_skipped = 0);
 
 	// Comparison view, switched on and off while a stream runs: the left half of every picture
 	// shows only the real frames (as the stream looks without frame generation), the right
@@ -86,11 +94,43 @@ public:
 	void setCompareSplit(bool on) { compare_split.store(on); }
 	void setCompareLabels(const QString &left_label, const QString &right_label);
 
+	// What the stage did since the last call; the counters start over. Robz Play writes it to
+	// the log once a minute, so stutter nobody was watching can be read afterwards. Safe to
+	// call from any thread.
+	struct Health
+	{
+		unsigned int real_frames = 0;      // real frames handed on
+		unsigned int generated_frames = 0; // generated frames handed on
+		unsigned int repeats = 0;          // repeated frames recognised and left out
+		unsigned int overloads = 0;        // frames passed on untouched because the worker was behind
+		unsigned int queue_max = 0;        // most decoded frames waiting for the worker at once
+		unsigned int late_frames = 0;      // frames handed on more than 4 ms after they were due
+		double late_max_ms = 0.0;
+		double generate_avg_ms = 0.0;      // per generated frame
+		double generate_max_ms = 0.0;
+		int motion_divisor = 0;            // motion detail in use: 1 high, 2 balanced, 4 fast
+		// generated frames left out because they could not have been ready for their slot:
+		// the picture before them stayed up instead
+		unsigned int held = 0;
+		// generated frames dropped at the last moment: late, with the next frame already due
+		unsigned int dropped_late = 0;
+		// times the stream's clock had to be set anew in one step (the console sent nothing
+		// for a frame or two, or the kind of content changed): see StreamClock::jumps
+		unsigned int clock_jumps = 0;
+		double latency_ms = 0.0;           // delay between a frame's slot and its showing, now
+		double picture_late_ms = 0.0;      // how much later than repeats new pictures arrive, now
+		int source_slots = 0;              // stream frames per new picture of the game (2: 30 fps)
+		// frames generated unseen, only to learn what a frame costs after one was left out
+		unsigned int probe_frames = 0;
+	};
+	Health takeHealth();
+
 	bool enabled() const { return running.load() && config.enabled; }
 	QString status() const;
 	double sourceFps() const { return stat_source_fps.load(); }
 	double outputFps() const { return stat_output_fps.load(); }
 	double generateMs() const { return stat_generate_ms.load(); }
+	bool detailTooHeavy() const { return running.load() && config.enabled && health_too_heavy.load(); }
 
 signals:
 	void stateChanged();
@@ -103,6 +143,8 @@ private:
 		int32_t frames_lost = 0;
 		qint64 delivery_us = 0;
 		uint64_t arrival_us = 0;
+		bool generated = false;
+		int32_t skipped = 0;
 	};
 	struct Scheduled
 	{
@@ -130,6 +172,9 @@ private:
 	void workerMain();
 	void presenterMain();
 	void process(Item &item);
+	void reviewFit(double limit_us);
+	void noteGenerateCost(double total_ms, double cadence_us, uint64_t now_us);
+	void probeCost(const robzfg::Nv12View &view, double cadence_us);
 	void schedule(Item &item, uint64_t due_us);
 	void scheduleNow(Item &item);
 	void flushSchedule();
@@ -178,15 +223,8 @@ private:
 
 	// worker-thread state
 	std::unique_ptr<Engine> engine;
-	// when the last real frame is (or was) due; the timeline the output cadence runs on
-	bool timeline_valid = false;
-	double timeline_real_due_us = 0.0;
+	// the latest due time handed out: due times never run backwards
 	uint64_t last_due_us = 0;
-	uint64_t last_unique_us = 0;
-	// running average of the time between real frames, and how many frames to put in between
-	double cadence_us = 0.0;
-	unsigned int cadence_samples = 0;
-	int intermediates = 0;
 	int32_t carried_frames_lost = 0;
 	std::vector<uint8_t> scratch_uv;
 	std::vector<uint8_t> scratch_out_uv;
@@ -200,6 +238,26 @@ private:
 	std::atomic<double> stat_source_fps{0.0};
 	std::atomic<double> stat_output_fps{0.0};
 	std::atomic<double> stat_generate_ms{0.0};
+	// see takeHealth()
+	std::atomic<unsigned int> health_real{0};
+	std::atomic<unsigned int> health_generated{0};
+	std::atomic<unsigned int> health_repeats{0};
+	std::atomic<unsigned int> health_overloads{0};
+	std::atomic<unsigned int> health_queue_max{0};
+	std::atomic<unsigned int> health_late{0};
+	std::atomic<uint64_t> health_late_max_us{0};
+	std::atomic<unsigned int> health_generate_count{0};
+	std::atomic<uint64_t> health_generate_sum_us{0};
+	std::atomic<uint64_t> health_generate_max_us{0};
+	std::atomic<int> health_divisor{0};
+	std::atomic<bool> health_too_heavy{false};
+	std::atomic<unsigned int> health_held{0};
+	std::atomic<unsigned int> health_dropped{0};
+	std::atomic<unsigned int> health_clock_jumps{0};
+	std::atomic<uint64_t> health_latency_us{0};
+	std::atomic<uint64_t> health_picture_late_us{0};
+	std::atomic<int> health_source_slots{0};
+	std::atomic<unsigned int> health_probes{0};
 	QTimer poll_timer;
 };
 

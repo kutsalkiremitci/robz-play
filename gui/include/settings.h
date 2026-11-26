@@ -277,9 +277,12 @@ class Settings : public QObject
 		void SetFrameGenEnabled(bool enabled)      { settings.setValue("settings/framegen_enabled", enabled); }
 		int GetFrameGenFlowDivisor() const
 		{
-			// Robz Play: High (full resolution) by default
-			const int divisor = settings.value("settings/framegen_flow_divisor", 1).toInt();
-			return (divisor == 1 || divisor == 2 || divisor == 4) ? divisor : 1;
+			// Robz Play: Balanced (half resolution) unless the user chose otherwise. The level
+			// is never changed behind the user's back, so the default has to be one most
+			// graphics cards keep up with: at High an RTX 4070 needs some 20 ms for a
+			// generated frame of a 1080p stream, with 26 ms being the most there is time for.
+			const int divisor = settings.value("settings/framegen_flow_divisor", 2).toInt();
+			return (divisor == 1 || divisor == 2 || divisor == 4) ? divisor : 2;
 		}
 		void SetFrameGenFlowDivisor(int divisor)   { settings.setValue("settings/framegen_flow_divisor", divisor); }
 		int GetFrameGenTargetFps() const

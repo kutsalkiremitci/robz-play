@@ -5,19 +5,26 @@
 
 #include <robzfg/dedup.h>
 #include <robzfg/rife_interpolator.h>
+#include <robzfg/timeline.h>
 
 #include <chiaki/time.h>
 
 extern "C" {
 #include <libavutil/frame.h>
+#include <libavutil/pixdesc.h>
 #include <libavutil/pixfmt.h>
 }
 
+#include <QCoreApplication>
+#include <QDateTime>
+#include <QDir>
+#include <QFile>
 #include <QFont>
 #include <QFontMetrics>
 #include <QImage>
 #include <QLoggingCategory>
 #include <QPainter>
+#include <QStandardPaths>
 
 #include <algorithm>
 #include <chrono>
@@ -39,36 +46,137 @@ namespace
 
 // At most this many frames are generated between two real ones (30 fps -> 120 fps).
 const int MAX_INTERMEDIATES = 3;
-// The number of frames to generate follows the average time between real frames, measured
-// in output intervals: 2 intervals leave room for one generated frame, 4 for three. The
-// count only changes once the average has clearly left its current value, so network
-// jitter does not switch generation on and off.
-const double CADENCE_HYSTERESIS = 0.35;
-const double CADENCE_TRACKING = 0.1;
-const unsigned int CADENCE_MIN_SAMPLES = 6;
-// Gaps outside this range say nothing about the cadence: a burst, a hitch or a loading pause.
-const double MIN_PLAUSIBLE_GAP_US = 3000.0;
-const double MAX_PLAUSIBLE_GAP_US = 120000.0;
-// A single gap longer than this is a hitch: nothing sensible fits in between.
-const double MAX_GENERATE_GAP_US = 70000.0;
 // More than this many frames waiting means the GPU cannot keep up: stop generating until it drains.
 const size_t MAX_QUEUE_DEPTH = 3;
 // Generating all the frames of one interval may take at most this share of the interval.
 const double MAX_GENERATE_LOAD = 0.8;
-// The output timeline follows the arrival times of real frames only this fast, so network
-// jitter is averaged out instead of being passed on to the screen.
-const double TIMELINE_TRACKING = 0.15;
-// Time set aside for synthesizing a frame before it is due; grows with the measured cost.
-const double MIN_GENERATE_BUDGET_US = 6000.0;
 // A change this large between two real frames is a cut, not motion: do not blend across it.
 const double SCENE_CUT_MEAN_DIFF = 35.0;
 const double SCENE_CUT_CHANGED_RATIO = 0.75;
+// A picture that differs from the one before by this little is the same picture again as far
+// as the eye goes: an encoder still refining a still screen, a clock ticking in a corner.
+// Nothing is generated in front of it. It would show no motion, and on a still screen such
+// pictures come seconds apart, when the GPU has gone idle and takes several times as long.
+const double STILL_MEAN_DIFF = 0.3;
+const double STILL_CHANGED_RATIO = 0.0005;
+// On a still screen (a menu, a pause) the encoder goes on refining the picture, and such a
+// refinement now and then passes for a new picture: a faint change, at no regular distance
+// from the one before. A game standing still while it runs sends faint changes too, but one
+// every other frame like any other picture. So a faint change is only left without a
+// generated frame when it does not come at the distance the game's pictures come at.
+// (Measured on a real session: in a minute on a menu such pictures came 4, 6 and 8 frames
+// apart with changes of 0.03 to 0.06 levels; each started a frame on a GPU that had been
+// idle for seconds, and those frames took 40 to 90 ms.)
+const double FAINT_MEAN_DIFF = 0.15;
+const double FAINT_CHANGED_RATIO = 0.003;
+// A generated frame this late, with the next frame due within LATE_DROP_NEXT_US, is left
+// out: it would be on the screen for an instant, or replace a frame nobody had seen yet.
+const uint64_t LATE_DROP_US = 8000;
+const uint64_t LATE_DROP_NEXT_US = 2000;
+// The trace file (see Engine::openTrace) stops growing here.
+const qint64 TRACE_MAX_BYTES = 200 * 1024 * 1024;
+// A frame handed on later than this after it was due counts as late (see Health).
+const uint64_t LATE_FRAME_US = 4000;
+// A generated frame that took longer than this is written to the log the moment it happens,
+// with what the time went on; so is a frame whose comparison and upload took this long.
+const double SLOW_GENERATE_MS = 40.0;
+const double SLOW_INTAKE_MS = 25.0;
+// At most one such line in this time: a bad second must not flood the log.
+const uint64_t SLOW_LOG_INTERVAL_US = 200000;
+// The motion detail is the one chosen in the settings and stays that: the delay follows what
+// generating costs at it (see OutputTimeline::readyLimitUs). When the first generated frame of
+// a pair is not ready within that limit in at least FIT_OVER_SHARE of FIT_WINDOW_PAIRS pairs,
+// the level is more than this GPU keeps up with and the stream says so, on screen and in the
+// log, until a window fits again. Single hitches do not count: they are too few to fill a
+// window.
+const unsigned int FIT_WINDOW_PAIRS = 60;
+const double FIT_OVER_SHARE = 0.5;
+// The notice goes away again once no more than this share of a window misses the limit; in
+// between it stays as it is, so that a level at the edge of what the GPU manages does not
+// make it flicker.
+const double FIT_CLEAR_SHARE = 0.1;
+const double FIT_MARGIN_US = 1000.0;
+
+// The estimates of what generating costs decide whether a frame is planned at all, so they have
+// to stay honest in both directions.
+//
+// A single frame that took ten times as long says the GPU was busy for a moment, not that
+// frames now take that long: one sample counts for little more than twice the estimate, and
+// the estimate follows a drop quickly. An estimate that jumped on such a frame would stop
+// generation, since nothing would look as if it could be ready in time.
+//
+// And a pair that was planned as too late still has its frame made (see probeCost): it is
+// not shown, but making it tells what frames cost right now. Without that the estimate
+// would stay where the last frames left it, and those were the slow ones.
+//
+// (Generating frames only to keep an idle GPU fast was tried and measured. A GPU with
+// nothing to do does slow down - robzfg-lab idle: 5 ms a frame in a steady run, 30 ms and
+// more after seconds without work - but thirty thrown-away frames a second on a still
+// screen changed nothing about the first frames after it, so the stage does not do that.)
+//
+// A GPU that really is too slow would be probed for nothing. After PROBE_LIMIT frames in a
+// row that took longer than the whole interval between two pictures, it is left alone for
+// PROBE_PAUSE_US.
+const int PROBE_LIMIT = 5;
+const uint64_t PROBE_PAUSE_US = 30000000;
+
+// Waits until a point in time to within a fraction of a millisecond. std::this_thread::sleep_for
+// is no use for this on Windows: it wakes up to a timer tick (15.6 ms) late.
+void waitUntil(std::chrono::steady_clock::time_point until)
+{
+#ifdef _WIN32
+	static thread_local HANDLE timer = CreateWaitableTimerExW(nullptr, nullptr, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);
+	const double sleep_ms = std::chrono::duration<double, std::milli>(until - std::chrono::steady_clock::now()).count() - 0.7;
+	if(timer && sleep_ms > 0.3)
+	{
+		LARGE_INTEGER due;
+		due.QuadPart = -(LONGLONG)(sleep_ms * 10000.0); // relative, in 100 ns units
+		if(SetWaitableTimer(timer, &due, 0, nullptr, nullptr, FALSE))
+			WaitForSingleObject(timer, INFINITE);
+	}
+#endif
+	// the rest of the way: giving the processor up, but never for long
+	while(std::chrono::steady_clock::now() < until)
+		std::this_thread::yield();
+}
+
+void trackDuration(double &average, double sample_ms)
+{
+	if(average <= 0.0)
+		average = sample_ms;
+	else if(sample_ms < average)
+		average += (sample_ms - average) * 0.3;
+	else
+		average += (std::min(sample_ms, average * 2.0 + 2.0) - average) * 0.1;
+}
+
+const char *motionDetailName(int flow_divisor)
+{
+	return flow_divisor <= 1 ? "High" : (flow_divisor == 2 ? "Balanced" : "Fast");
+}
+
+template <typename T>
+void raiseTo(std::atomic<T> &target, T value)
+{
+	T current = target.load();
+	while(value > current && !target.compare_exchange_weak(current, value))
+	{
+	}
+}
+
+// 10-bit pictures in 16-bit words, the value in the upper bits: what an HDR stream gives
+// after hardware decoding.
+bool isWideFormat(const AVFrame *frame)
+{
+	return frame->format == AV_PIX_FMT_P010LE;
+}
 
 bool isSupportedFormat(const AVFrame *frame)
 {
 	if(!frame || frame->hw_frames_ctx)
 		return false;
-	if(frame->format != AV_PIX_FMT_NV12 && frame->format != AV_PIX_FMT_YUV420P && frame->format != AV_PIX_FMT_YUVJ420P)
+	if(frame->format != AV_PIX_FMT_NV12 && frame->format != AV_PIX_FMT_YUV420P && frame->format != AV_PIX_FMT_YUVJ420P
+		&& !isWideFormat(frame))
 		return false;
 	return frame->width > 0 && frame->height > 0 && (frame->width % 4) == 0 && (frame->height % 2) == 0;
 }
@@ -77,9 +185,14 @@ robzfg::ColorInfo colorInfoOf(const AVFrame *frame)
 {
 	robzfg::ColorInfo color;
 	color.full_range = frame->color_range == AVCOL_RANGE_JPEG || frame->format == AV_PIX_FMT_YUVJ420P;
+	const bool wide = isWideFormat(frame);
 	const bool bt601 = frame->colorspace == AVCOL_SPC_BT470BG || frame->colorspace == AVCOL_SPC_SMPTE170M
 		|| (frame->colorspace == AVCOL_SPC_UNSPECIFIED && frame->height < 720);
-	color.matrix = bt601 ? robzfg::ColorMatrix::BT601 : robzfg::ColorMatrix::BT709;
+	// a 10-bit stream that does not say what it is, is HDR: the console sends nothing else in 10 bits
+	const bool bt2020 = frame->colorspace == AVCOL_SPC_BT2020_NCL || frame->colorspace == AVCOL_SPC_BT2020_CL
+		|| (frame->colorspace == AVCOL_SPC_UNSPECIFIED && wide);
+	color.matrix = bt2020 ? robzfg::ColorMatrix::BT2020 : (bt601 ? robzfg::ColorMatrix::BT601 : robzfg::ColorMatrix::BT709);
+	color.pq = frame->color_trc == AVCOL_TRC_SMPTE2084 || (frame->color_trc == AVCOL_TRC_UNSPECIFIED && wide);
 	return color;
 }
 
@@ -106,6 +219,82 @@ struct FrameGenStage::Engine
 	robzfg::RifeInterpolator rife;
 	robzfg::DuplicateDetector dedup;
 	bool ok = false;
+
+	// ROBZPLAY_FRAMEGEN_FAKE_MS=<ms>: instead of the GPU, a stand-in that takes that long for
+	// the first frame of a pair at high motion detail (less at the lower levels, a fifth for
+	// every further frame of the pair) and hands back the newer of the two pictures. With it
+	// everything else in this stage - recognising repeats, the timeline, handing frames on -
+	// runs as in a real session on a machine whose GPU is busy with something else, which
+	// is what the simulator (gui/tools/framegen_sim.cpp) is for. Never set in normal use.
+	double fake_ms = 0.0;
+	int fake_divisor = 1;
+	int fake_frames = 0;
+	bool fake_estimated = false;
+	float fake_field_time = 0.5f;
+
+	bool init(const robzfg::RifeInterpolator::Config &rife_config, std::string *error)
+	{
+		fake_ms = qEnvironmentVariable("ROBZPLAY_FRAMEGEN_FAKE_MS").toDouble();
+		if(fake_ms <= 0.0)
+			return rife.init(rife_config, error);
+		fake_divisor = rife_config.flow_divisor;
+		return true;
+	}
+
+	std::string gpuName() const
+	{
+		return fake_ms > 0.0 ? std::string("a stand-in for the GPU (ROBZPLAY_FRAMEGEN_FAKE_MS)") : rife.gpuName();
+	}
+
+	bool push(const robzfg::Nv12View &view, const robzfg::ColorInfo &color, std::string *error)
+	{
+		if(fake_ms <= 0.0)
+			return rife.push(view, color, error);
+		fake_frames = std::min(2, fake_frames + 1);
+		fake_estimated = false;
+		return true;
+	}
+
+	bool ready() const { return fake_ms > 0.0 ? fake_frames >= 2 : rife.ready(); }
+
+	void forgetFrames()
+	{
+		if(fake_ms > 0.0)
+			fake_frames = 0;
+		else
+			rife.reset();
+	}
+
+	// `newest`: the real frame the pair ends with (what the stand-in hands back).
+	// `field_time`: the point in time the motion estimate is made for. One estimate serves
+	// every frame of a pair that asks for the same one, so frames to be shown ask for 0.5,
+	// the middle; a frame made only to keep the GPU at work asks for another, which makes
+	// the estimate anew.
+	bool interpolate(float t, const robzfg::Nv12View &newest, const robzfg::Nv12Mut &out, robzfg::InterpolateTiming *timing, std::string *error,
+		float field_time = 0.5f)
+	{
+		if(fake_ms <= 0.0)
+			return rife.interpolate(t, out, timing, error, field_time);
+
+		const auto start = std::chrono::steady_clock::now();
+		double cost_ms = fake_ms * (fake_divisor <= 1 ? 1.0 : (fake_divisor == 2 ? 0.4 : 0.25));
+		if(fake_estimated && field_time == fake_field_time)
+			cost_ms *= 0.2;
+		fake_estimated = true;
+		fake_field_time = field_time;
+		const size_t row_bytes = (size_t)newest.width * newest.sample_bytes;
+		for(int row = 0; row < newest.height; row++)
+			memcpy(out.y + (size_t)row * out.y_stride, newest.y + (size_t)row * newest.y_stride, row_bytes);
+		for(int row = 0; row < newest.height / 2; row++)
+			memcpy(out.uv + (size_t)row * out.uv_stride, newest.uv + (size_t)row * newest.uv_stride, row_bytes);
+		waitUntil(start + std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<double, std::milli>(cost_ms)));
+		if(timing)
+		{
+			timing->total_ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - start).count();
+			timing->gpu_ms = timing->total_ms;
+		}
+		return true;
+	}
 	// recent averages: any generated frame, the first frame of a pair (the one that includes
 	// the motion estimate), and the further frames of a pair (built from the same estimate)
 	double generate_ms_avg = 0.0;
@@ -117,6 +306,96 @@ struct FrameGenStage::Engine
 	// the very first runs are slow (pipelines and buffers are still being set up) and say
 	// nothing about the steady cost: they are not measured
 	int warmup_left = 4;
+
+	// the motion detail in use: the one chosen in the settings
+	int divisor = 1;
+	// the current window of pairs for telling whether it fits (see FIT_WINDOW_PAIRS)
+	unsigned int fit_pairs = 0;
+	unsigned int fit_over = 0;
+	double fit_ready_sum_ms = 0.0;
+
+	// context for the log line written when a frame takes unusually long
+	uint64_t last_generate_end_us = 0;
+	unsigned int generated_since_restart = 0;
+	uint64_t last_slow_log_us = 0;
+	size_t waiting = 0; // decoded frames still queued when the current one was taken
+	// see PROBE_LIMIT
+	int failed_probes = 0;
+	uint64_t probe_pause_until_us = 0;
+	// the slot of the last new picture (see FAINT_MEAN_DIFF)
+	bool have_picture_slot = false;
+	int64_t picture_slot = 0;
+	// where a frame made only to learn what it costs goes (see probeCost)
+	std::vector<uint8_t> probe_picture;
+	bool probe_flip = false;
+
+	// when each picture is shown (robzfg/timeline.h), and what it said about the frame
+	// that is being worked on
+	robzfg::OutputTimeline timeline;
+	int64_t frame_slot = 0;
+	int frame_advance = 1;
+	double frame_error_us = 0.0;
+	unsigned int clock_jumps_seen = 0;
+
+	// One line per frame of the stream, for working on the timing with what a real session
+	// looked like. Only written when asked for: ROBZPLAY_FRAMEGEN_TRACE_FILE=1, or a file
+	// called framegen-trace.on next to the executable.
+	std::unique_ptr<QFile> trace;
+	uint64_t trace_origin_us = 0;
+	qint64 trace_bytes = 0;
+
+	void openTrace()
+	{
+		const bool wanted = qEnvironmentVariableIsSet("ROBZPLAY_FRAMEGEN_TRACE_FILE")
+			|| QFile::exists(QCoreApplication::applicationDirPath() + QStringLiteral("/framegen-trace.on"));
+		if(!wanted)
+			return;
+		const QString dir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + QStringLiteral("/log");
+		QDir().mkpath(dir);
+		trace.reset(new QFile(dir + QStringLiteral("/framegen-trace-")
+			+ QDateTime::currentDateTime().toString(QStringLiteral("yyyy-MM-dd_HH-mm-ss")) + QStringLiteral(".csv")));
+		if(!trace->open(QIODevice::WriteOnly | QIODevice::Text))
+		{
+			trace.reset();
+			return;
+		}
+		traceLine("t_ms,slot,advance,kind,clock_error_ms,picture_late_ms,mean_diff,changed_ratio,slots,generated,held,"
+			"latency_ms,first_ms,ready_delay_ms,real_wait_ms,waiting\n");
+	}
+
+	void traceLine(const QByteArray &line)
+	{
+		if(!trace)
+			return;
+		trace_bytes += trace->write(line);
+		if(trace_bytes > TRACE_MAX_BYTES)
+			trace.reset();
+	}
+
+	// kind: R a repeat, U a new picture, O passed on untouched (the worker was behind),
+	// X passed on untouched (cannot be worked on)
+	void traceFrame(uint64_t arrival_us, char kind, const robzfg::FrameDifference *diff, const robzfg::OutputTimeline::Plan *plan,
+		uint64_t planned_us)
+	{
+		if(!trace)
+			return;
+		if(!trace_origin_us)
+			trace_origin_us = arrival_us;
+		QString line = QString::asprintf("%.3f,%lld,%d,%c,%.3f,%.3f,", (double)(arrival_us - trace_origin_us) / 1000.0,
+			(long long)frame_slot, frame_advance, kind, frame_error_us / 1000.0, timeline.pictureLateness() / 1000.0);
+		if(diff)
+			line += QString::asprintf("%.3f,%.5f,", diff->mean_abs_diff, diff->changed_ratio);
+		else
+			line += QStringLiteral(",,");
+		if(plan)
+			line += QString::asprintf("%d,%d,%d,%.3f,%.3f,%.3f,%.3f,", plan->immediate ? 0 : plan->spacing, (int)plan->generated.size(),
+				plan->held, plan->latency_us / 1000.0, first_ms_avg, ready_delay_ms_avg,
+				plan->real_due_us > planned_us ? (double)(plan->real_due_us - planned_us) / 1000.0 : 0.0);
+		else
+			line += QStringLiteral(",,,,,,,");
+		line += QString::asprintf("%u\n", (unsigned int)waiting);
+		traceLine(line.toLatin1());
+	}
 
 	// What generating `count` frames for one pair is expected to cost, in ms.
 	double pairCostMs(int count) const
@@ -234,6 +513,7 @@ void FrameGenStage::start(const Config &new_config, PresentFn present_fn)
 	stat_source_fps.store(0.0);
 	stat_output_fps.store(0.0);
 	stat_generate_ms.store(0.0);
+	takeHealth(); // nothing of an earlier stream is left in the counters
 	setStatus(config.enabled ? "loading" : "off");
 #ifdef _WIN32
 	timeBeginPeriod(1);
@@ -281,7 +561,10 @@ void FrameGenStage::stop()
 void FrameGenStage::runSelfTest(const Config &test_config, std::function<void()> on_presented)
 {
 	auto presented = std::make_shared<std::atomic<int>>(0);
-	start(test_config, [presented, on_presented](ChiakiFfmpegFrame frame, int32_t, qint64) {
+	// what is fed below is a new picture every 1/30 s and nothing in between: a 30 fps stream
+	Config self_test_config = test_config;
+	self_test_config.stream_fps = 30;
+	start(self_test_config, [presented, on_presented](ChiakiFfmpegFrame frame, int32_t, qint64) {
 		presented->fetch_add(1);
 		if(on_presented)
 			on_presented();
@@ -343,7 +626,7 @@ void FrameGenStage::runSelfTest(const Config &test_config, std::function<void()>
 	});
 }
 
-void FrameGenStage::submit(ChiakiFfmpegFrame frame, int32_t frames_lost, qint64 delivery_us)
+void FrameGenStage::submit(ChiakiFfmpegFrame frame, int32_t frames_lost, qint64 delivery_us, int32_t frames_skipped)
 {
 	if(!frame.frame)
 		return;
@@ -358,6 +641,7 @@ void FrameGenStage::submit(ChiakiFfmpegFrame frame, int32_t frames_lost, qint64 
 		// instead of letting frames pile up behind the load
 		stats_unique.fetch_add(1);
 		stats_presented.fetch_add(1);
+		health_real.fetch_add(1);
 		present(frame, frames_lost, delivery_us);
 		return;
 	}
@@ -365,11 +649,15 @@ void FrameGenStage::submit(ChiakiFfmpegFrame frame, int32_t frames_lost, qint64 
 	item.frame = frame;
 	item.frames_lost = frames_lost;
 	item.delivery_us = delivery_us;
+	item.skipped = frames_skipped;
 	item.arrival_us = chiaki_time_now_monotonic_us();
+	size_t waiting = 0;
 	{
 		std::lock_guard<std::mutex> lock(queue_mutex);
 		queue.push_back(item);
+		waiting = queue.size();
 	}
+	raiseTo(health_queue_max, (unsigned int)waiting);
 	work_waiter.signal();
 }
 
@@ -394,8 +682,24 @@ void FrameGenStage::presenterMain()
 		}
 		Item item = scheduled.front().item;
 		scheduled.pop_front();
+		const uint64_t late_us = now - due;
+		if(item.generated && late_us > LATE_DROP_US && !scheduled.empty() && scheduled.front().due_us <= now + LATE_DROP_NEXT_US)
+		{
+			// too late to be seen (see LATE_DROP_US); what it knew about lost frames goes
+			// on with the frame behind it
+			scheduled.front().item.frames_lost += item.frames_lost;
+			lock.unlock();
+			health_dropped.fetch_add(1);
+			av_frame_free(&item.frame.frame);
+			lock.lock();
+			continue;
+		}
 		lock.unlock();
 		stats_presented.fetch_add(1);
+		if(late_us > LATE_FRAME_US)
+			health_late.fetch_add(1);
+		raiseTo(health_late_max_us, late_us);
+		(item.generated ? health_generated : health_real).fetch_add(1);
 		present(item.frame, item.frames_lost, static_cast<qint64>(now));
 		lock.lock();
 	}
@@ -443,7 +747,6 @@ void FrameGenStage::flushSchedule()
 			entry.due_us = std::min(entry.due_us, now);
 	}
 	last_due_us = std::min(last_due_us, now);
-	timeline_valid = false;
 	present_waiter.signal();
 }
 
@@ -452,13 +755,11 @@ void FrameGenStage::flushSchedule()
 void FrameGenStage::workerMain()
 {
 	engine.reset(new Engine);
-	timeline_valid = false;
 	last_due_us = 0;
-	last_unique_us = 0;
-	cadence_us = 0.0;
-	cadence_samples = 0;
-	intermediates = 0;
 	carried_frames_lost = 0;
+	engine->timeline.reset(1000000.0 / (config.stream_fps > 0 ? (double)config.stream_fps : 60.0),
+		config.target_fps >= 100 ? 120u : 60u, MAX_INTERMEDIATES);
+	engine->openTrace();
 	stats_window_start_us = chiaki_time_now_monotonic_us();
 
 	if(config.enabled)
@@ -468,15 +769,23 @@ void FrameGenStage::workerMain()
 		rife_config.model_dir = config.model_dir.toUtf8().toStdString();
 		rife_config.flow_divisor = config.flow_divisor;
 		rife_config.protect_static = config.protect_static;
+		// ROBZPLAY_FRAMEGEN_GPU=<index> runs frame generation on that GPU instead of the first
+		// discrete one (robzfg-lab gpus lists them): for trying things out on a second GPU
+		// while the first one is busy.
+		if(qEnvironmentVariableIsSet("ROBZPLAY_FRAMEGEN_GPU"))
+			rife_config.gpu_index = qEnvironmentVariableIntValue("ROBZPLAY_FRAMEGEN_GPU");
 		std::string error;
 		const auto begin = std::chrono::steady_clock::now();
-		engine->ok = engine->rife.init(rife_config, &error);
+		engine->ok = engine->init(rife_config, &error);
 		const double ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - begin).count();
 		if(engine->ok)
 		{
-			qCInfo(robzFrameGen).nospace() << "Frame generation ready on " << QString::fromStdString(engine->rife.gpuName())
+			qCInfo(robzFrameGen).nospace() << "Frame generation ready on " << QString::fromStdString(engine->gpuName())
 				<< " in " << qRound(ms) << " ms (model " << config.model_dir << ", flow divisor " << config.flow_divisor
 				<< ", target " << config.target_fps << " fps)";
+			engine->divisor = config.flow_divisor;
+			health_divisor.store(config.flow_divisor);
+			health_too_heavy.store(false);
 			setStatus("waiting for video");
 			engine_ready.store(true);
 		}
@@ -501,19 +810,34 @@ void FrameGenStage::workerMain()
 		Item item = queue.front();
 		queue.pop_front();
 		const bool overloaded = queue.size() >= MAX_QUEUE_DEPTH;
+		engine->waiting = queue.size();
 		lock.unlock();
+
+		// Every frame of the stream is counted, whatever happens to it: the count is the
+		// stream's own clock (robzfg/timeline.h).
+		engine->frame_advance = 1 + std::max(0, item.frames_lost) + std::max(0, item.skipped);
+		engine->frame_slot = engine->timeline.observe(item.arrival_us, engine->frame_advance);
+		engine->frame_error_us = engine->timeline.streamClock().lastError();
+		const unsigned int clock_jumps = engine->timeline.streamClock().jumps();
+		if(clock_jumps != engine->clock_jumps_seen)
+		{
+			health_clock_jumps.fetch_add(clock_jumps - engine->clock_jumps_seen);
+			engine->clock_jumps_seen = clock_jumps;
+		}
+
 		if(overloaded)
 		{
 			// falling behind: show frames as they are until the queue is short again
+			health_overloads.fetch_add(1);
 			flushSchedule();
 			if(engine->ok)
 			{
-				engine->rife.reset();
+				engine->forgetFrames();
 				engine->dedup.reset();
 			}
-			last_unique_us = 0;
-			cadence_samples = 0;
-			intermediates = 0;
+			engine->generated_since_restart = 0;
+			engine->timeline.forgetPrevious();
+			engine->traceFrame(item.arrival_us, 'O', nullptr, nullptr, 0);
 			stats_unique.fetch_add(1);
 			scheduleNow(item);
 		}
@@ -532,6 +856,31 @@ void FrameGenStage::workerMain()
 		av_frame_free(&item.frame.frame);
 	av_frame_free(&compare_prev);
 	engine.reset();
+}
+
+FrameGenStage::Health FrameGenStage::takeHealth()
+{
+	Health health;
+	health.real_frames = health_real.exchange(0);
+	health.generated_frames = health_generated.exchange(0);
+	health.repeats = health_repeats.exchange(0);
+	health.overloads = health_overloads.exchange(0);
+	health.queue_max = health_queue_max.exchange(0);
+	health.late_frames = health_late.exchange(0);
+	health.late_max_ms = (double)health_late_max_us.exchange(0) / 1000.0;
+	const unsigned int generate_count = health_generate_count.exchange(0);
+	const uint64_t generate_sum_us = health_generate_sum_us.exchange(0);
+	health.generate_avg_ms = generate_count ? (double)generate_sum_us / generate_count / 1000.0 : 0.0;
+	health.generate_max_ms = (double)health_generate_max_us.exchange(0) / 1000.0;
+	health.motion_divisor = health_divisor.load();
+	health.held = health_held.exchange(0);
+	health.dropped_late = health_dropped.exchange(0);
+	health.clock_jumps = health_clock_jumps.exchange(0);
+	health.latency_ms = (double)health_latency_us.load() / 1000.0;
+	health.picture_late_ms = (double)health_picture_late_us.load() / 1000.0;
+	health.source_slots = health_source_slots.load();
+	health.probe_frames = health_probes.exchange(0);
+	return health;
 }
 
 void FrameGenStage::publishStats()
@@ -554,8 +903,17 @@ void FrameGenStage::process(Item &item)
 	if(!config.enabled || !engine->ok || !isSupportedFormat(frame))
 	{
 		if(config.enabled && engine->ok)
-			setStatus(frame->hw_frames_ctx ? "passing through (frame stayed on the GPU)" : "passing through (pixel format not supported yet, e.g. HDR)");
+		{
+			const char *format_name = frame->hw_frames_ctx ? nullptr : av_get_pix_fmt_name((AVPixelFormat)frame->format);
+			const std::string status = frame->hw_frames_ctx ? std::string("passing through (frame stayed on the GPU)")
+				: std::string("passing through (pixel format not supported: ") + (format_name ? format_name : "unknown") + ")";
+			if(this->status().toStdString() != status)
+				qCWarning(robzFrameGen) << "Frame generation:" << QString::fromStdString(status);
+			setStatus(status);
+		}
 		flushSchedule();
+		engine->timeline.forgetPrevious();
+		engine->traceFrame(item.arrival_us, 'X', nullptr, nullptr, 0);
 		stats_unique.fetch_add(1);
 		scheduleNow(item);
 		return;
@@ -563,11 +921,13 @@ void FrameGenStage::process(Item &item)
 
 	const int w = frame->width;
 	const int h = frame->height;
-	const bool planar = frame->format != AV_PIX_FMT_NV12;
+	const bool wide = isWideFormat(frame);
+	const bool planar = frame->format != AV_PIX_FMT_NV12 && !wide;
 
 	robzfg::Nv12View view;
 	view.width = w;
 	view.height = h;
+	view.sample_bytes = wide ? 2 : 1;
 	view.y = frame->data[0];
 	view.y_stride = frame->linesize[0];
 	if(planar)
@@ -594,10 +954,14 @@ void FrameGenStage::process(Item &item)
 		view.uv_stride = frame->linesize[1];
 	}
 
+	const uint64_t compare_begin_us = chiaki_time_now_monotonic_us();
 	const robzfg::FrameDifference diff = engine->dedup.measure(view);
+	const double compare_ms = (double)(chiaki_time_now_monotonic_us() - compare_begin_us) / 1000.0;
 	if(engine->dedup.classify(diff))
 	{
 		// a repeat of the frame we already have: the console had nothing new to send
+		health_repeats.fetch_add(1);
+		engine->traceFrame(item.arrival_us, 'R', &diff, nullptr, 0);
 		carried_frames_lost += item.frames_lost;
 		av_frame_free(&item.frame.frame);
 		return;
@@ -605,98 +969,134 @@ void FrameGenStage::process(Item &item)
 	engine->dedup.accept(view);
 	stats_unique.fetch_add(1);
 
-	// How fast real frames arrive decides how many frames go in between.
-	const double target_interval_us = 1000000.0 / (config.target_fps >= 100 ? 120.0 : 60.0);
-	const double gap_us = last_unique_us ? (double)(item.arrival_us - last_unique_us) : 0.0;
-	last_unique_us = item.arrival_us;
-	if(gap_us >= MIN_PLAUSIBLE_GAP_US && gap_us <= MAX_PLAUSIBLE_GAP_US)
-	{
-		cadence_us = cadence_samples ? cadence_us + (gap_us - cadence_us) * CADENCE_TRACKING : gap_us;
-		cadence_samples++;
-	}
-	else if(gap_us > MAX_PLAUSIBLE_GAP_US)
-	{
-		// a long pause: whatever came before says nothing about what follows
-		cadence_samples = 0;
-		intermediates = 0;
-	}
-	if(cadence_samples >= CADENCE_MIN_SAMPLES)
-	{
-		const double ratio = cadence_us / target_interval_us;
-		if(std::abs(ratio - (double)(intermediates + 1)) > CADENCE_HYSTERESIS)
-			intermediates = std::max(0, std::min(MAX_INTERMEDIATES, (int)std::lround(ratio) - 1));
-	}
-
-	// Never take on more than the GPU can finish inside one interval.
-	int count = intermediates;
-	bool reduced = false;
-	while(count > 1 && engine->pairCostMs(count) * 1000.0 > cadence_us * MAX_GENERATE_LOAD)
-	{
-		count = (count - 1) / 2; // 3 -> 1
-		reduced = true;
-	}
-
 	const bool scene_cut = diff.comparable && diff.mean_abs_diff > SCENE_CUT_MEAN_DIFF && diff.changed_ratio > SCENE_CUT_CHANGED_RATIO;
+	const int64_t picture_spacing = engine->have_picture_slot ? engine->frame_slot - engine->picture_slot : 0;
+	engine->picture_slot = engine->frame_slot;
+	engine->have_picture_slot = true;
+	const bool faint = diff.comparable && diff.mean_abs_diff < FAINT_MEAN_DIFF && diff.changed_ratio < FAINT_CHANGED_RATIO;
+	const bool off_beat = picture_spacing != engine->timeline.nominalSlots();
+	const bool nearly_still = diff.comparable
+		&& ((diff.mean_abs_diff < STILL_MEAN_DIFF && diff.changed_ratio < STILL_CHANGED_RATIO) || (faint && off_beat));
 
 	std::string error;
-	if(!engine->rife.push(view, colorInfoOf(frame), &error))
+	const uint64_t push_begin_us = chiaki_time_now_monotonic_us();
+	if(!engine->push(view, colorInfoOf(frame), &error))
 	{
 		qCWarning(robzFrameGen) << "Frame generation push failed:" << QString::fromStdString(error);
 		flushSchedule();
+		engine->timeline.forgetPrevious();
 		scheduleNow(item);
 		return;
 	}
+	{
+		const uint64_t pushed_us = chiaki_time_now_monotonic_us();
+		const double push_ms = (double)(pushed_us - push_begin_us) / 1000.0;
+		if(compare_ms + push_ms >= SLOW_INTAKE_MS && pushed_us - engine->last_slow_log_us >= SLOW_LOG_INTERVAL_US)
+		{
+			engine->last_slow_log_us = pushed_us;
+			qCInfo(robzFrameGen).noquote() << QString::asprintf(
+				"[health] slow frame intake: comparing with the previous frame took %.1f ms, handing the frame to the GPU %.1f ms, %u waiting",
+				compare_ms, push_ms, (unsigned int)engine->waiting);
+		}
+	}
 
-	const bool gap_fits = gap_us > 0.0 && gap_us <= MAX_GENERATE_GAP_US;
+	// When this picture is shown and what goes in front of it. The stream is a row of slots
+	// (one per frame the console sends); this picture belongs to its slot, the generated ones
+	// to the slots that held repeats. See robzfg/timeline.h.
+	robzfg::OutputTimeline::Costs costs;
+	costs.first_us = engine->first_ms_avg * 1000.0;
+	costs.rest_us = engine->rest_ms_avg * 1000.0;
+	costs.ready_delay_us = engine->ready_delay_ms_avg * 1000.0;
+	const bool may_generate = engine->ready() && !scene_cut && !nearly_still;
+	const uint64_t planned_us = chiaki_time_now_monotonic_us();
+	robzfg::OutputTimeline::Plan plan = engine->timeline.plan(planned_us, costs, may_generate);
+	const double cadence_us = engine->timeline.cadenceUs();
+	const double ready_limit_us = engine->timeline.readyLimitUs();
+	if(plan.held > 0)
+		health_held.fetch_add((unsigned int)plan.held);
+	health_latency_us.store((uint64_t)std::max(0.0, plan.latency_us));
+	health_picture_late_us.store((uint64_t)std::max(0.0, engine->timeline.pictureLateness()));
+	health_source_slots.store(engine->timeline.nominalSlots());
+
+	// Never take on more than the GPU can finish inside one interval: of several frames
+	// only the one nearest the middle is made then.
+	bool reduced = false;
+	if(plan.generated.size() > 1 && engine->pairCostMs((int)plan.generated.size()) * 1000.0 > cadence_us * MAX_GENERATE_LOAD)
+	{
+		size_t middle = 0;
+		for(size_t i = 1; i < plan.generated.size(); i++)
+			if(std::abs(plan.generated[i].t - 0.5f) < std::abs(plan.generated[middle].t - 0.5f))
+				middle = i;
+		const robzfg::OutputTimeline::Generated kept = plan.generated[middle];
+		plan.generated.assign(1, kept);
+		reduced = true;
+	}
+	engine->traceFrame(item.arrival_us, 'U', &diff, &plan, planned_us);
+
 	// ROBZPLAY_FRAMEGEN_TRACE=1 prints one line per real frame: what arrived and what was decided
 	static const bool trace = qEnvironmentVariableIsSet("ROBZPLAY_FRAMEGEN_TRACE");
 	if(trace)
-		fprintf(stderr, "[framegen] gap %.1f ms cadence %.1f ms (%u samples) wanted %d using %d first %.1f rest %.1f ms diff %.2f cut %d ready %d\n",
-			gap_us / 1000.0, cadence_us / 1000.0, cadence_samples, intermediates, count, engine->first_ms_avg, engine->rest_ms_avg,
-			diff.mean_abs_diff, scene_cut ? 1 : 0, engine->rife.ready() ? 1 : 0);
-	if(count <= 0 || !gap_fits || scene_cut || !engine->rife.ready())
+		fprintf(stderr, "[framegen] slot %lld (+%d) late %.1f ms slots %d typical %d generating %d held %d delay %.1f ms first %.1f rest %.1f ms diff %.2f cut %d still %d ready %d\n",
+			(long long)plan.slot, engine->frame_advance, engine->frame_error_us / 1000.0, plan.spacing, engine->timeline.nominalSlots(),
+			(int)plan.generated.size(), plan.held, plan.latency_us / 1000.0, engine->first_ms_avg, engine->rest_ms_avg,
+			diff.mean_abs_diff, scene_cut ? 1 : 0, nearly_still ? 1 : 0, engine->ready() ? 1 : 0);
+
+	if(plan.immediate)
 	{
-		if(cadence_samples >= CADENCE_MIN_SAMPLES && intermediates == 0)
-			setStatus(config.target_fps >= 100 ? "passing through (source already near 120 fps)" : "passing through (source already near 60 fps)");
+		// the source already runs at the target rate: nothing to generate, nothing held back
+		setStatus(config.target_fps >= 100 ? "passing through (source already near 120 fps)" : "passing through (source already near 60 fps)");
 		flushSchedule();
 		av_frame_free(&compare_prev);
 		scheduleNow(item);
+		return;
+	}
+	if(plan.generated.empty())
+	{
+		// Nothing goes in front of this picture: a cut, a still screen, a hitch, or it came
+		// too late for anything to be ready. It still takes its own slot, so what follows
+		// stays where it belongs.
+		av_frame_free(&compare_prev);
+		schedule(item, plan.real_due_us);
+		// Wanted, but could not have been ready. When that is because generating takes too
+		// long, it is as bad as a frame that came out late and counts against the motion
+		// detail in use; when the picture itself arrived late, it says nothing about it.
+		const double would_take_us = costs.first_us + (double)(planned_us - item.arrival_us);
+		if(plan.held > 0 && would_take_us > ready_limit_us - FIT_MARGIN_US)
+		{
+			engine->fit_pairs++;
+			engine->fit_over++;
+			engine->fit_ready_sum_ms += would_take_us / 1000.0;
+			reviewFit(ready_limit_us);
+		}
+		// When a frame was left out it is made all the same, unseen: what it costs right now
+		// is what decides about the next one.
+		if(plan.held > 0)
+			probeCost(view, cadence_us);
 		return;
 	}
 
 	// Comparison view: the left half keeps the previous real frame until this one is due,
 	// as the stream would show it without frame generation.
-	const bool compare = compare_split.load();
+	const int count = (int)plan.generated.size();
+	// (the comparison view draws into 8-bit pictures only)
+	const bool compare = compare_split.load() && !wide;
 	AVFrame *compare_cur = compare ? av_frame_clone(frame) : nullptr;
 	if(!compare)
 		av_frame_free(&compare_prev);
-	const int compare_left_fps = cadence_us > 0.0 ? (int)std::lround(1000000.0 / cadence_us) : 0;
-	const int compare_right_fps = cadence_us > 0.0 ? (int)std::lround(1000000.0 * (count + 1) / cadence_us) : 0;
+	const double pair_us = engine->timeline.streamClock().period() * std::max(1, plan.spacing);
+	const int compare_left_fps = (int)std::lround(1000000.0 / pair_us);
+	const int compare_right_fps = (int)std::lround(1000000.0 * (count + 1) / pair_us);
 
-	// Output timeline. With n generated frames the interval is cut into n + 1 steps. The
-	// first generated frame is due one budget after the real frame arrived - the time it
-	// has been taking to get that frame ready, plus a margin - and the real frame itself n
-	// steps later. Following that target only gradually keeps the cadence even when frames
-	// arrive unevenly.
-	const double step_us = cadence_us / (count + 1);
-	const double budget_us = std::min(cadence_us * 0.5,
-		std::max(MIN_GENERATE_BUDGET_US, engine->ready_delay_ms_avg * 1000.0 * 1.15 + 1000.0));
-	const double wanted_due_us = (double)item.arrival_us + budget_us + step_us * count;
-	const double predicted_due_us = timeline_real_due_us + cadence_us;
-	if(timeline_valid && std::abs(wanted_due_us - predicted_due_us) < cadence_us)
-		timeline_real_due_us = predicted_due_us + (wanted_due_us - predicted_due_us) * TIMELINE_TRACKING;
-	else
-		timeline_real_due_us = wanted_due_us;
-	timeline_valid = true;
-
+	// what the pair spans in the stream's own time: the frames in between share it
 	const double real_duration = item.frame.duration;
+	const double pair_duration = real_duration * std::max(1, plan.spacing);
 	const double real_pts = item.frame.pts;
 	int32_t lost_for_first = item.frames_lost;
 	item.frames_lost = 0;
 
 	for(int k = 1; k <= count; k++)
 	{
-		const float t = (float)k / (float)(count + 1);
+		const float t = plan.generated[(size_t)k - 1].t;
 		AVFrame *mid = allocLike(frame);
 		if(!mid)
 			break;
@@ -704,6 +1104,7 @@ void FrameGenStage::process(Item &item)
 		robzfg::Nv12Mut out;
 		out.width = w;
 		out.height = h;
+		out.sample_bytes = view.sample_bytes;
 		out.y = mid->data[0];
 		out.y_stride = mid->linesize[0];
 		if(planar)
@@ -719,8 +1120,7 @@ void FrameGenStage::process(Item &item)
 		}
 
 		robzfg::InterpolateTiming timing;
-		// one motion estimate per pair, made for the middle of the interval
-		if(!engine->rife.interpolate(t, out, &timing, &error, 0.5f))
+		if(!engine->interpolate(t, view, out, &timing, &error))
 		{
 			qCWarning(robzFrameGen) << "Frame generation failed:" << QString::fromStdString(error);
 			av_frame_free(&mid);
@@ -744,18 +1144,39 @@ void FrameGenStage::process(Item &item)
 			engine->warmup_left--;
 		else
 		{
-			auto track = [&timing](double &average) {
-				average = average > 0.0 ? average * 0.9 + timing.total_ms * 0.1 : timing.total_ms;
-			};
-			track(engine->generate_ms_avg);
-			track(k == 1 ? engine->first_ms_avg : engine->rest_ms_avg);
+			trackDuration(engine->generate_ms_avg, timing.total_ms);
+			trackDuration(k == 1 ? engine->first_ms_avg : engine->rest_ms_avg, timing.total_ms);
+			const uint64_t generate_us = (uint64_t)(std::max(0.0, timing.total_ms) * 1000.0);
+			health_generate_count.fetch_add(1);
+			health_generate_sum_us.fetch_add(generate_us);
+			raiseTo(health_generate_max_us, generate_us);
+			const uint64_t generated_us = chiaki_time_now_monotonic_us();
+			if(timing.total_ms >= SLOW_GENERATE_MS && generated_us - engine->last_slow_log_us >= SLOW_LOG_INTERVAL_US)
+			{
+				// what the time went on, and what the stage had been doing before: enough to
+				// tell a busy GPU from a cold start from a problem in this stage
+				engine->last_slow_log_us = generated_us;
+				const double idle_ms = engine->last_generate_end_us
+					? (double)(generated_us - engine->last_generate_end_us) / 1000.0 - timing.total_ms : -1.0;
+				qCInfo(robzFrameGen).noquote() << QString::asprintf(
+					"[health] slow frame generation: %.1f ms (preparing %.1f, GPU %.1f, copying %.1f), frame %d of %d, detail %s,"
+					" %.0f ms after the previous one, %u generated since the last restart, %u waiting, cadence %.1f ms, picture change %.1f",
+					timing.total_ms, timing.prepare_ms, timing.gpu_ms, timing.copy_ms, k, count, motionDetailName(engine->divisor),
+					idle_ms, engine->generated_since_restart, (unsigned int)engine->waiting, cadence_us / 1000.0, diff.mean_abs_diff);
+			}
 			if(k == 1)
 			{
-				const double delay_ms = (double)(chiaki_time_now_monotonic_us() - item.arrival_us) / 1000.0;
-				engine->ready_delay_ms_avg = engine->ready_delay_ms_avg > 0.0
-					? engine->ready_delay_ms_avg * 0.9 + delay_ms * 0.1 : delay_ms;
+				const double delay_ms = (double)(generated_us - item.arrival_us) / 1000.0;
+				trackDuration(engine->ready_delay_ms_avg, delay_ms);
+				noteGenerateCost(timing.total_ms, cadence_us, generated_us);
+				engine->fit_pairs++;
+				engine->fit_ready_sum_ms += delay_ms;
+				if(delay_ms * 1000.0 > ready_limit_us - FIT_MARGIN_US)
+					engine->fit_over++;
 			}
 		}
+		engine->last_generate_end_us = chiaki_time_now_monotonic_us();
+		engine->generated_since_restart++;
 
 		if(compare)
 		{
@@ -765,24 +1186,106 @@ void FrameGenStage::process(Item &item)
 		}
 
 		Item generated;
+		generated.generated = true;
 		generated.frame.frame = mid;
-		generated.frame.duration = real_duration / (count + 1);
-		generated.frame.pts = real_pts - real_duration * (1.0 - t);
+		generated.frame.duration = pair_duration / (count + 1);
+		generated.frame.pts = real_pts - pair_duration * (1.0 - t);
 		generated.frame.recovered = false;
 		generated.frames_lost = lost_for_first;
 		generated.delivery_us = item.delivery_us;
 		lost_for_first = 0;
-		schedule(generated, (uint64_t)(timeline_real_due_us - step_us * (count + 1 - k)));
+		schedule(generated, plan.generated[(size_t)k - 1].due_us);
 	}
 
 	item.frames_lost = lost_for_first;
-	item.frame.duration = real_duration / (count + 1);
+	item.frame.duration = pair_duration / (count + 1);
 	if(compare && av_frame_make_writable(item.frame.frame) >= 0)
 		drawCompare(item.frame.frame, compare_left_fps, compare_right_fps);
 	av_frame_free(&compare_prev);
 	compare_prev = compare_cur;
-	schedule(item, (uint64_t)timeline_real_due_us);
+	schedule(item, plan.real_due_us);
 	setStatus(reduced ? "generating (GPU too slow for the full target, generating fewer frames)" : "generating");
+	reviewFit(ready_limit_us);
+}
+
+// See PROBE_LIMIT.
+void FrameGenStage::noteGenerateCost(double total_ms, double cadence_us, uint64_t now_us)
+{
+	if(total_ms * 1000.0 <= cadence_us)
+	{
+		engine->failed_probes = 0;
+		return;
+	}
+	if(++engine->failed_probes >= PROBE_LIMIT)
+	{
+		engine->failed_probes = 0;
+		engine->probe_pause_until_us = now_us + PROBE_PAUSE_US;
+	}
+}
+
+// Generates a frame nobody will see, to learn what a frame costs right now (see PROBE_LIMIT).
+// `view`: the frame being worked on, which gives the size.
+void FrameGenStage::probeCost(const robzfg::Nv12View &view, double cadence_us)
+{
+	if(!engine->ok || !engine->ready() || engine->waiting > 0)
+		return;
+	if(chiaki_time_now_monotonic_us() < engine->probe_pause_until_us)
+		return;
+
+	const size_t row_bytes = (size_t)view.width * view.sample_bytes;
+	engine->probe_picture.resize(row_bytes * view.height * 3 / 2);
+	robzfg::Nv12Mut out;
+	out.width = view.width;
+	out.height = view.height;
+	out.sample_bytes = view.sample_bytes;
+	out.y = engine->probe_picture.data();
+	out.y_stride = (int)row_bytes;
+	out.uv = engine->probe_picture.data() + row_bytes * view.height;
+	out.uv_stride = (int)row_bytes;
+	robzfg::InterpolateTiming timing;
+	std::string error;
+	// a motion estimate of its own: that is the part whose cost matters
+	engine->probe_flip = !engine->probe_flip;
+	if(!engine->interpolate(0.5f, view, out, &timing, &error, engine->probe_flip ? 0.47f : 0.53f))
+		return;
+	const uint64_t end_us = chiaki_time_now_monotonic_us();
+	engine->last_generate_end_us = end_us;
+	health_probes.fetch_add(1);
+	if(engine->warmup_left > 0)
+	{
+		engine->warmup_left--;
+		return;
+	}
+	trackDuration(engine->first_ms_avg, timing.total_ms);
+	trackDuration(engine->generate_ms_avg, timing.total_ms);
+	noteGenerateCost(timing.total_ms, cadence_us, end_us);
+}
+
+// Whether the GPU keeps up with the motion detail chosen in the settings (see FIT_WINDOW_PAIRS).
+// The level itself is never changed here: what the user chose stays.
+void FrameGenStage::reviewFit(double limit_us)
+{
+	if(engine->fit_pairs < FIT_WINDOW_PAIRS)
+		return;
+	const bool was_too_heavy = health_too_heavy.load();
+	const bool too_heavy = was_too_heavy
+		? engine->fit_over > FIT_WINDOW_PAIRS * FIT_CLEAR_SHARE
+		: engine->fit_over >= FIT_WINDOW_PAIRS * FIT_OVER_SHARE;
+	const double ready_ms = engine->fit_ready_sum_ms / engine->fit_pairs;
+	engine->fit_pairs = 0;
+	engine->fit_over = 0;
+	engine->fit_ready_sum_ms = 0.0;
+	if(too_heavy == was_too_heavy)
+		return;
+	health_too_heavy.store(too_heavy);
+	if(too_heavy)
+		qCInfo(robzFrameGen).noquote() << QString::asprintf(
+			"[health] motion detail %s is more than this GPU keeps up with: generated frames were ready %.1f ms after the real frame, %.1f ms is what fits",
+			motionDetailName(engine->divisor), ready_ms, (limit_us - FIT_MARGIN_US) / 1000.0);
+	else
+		qCInfo(robzFrameGen).noquote() << QString::asprintf(
+			"[health] motion detail %s fits again: generated frames were ready %.1f ms after the real frame",
+			motionDetailName(engine->divisor), ready_ms);
 }
 
 // ---------------------------------------------------------------------------- comparison view

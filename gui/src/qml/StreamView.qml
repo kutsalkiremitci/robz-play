@@ -975,6 +975,16 @@ Item {
                             font.pixelSize: 14
                         }
 
+                        Label {
+                            // Robz Play: the graphics card does not keep up with the motion detail
+                            // chosen in the settings. The level stays; lowering it is up to the user.
+                            Layout.alignment: Qt.AlignRight
+                            visible: Chiaki.session && Chiaki.frameGen.enabled && Chiaki.frameGen.detailTooHeavy ? true : false
+                            text: visible ? qsTr("Motion detail is too high for this graphics card") : ""
+                            color: "#CDBFB4"
+                            font.pixelSize: 13
+                        }
+
                         RowLayout {
                             Layout.alignment: Qt.AlignRight
                             visible: Chiaki.session ? true : false
