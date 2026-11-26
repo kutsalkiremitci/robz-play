@@ -290,9 +290,9 @@ Robz Play bu ayarlarla geliştirilip denendi:
 
 | Hareket ayrıntısı | Keskinleştirme | FPS sayacı |
 |:---:|:---:|:---:|
-| **Yüksek** | **Yüksek** | **Açık** |
+| **Dengeli** | **Yüksek** | **Açık** |
 
-Hareket ayrıntısı **Yüksek** ekran kartına **Dengeli**'den yaklaşık üç kat daha ağır; kartın zorlanırsa **Ayarlar › Genel**'den Dengeli'ye ya da Hızlı'ya al.
+Hareket ayrıntısı **Yüksek** daha temiz, ama ekran kartına **Dengeli**'den yaklaşık üç kat daha ağır; kartın yeterince hızlıysa **Ayarlar › Genel**'den seç. Robz Play seçtiğin düzeyi korur, kart ona yetişmezse yayın menüsünde bildirir. Kartın Dengeli'de zorlanırsa Hızlı'ya al.
 
 Görüntü işleyici olarak Vulkan seçili gelir, çünkü geliştiricinin görüntüden altyazı okuyan diğer uygulaması Robz Vision OpenGL görüntüsünü yakalayamıyor. Ev dışından bağlanırken 100 Mbps çoğu ev internetinin yükleme hızı için fazladır; **Ayarlar › Yayın** sayfasındaki **Uzak** sütununda bit hızını düşür.
 

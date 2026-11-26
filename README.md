@@ -290,9 +290,9 @@ Robz Play was developed and tested with these settings:
 
 | Motion detail | Sharpening | FPS counter |
 |:---:|:---:|:---:|
-| **High** | **High** | **On** |
+| **Balanced** | **High** | **On** |
 
-Motion detail **High** is about three times heavier on the graphics card than **Balanced**; if your card struggles, set it to Balanced or Fast under **Settings › General**.
+Motion detail **High** is cleaner but about three times heavier on the graphics card than **Balanced**; choose it under **Settings › General** if your card is fast enough. Robz Play keeps the level you choose and tells you in the stream menu when the card cannot keep up with it. If your card struggles at Balanced, set it to Fast.
 
 Vulkan is selected as the renderer because the developer's other app, Robz Vision, which reads subtitles from the picture, cannot capture the OpenGL picture. When connecting from away from home, 100 Mbps is too much for the upload speed of most home connections; lower the bitrate in the **Remote** column on the **Settings › Stream** page.
 
