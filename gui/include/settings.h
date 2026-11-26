@@ -260,7 +260,9 @@ class Settings : public QObject
 		void SetLogVerbose(bool enabled)		{ settings.setValue("settings/log_verbose", enabled); }
 		bool GetLogSanitize() const            { return settings.value("settings/log_sanitize", true).toBool(); }
 		void SetLogSanitize(bool enabled)      { settings.setValue("settings/log_sanitize", enabled); }
-		bool GetVSyncEnabled() const           { return settings.value("settings/vsync", false).toBool(); }
+		// Robz Play: on unless the user has switched it off. Presenting without it tears, and the
+		// tear is most visible in exactly the steady sideways motion frame generation is for.
+		bool GetVSyncEnabled() const           { return settings.value("settings/vsync", true).toBool(); }
 		void SetVSyncEnabled(bool enabled)     { settings.setValue("settings/vsync", enabled); }
 		uint32_t GetLogLevelMask();
 

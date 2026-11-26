@@ -1304,7 +1304,7 @@ DialogView {
                         Layout.alignment: Qt.AlignLeft
                         color: "#A08F84"
                         font.pixelSize: 14
-                        text: qsTr("(Off)")
+                        text: qsTr("(On)")
                     }
 
                     Label {
