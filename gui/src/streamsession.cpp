@@ -36,6 +36,7 @@
 #define PS5_TOUCHPAD_MAX_X 1919.0f
 #define PS5_TOUCHPAD_MAX_Y 1079.0f
 #define SESSION_RETRY_SECONDS 20
+#define SESSION_RETRY_INTERVAL_MS 250
 #define HAPTIC_RUMBLE_MIN_STRENGTH 100
 
 #define MICROPHONE_SAMPLES 480
@@ -2392,7 +2393,10 @@ void StreamSession::Event(ChiakiEvent *event)
 		case CHIAKI_EVENT_QUIT:
 			if(!connected && !holepunch_session && chiaki_quit_reason_is_error(event->quit.reason) && connect_timer.elapsed() < SESSION_RETRY_SECONDS * 1000)
 			{
-				QTimer::singleShot(SESSION_RETRY_SECONDS / 3, this, &StreamSession::Start);
+				// Robz Play: this said SESSION_RETRY_SECONDS / 3, which a timer reads as 6 ms: a
+				// console still closing the previous session ("Remote is already in use") was
+				// asked again some fifty times a second, 250 times before it answered yes.
+				QTimer::singleShot(SESSION_RETRY_INTERVAL_MS, this, &StreamSession::Start);
 				return;
 			}
 			connected = false;
